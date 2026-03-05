@@ -1,18 +1,22 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Arize AX tracing — must initialize before any LLM client creation
-from arize.otel import register
-from openinference.instrumentation.openai import OpenAIInstrumentor
+try:
+    from arize.otel import register
+    from openinference.instrumentation.openai import OpenAIInstrumentor
 
-tracer_provider = register(
-    space_id=os.environ["ARIZE_SPACE_ID"],
-    api_key=os.environ["ARIZE_API_KEY"],
-    project_name=os.getenv("ARIZE_PROJECT_NAME", "thalia-msme-agent"),
-)
-OpenAIInstrumentor().instrument(tracer_provider=tracer_provider)
+    tracer_provider = register(
+        space_id=os.environ["ARIZE_SPACE_ID"],
+        api_key=os.environ["ARIZE_API_KEY"],
+        project_name=os.getenv("ARIZE_PROJECT_NAME", "thalia-msme-agent"),
+    )
+    OpenAIInstrumentor().instrument(tracer_provider=tracer_provider)
+except Exception as e:
+    logging.warning(f"Arize tracing disabled: {e}")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +28,7 @@ app = FastAPI(title="Thalia Agent API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "https://*.railway.app", "https://*.vercel.app"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "https://*.railway.app", "https://*.vercel.app", "https://*.awsapprunner.com"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
