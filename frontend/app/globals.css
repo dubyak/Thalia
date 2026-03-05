@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Tala MX Brand Colors */
+  --tala-teal: #1a989e;
+  --tala-teal-light: #20bec6;
+  --tala-teal-dark: #1d6d70;
+  --tala-teal-deep: #083032;
+  --tala-orange: #f06f14;
+  --tala-orange-light: #fbe9dd;
+  --tala-error: #ff2056;
+  --tala-error-dark: #ca1b1b;
+
+  /* Backgrounds */
+  --bg-primary: #f5f6f0;
+  --bg-secondary: #f8fafc;
+  --bg-cream: #fdfdfa;
+  --bg-card: #ffffff;
+
+  /* Text */
+  --text-primary: #1f1c2f;
+  --text-secondary: #676d65;
+  --text-muted: #939490;
+  --text-light: #c2c6c0;
+
+  /* Borders */
+  --border-light: #d8d4c3;
+  --border-medium: #c9c8c6;
+
+  /* Radius */
+  --radius: 12px;
+
+  /* Mobile */
+  --app-max-width: 390px;
+  --bottom-nav-height: 64px;
+  --status-bar-height: 44px;
+  --top-bar-height: 56px;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-[#f5f6f0] text-[#1f1c2f];
+    font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+    overscroll-behavior: none;
+  }
+
+  /* Smooth scrolling within the app container */
+  .app-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  /* Mobile viewport that accounts for dynamic keyboard */
+  .h-dvh {
+    height: 100dvh;
+  }
+
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
+  /* Safe areas for notched phones */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Android ripple-like active state */
+  .touch-active {
+    @apply active:opacity-70 transition-opacity duration-100;
+  }
+
+  /* Tala gradient backgrounds */
+  .bg-teal-gradient {
+    background: linear-gradient(135deg, #083032 0%, #1a989e 100%);
+  }
+
+  .bg-card-gradient {
+    background: linear-gradient(135deg, #f0fafb 0%, #d2f2f4 100%);
+  }
+
+  /* Chat bubble shapes */
+  .chat-bubble-agent {
+    border-radius: 4px 16px 16px 16px;
+  }
+
+  .chat-bubble-user {
+    border-radius: 16px 4px 16px 16px;
+  }
+}
