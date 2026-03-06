@@ -1,0 +1,7 @@
+# Railway config-as-code (optional when using Dockerfile).
+# Dockerfile at repo root is auto-detected; this file sets deploy options.
+
+[deploy]
+# Railway sends traffic to PORT; frontend listens on PORT (see supervisord.conf).
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
