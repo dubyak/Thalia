@@ -1,28 +1,13 @@
 version: 1.0
-runtime: python312
+runtime: python311
 build:
   commands:
-    pre-build:
-      - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-      - apt-get install -y nodejs
     build:
-      # Backend
       - pip install -r backend/requirements.txt
-      - pip install supervisor
-      # Frontend
-      - cd frontend && npm ci && npm run build && cd ..
-      # Copy standalone output to a known location
-      - cp -r frontend/.next/standalone frontend-standalone
-      - cp -r frontend/.next/static frontend-standalone/.next/static
-      - cp -r frontend/public frontend-standalone/public
-  env:
-    - name: NODE_ENV
-      value: production
 run:
-  command: supervisord -c supervisord.conf
+  pre-run:
+    - pip3 install -r backend/requirements.txt
+  command: cd backend && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
   network:
-    port: 3000
+    port: 8000
     env: PORT
-  env:
-    - name: NODE_ENV
-      value: production
