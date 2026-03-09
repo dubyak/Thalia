@@ -22,7 +22,8 @@ export function ChatOverlay() {
 
     const profile = (flow.businessProfile ?? {}) as Record<string, string>
     const approvedAmount = flow.loanConfig?.amount ?? tester.approvedAmount ?? 8000
-    startCoaching(tester.firstName, profile, approvedAmount, isFirstVisit)
+    const maxAmount = tester.maxAmount ?? 12000
+    startCoaching(tester.firstName, profile, approvedAmount, maxAmount, isFirstVisit)
     if (isFirstVisit) {
       flowDispatch({ type: 'COACHING_STARTED' })
     }

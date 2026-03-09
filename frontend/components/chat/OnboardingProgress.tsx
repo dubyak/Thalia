@@ -1,35 +1,50 @@
 import type { OnboardingPhase } from '@/lib/types'
-import { cn } from '@/lib/utils'
 
-const PHASE_LABELS: Record<string, string> = {
-  '1': 'Intro',
-  '2': 'Your business',
-  '3': 'Your profile',
-  '4': 'Your loan',
-  '5': 'Evidence',
-  '6': 'Coaching',
-  '7': 'Offer',
-  '8': 'Closing',
-  'complete': 'Completed'
+// Map phases to visible progress steps
+const PHASE_TO_STEP: Record<string, number> = {
+  '0': 1,   // Welcome
+  '1': 2,   // Business profile
+  '2': 2,
+  '3': 2,
+  '4': 3,   // Business health
+  '5': 3,
+  '6': 3,
+  '7': 3,
+  '8': 4,   // Evidence
+  '9': 5,   // Coaching demo
+  '10': 6,  // Offer
+  '11': 7,  // Closing
+  'complete': 7,
 }
+
+const STEP_LABELS: Record<number, string> = {
+  1: 'Welcome',
+  2: 'About your business',
+  3: 'Business health',
+  4: 'Evidence',
+  5: 'Coaching preview',
+  6: 'Your offer',
+  7: 'Done',
+}
+
+const TOTAL_STEPS = 7
 
 interface OnboardingProgressProps {
   phase: OnboardingPhase
 }
 
 export function OnboardingProgress({ phase }: OnboardingProgressProps) {
-  const phaseNum = phase === 'complete' ? 8 : Number(phase)
-  const totalSteps = 8
-  const progress = (phaseNum / totalSteps) * 100
+  const step = PHASE_TO_STEP[String(phase)] ?? 1
+  const progress = (step / TOTAL_STEPS) * 100
 
   return (
     <div className="px-4 py-3 bg-white border-b border-[#e5e5e5]">
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-xs font-semibold text-[#1a989e]">
-          {phase === 'complete' ? 'Completed' : `Step ${phaseNum} of ${totalSteps}`}
+          {phase === 'complete' ? 'Completed' : `Step ${step} of ${TOTAL_STEPS}`}
         </span>
         <span className="text-xs text-[#939490] font-light">
-          {PHASE_LABELS[String(phase)] ?? ''}
+          {STEP_LABELS[step] ?? ''}
         </span>
       </div>
       <div className="w-full h-1.5 bg-[#e5e5e5] rounded-full overflow-hidden">

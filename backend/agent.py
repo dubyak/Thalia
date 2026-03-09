@@ -1,6 +1,4 @@
-import json
 import os
-import re
 from dataclasses import dataclass, field
 
 from openai import AsyncOpenAI
@@ -8,7 +6,25 @@ from openai import AsyncOpenAI
 from state import AgentDecision
 from prompts import build_system_prompt
 
-PHASE_ORDER = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "complete"]
+# Phase 0: Welcome
+# Phase 1-3: Business profile (selling channel, tenure, typical customer)
+# Phase 4-7: Business health (recent changes, outlook, cash-cycle, working capital)
+# Phase 8: Optional evidence
+# Phase 9: Coaching demo (multi-turn)
+# Phase 10: Offer presentation + negotiation
+# Phase 11: Closing
+PHASE_ORDER = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "complete"]
+
+# Field required for each profile/health phase to advance
+PHASE_FIELD = {
+    "1": "sellingChannel",
+    "2": "tenure",
+    "3": "typicalCustomer",
+    "4": "recentChanges",
+    "5": "nearTermOutlook",
+    "6": "cashCycleSpeed",
+    "7": "workingCapital",
+}
 
 
 @dataclass
@@ -18,12 +34,16 @@ class Session:
     mode: str = "onboarding"
     tester_name: str = "there"
     approved_amount: int = 8000
+    max_amount: int = 12000
     collected: dict = field(default_factory=dict)
-    quick_replies: list[str] = field(default_factory=list)
     is_first_visit: bool = True
-    weekly_revenue: str | None = None
-    main_costs: str | None = None
+    # Survey-provided context (not asked in chat)
+    business_type: str | None = None
     loan_purpose: str | None = None
+    # Coaching demo turn counter
+    coaching_turns: int = 0
+    # Offer negotiation state
+    offer_stage: str = "initial"  # initial | negotiating | accepted
 
 
 sessions: dict[str, Session] = {}
@@ -31,21 +51,10 @@ sessions: dict[str, Session] = {}
 _client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
-def _calculate_offer(weekly_revenue_str: str | None) -> int:
-    if not weekly_revenue_str:
-        return 8000
-    nums = re.findall(r'\d+', weekly_revenue_str.replace(',', ''))
-    if not nums:
-        return 8000
-    w = int(nums[0])
-    if w >= 15000:
-        return 25000
-    elif w >= 8000:
-        return 15000
-    elif w >= 3000:
-        return 10000
-    else:
-        return 5000
+def _initial_offer(max_amount: int) -> int:
+    """~10% below max, rounded to nearest 500."""
+    raw = max_amount * 0.9
+    return round(raw / 500) * 500
 
 
 def _next_phase(current: str) -> str:
@@ -62,10 +71,10 @@ async def run_agent(
     *,
     tester_name: str | None = None,
     approved_amount: int = 8000,
+    max_amount: int = 12000,
     mode: str = "onboarding",
     collected: dict | None = None,
-    weekly_revenue: str | None = None,
-    main_costs: str | None = None,
+    business_type: str | None = None,
     loan_purpose: str | None = None,
     is_first_visit: bool = True,
     image_data: str | None = None,
@@ -77,38 +86,49 @@ async def run_agent(
             mode=mode,
             tester_name=tester_name or "there",
             approved_amount=approved_amount,
+            max_amount=max_amount,
             collected=dict(collected or {}),
             is_first_visit=is_first_visit,
-            weekly_revenue=weekly_revenue,
-            main_costs=main_costs,
+            business_type=business_type,
             loan_purpose=loan_purpose,
         )
 
     session = sessions[session_id]
 
-    # ── Append user message ────────────────────────────────────────────
-    if message or image_data:
-        if image_data:
-            content = [
-                {"type": "text", "text": message or "I'm sharing a photo of my business."},
-                {"type": "image_url", "image_url": {"url": image_data}},
-            ]
-        else:
-            content = message
-        session.messages.append({"role": "user", "content": content})
-
-    # ── Pull top-level fields into collected for prompt context ─────────
-    if session.weekly_revenue:
-        session.collected["weeklyRevenue"] = session.weekly_revenue
-    if session.main_costs:
-        session.collected["mainCosts"] = session.main_costs
+    # ── Inject survey context into collected ─────────────────────────
+    if session.business_type:
+        session.collected["businessType"] = session.business_type
     if session.loan_purpose:
         session.collected["loanPurpose"] = session.loan_purpose
 
-    # ── Calculate offer for Phase 7 ───────────────────────────────────
+    # ── Append user message ────────────────────────────────────────────
+    if message or image_data:
+        if image_data and not message:
+            session.messages.append({
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "(Customer shared a photo)"},
+                    {"type": "image_url", "image_url": {"url": image_data}},
+                ],
+            })
+        elif image_data and message:
+            session.messages.append({
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": message},
+                    {"type": "image_url", "image_url": {"url": image_data}},
+                ],
+            })
+        else:
+            session.messages.append({"role": "user", "content": message})
+
+    # ── Calculate offer amounts for Phase 10 ──────────────────────────
     offer_amount = 0
-    if session.phase == "7":
-        offer_amount = _calculate_offer(session.collected.get("weeklyRevenue"))
+    if session.phase == "10":
+        if session.offer_stage == "initial":
+            offer_amount = _initial_offer(session.max_amount)
+        else:
+            offer_amount = session.max_amount
 
     # ── Build system prompt ────────────────────────────────────────────
     system_prompt = build_system_prompt(
@@ -117,8 +137,11 @@ async def run_agent(
         tester_name=session.tester_name,
         collected=session.collected,
         approved_amount=session.approved_amount,
+        max_amount=session.max_amount,
         offer_amount=offer_amount,
+        offer_stage=session.offer_stage,
         is_first_visit=session.is_first_visit,
+        coaching_turns=session.coaching_turns,
     )
 
     # ── Call OpenAI with structured output ─────────────────────────────
@@ -134,59 +157,82 @@ async def run_agent(
     result = completion.choices[0].message.parsed
 
     # ── DEBUG: log LLM decision ────────────────────────────────────────
-    print(f"[DEBUG] phase={session.phase} | advance={result.advance_phase} | extracted={result.extracted} | collected={session.collected} | response={result.response[:80]}...")
+    preview = result.messages[0][:80] if result.messages else "(empty)"
+    print(f"[DEBUG] phase={session.phase} | advance={result.advance_phase} | extracted={result.extracted} | collected={session.collected} | msgs={len(result.messages)} | first={preview}...")
 
     # ── Merge extracted fields ─────────────────────────────────────────
     extracted = result.extracted.to_dict()
-    if "weeklyRevenue" in extracted:
-        session.collected["weeklyRevenue"] = extracted["weeklyRevenue"]
-        session.weekly_revenue = extracted["weeklyRevenue"]
-    if "mainCosts" in extracted:
-        session.collected["mainCosts"] = extracted["mainCosts"]
-        session.main_costs = extracted["mainCosts"]
-    if "loanPurpose" in extracted:
-        session.collected["loanPurpose"] = extracted["loanPurpose"]
-        session.loan_purpose = extracted["loanPurpose"]
-    if "businessType" in extracted:
-        session.collected["businessType"] = extracted["businessType"]
+    for key, value in extracted.items():
+        session.collected[key] = value
 
     # ── Phase advancement ──────────────────────────────────────────────
     if session.mode == "onboarding":
-        if session.phase == "1":
-            if session.collected.get("businessType") and result.advance_phase:
-                session.phase = "2"
-        elif session.phase == "2":
-            if session.collected.get("weeklyRevenue"):
-                session.phase = "3"
-            elif result.advance_phase:
-                session.phase = "3"
-        elif session.phase == "3":
-            if session.collected.get("mainCosts") and result.advance_phase:
-                session.phase = "4"
-        elif session.phase == "4":
-            if session.collected.get("loanPurpose") and result.advance_phase:
-                session.phase = "5"
-        elif session.phase == "5":
-            if result.advance_phase:
-                session.phase = "6"
-        elif session.phase == "6":
-            if result.advance_phase:
-                session.phase = "7"
-        elif session.phase == "7":
-            if result.advance_phase:
-                session.phase = "8"
-        elif result.advance_phase:
-            session.phase = _next_phase(session.phase)
+        phase = session.phase
 
-    # ── Append assistant message to history ─────────────────────────────
-    session.messages.append({"role": "assistant", "content": result.response})
-    session.quick_replies = result.quick_replies
+        if phase == "0":
+            if result.advance_phase:
+                session.phase = _next_phase(phase)
+
+        elif phase in PHASE_FIELD:
+            required_field = PHASE_FIELD[phase]
+            if session.collected.get(required_field) and result.advance_phase:
+                # Phase flexibility: skip ahead if later fields were volunteered
+                next_p = _next_phase(phase)
+                while next_p in PHASE_FIELD:
+                    next_field = PHASE_FIELD[next_p]
+                    if session.collected.get(next_field):
+                        next_p = _next_phase(next_p)
+                    else:
+                        break
+                session.phase = next_p
+            # Phase 5: need outlookReason follow-up if outlook is negative
+            if phase == "5" and result.advance_phase:
+                outlook = session.collected.get("nearTermOutlook", "").lower()
+                negative_words = ["slow", "bad", "down", "worse", "difficult", "tough", "negative", "not great"]
+                if any(w in outlook for w in negative_words) and not session.collected.get("outlookReason"):
+                    session.phase = "5"  # Stay for follow-up
+
+        elif phase == "8":
+            if result.advance_phase:
+                session.phase = _next_phase(phase)
+
+        elif phase == "9":
+            session.coaching_turns += 1
+            if result.advance_phase and session.coaching_turns >= 3:
+                session.phase = _next_phase(phase)
+
+        elif phase == "10":
+            if session.offer_stage == "initial":
+                if result.advance_phase:
+                    session.offer_stage = "accepted"
+                    session.phase = _next_phase(phase)
+                else:
+                    last_msg = (message or "").lower()
+                    negotiate_signals = ["think", "not sure", "too low", "more", "higher", "need time", "less"]
+                    if any(sig in last_msg for sig in negotiate_signals):
+                        session.offer_stage = "negotiating"
+                        offer_amount = session.max_amount
+            elif session.offer_stage == "negotiating":
+                if result.advance_phase:
+                    session.offer_stage = "accepted"
+                    session.phase = _next_phase(phase)
+
+        elif phase == "11":
+            if result.advance_phase:
+                session.phase = "complete"
+
+        else:
+            if result.advance_phase:
+                session.phase = _next_phase(phase)
+
+    # ── Append assistant messages to history ───────────────────────────
+    combined = "\n\n".join(result.messages)
+    session.messages.append({"role": "assistant", "content": combined})
 
     # ── Return response ────────────────────────────────────────────────
     return {
-        "content": result.response,
+        "messages": result.messages,
         "phase": session.phase,
         "collected": session.collected,
-        "quick_replies": result.quick_replies,
-        "offer_amount": offer_amount if session.phase == "7" or offer_amount > 0 else 0,
+        "offer_amount": offer_amount,
     }

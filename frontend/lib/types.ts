@@ -32,28 +32,32 @@ export interface ChatMessage {
   content: string
   timestamp: Date
   phase?: OnboardingPhase
-  quickReplies?: string[]
-  showPhotoUpload?: boolean
   isOffer?: boolean
   offerAmount?: number
   imageUrl?: string
 }
 
-// Onboarding phases — string phases from backend
-export type OnboardingPhase = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | 'complete' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+// Onboarding phases — 0-11 + complete
+export type OnboardingPhase =
+  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11'
+  | 'complete'
 
-// Data collected during onboarding
+// Data collected during onboarding (matches backend ExtractedFields)
 export interface BusinessProfile {
-  businessCategory?: string
-  weeklyRevenue?: string
-  mainCosts?: string
+  // Survey-provided
+  businessType?: string
   loanPurpose?: string
+  // Business profile (phases 1-3)
   sellingChannel?: string
-  yearsInOperation?: string
+  tenure?: string
+  typicalCustomer?: string
+  // Business health (phases 4-7)
   recentChanges?: string
-  salesOutlook?: 'positive' | 'neutral' | 'negative'
-  cashCycleSpeed?: 'fast' | 'medium' | 'slow'
-  loanUseIntent?: string
+  nearTermOutlook?: string
+  outlookReason?: string
+  cashCycleSpeed?: string
+  workingCapital?: string
+  // Evidence
   photoUploaded?: boolean
 }
 
@@ -62,6 +66,8 @@ export interface FlowState {
   loginComplete: boolean
   surveyComplete: boolean
   surveyChoice: 'business' | 'personal' | null
+  surveyBusinessType?: string
+  surveyLoanPurpose?: string
   msmeOptIn: boolean
   onboardingComplete: boolean
   offerAccepted: boolean
@@ -75,12 +81,10 @@ export interface FlowState {
   businessProfile?: BusinessProfile
 }
 
-// Agent response from chat service
+// Agent response from chat service (multi-bubble)
 export interface AgentResponse {
-  content: string
+  messages: string[]
   phase: OnboardingPhase
-  quickReplies?: string[]
-  showPhotoUpload?: boolean
   isOffer?: boolean
   offerAmount?: number
   metadata?: {

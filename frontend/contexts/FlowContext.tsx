@@ -13,6 +13,8 @@ const INITIAL_STATE: FlowState = {
   loginComplete: false,
   surveyComplete: false,
   surveyChoice: null,
+  surveyBusinessType: undefined,
+  surveyLoanPurpose: undefined,
   msmeOptIn: false,
   onboardingComplete: false,
   offerAccepted: false,
@@ -28,7 +30,7 @@ const INITIAL_STATE: FlowState = {
 
 type FlowAction =
   | { type: 'LOGIN_COMPLETE' }
-  | { type: 'SURVEY_COMPLETE'; choice: 'business' | 'personal' }
+  | { type: 'SURVEY_COMPLETE'; choice: 'business' | 'personal'; businessType?: string; loanPurpose?: string }
   | { type: 'MSME_OPT_IN' }
   | { type: 'ONBOARDING_COMPLETE'; profile: BusinessProfile }
   | { type: 'OFFER_ACCEPTED'; config: LoanConfig }
@@ -44,7 +46,7 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
     case 'LOGIN_COMPLETE':
       return { ...state, loginComplete: true }
     case 'SURVEY_COMPLETE':
-      return { ...state, surveyComplete: true, surveyChoice: action.choice }
+      return { ...state, surveyComplete: true, surveyChoice: action.choice, surveyBusinessType: action.businessType, surveyLoanPurpose: action.loanPurpose }
     case 'MSME_OPT_IN':
       return { ...state, msmeOptIn: true }
     case 'ONBOARDING_COMPLETE':

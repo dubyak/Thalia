@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, ChevronRight } from 'lucide-react'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
@@ -16,27 +16,111 @@ const LOAN_USE_OPTIONS = [
   { id: 'other', label: 'Other', emoji: '✨' },
 ]
 
+const LOAN_PURPOSE_OPTIONS = [
+  { id: 'restock', label: 'Restock inventory' },
+  { id: 'equipment', label: 'Buy equipment' },
+  { id: 'working-capital', label: 'Working capital' },
+  { id: 'expand', label: 'Expand the business' },
+  { id: 'other', label: 'Something else' },
+]
+
+type Step = 'loan-use' | 'loan-purpose'
+
 export default function SurveyPage() {
+  const [step, setStep] = useState<Step>('loan-use')
   const [selected, setSelected] = useState<string | null>(null)
+  const [loanPurpose, setLoanPurpose] = useState<string | null>(null)
   const { dispatch } = useFlow()
   const { tester } = useTester()
   const router = useRouter()
 
-  const handleSelect = (id: string) => {
+  const handleLoanUseSelect = (id: string) => {
     setSelected(id)
     if (id === 'business') {
-      setTimeout(() => {
-        dispatch({ type: 'SURVEY_COMPLETE', choice: 'business' })
-        router.push('/intro')
-      }, 400)
+      setTimeout(() => setStep('loan-purpose'), 400)
     }
   }
 
-  const handleContinue = () => {
+  const handlePurposeSelect = (id: string) => {
+    setLoanPurpose(id)
+  }
+
+  const handleBusinessContinue = () => {
+    if (!loanPurpose) return
+    const purposeLabel = LOAN_PURPOSE_OPTIONS.find(o => o.id === loanPurpose)?.label ?? loanPurpose
+    dispatch({
+      type: 'SURVEY_COMPLETE',
+      choice: 'business',
+      businessType: tester?.businessType,
+      loanPurpose: purposeLabel,
+    })
+    router.push('/intro')
+  }
+
+  const handlePersonalContinue = () => {
     dispatch({ type: 'SURVEY_COMPLETE', choice: 'personal' })
     router.push('/home')
   }
 
+  // Step 2: Loan purpose for business users
+  if (step === 'loan-purpose') {
+    return (
+      <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
+        <div className="bg-[#083032]">
+          <StatusBar dark />
+          <div className="px-5 pb-6 pt-2">
+            <p className="text-[#20bec6] text-sm font-light mb-1">
+              Almost there 👍
+            </p>
+            <h1 className="text-white text-xl font-semibold leading-snug">
+              What do you plan to use the loan for?
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex-1 px-4 py-5 space-y-3">
+          {LOAN_PURPOSE_OPTIONS.map((opt) => {
+            const isSelected = loanPurpose === opt.id
+            return (
+              <button
+                key={opt.id}
+                onClick={() => handlePurposeSelect(opt.id)}
+                className={cn(
+                  'w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-200 touch-active',
+                  isSelected
+                    ? 'bg-[#00A69C] border-[#00A69C] shadow-md'
+                    : 'bg-white border-[#e5e5e5]'
+                )}
+              >
+                <span className={cn('flex-1 font-semibold text-base', isSelected ? 'text-white' : 'text-[#1b1b1b]')}>
+                  {opt.label}
+                </span>
+                {isSelected ? (
+                  <CheckCircle2 size={20} className="text-white" />
+                ) : (
+                  <ChevronRight size={18} className="text-[#c2c6c0]" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {loanPurpose && (
+          <div className="px-4 pb-8">
+            <button
+              onClick={handleBusinessContinue}
+              className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
+              style={{ background: '#F06B22' }}
+            >
+              Continue
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Step 1: Loan use selection
   return (
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-[#083032]">
@@ -57,7 +141,7 @@ export default function SurveyPage() {
           return (
             <button
               key={opt.id}
-              onClick={() => handleSelect(opt.id)}
+              onClick={() => handleLoanUseSelect(opt.id)}
               className={cn(
                 'w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-200 touch-active',
                 isSelected
@@ -78,7 +162,7 @@ export default function SurveyPage() {
       {selected && selected !== 'business' && (
         <div className="px-4 pb-8">
           <button
-            onClick={handleContinue}
+            onClick={handlePersonalContinue}
             className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
             style={{ background: '#F06B22' }}
           >

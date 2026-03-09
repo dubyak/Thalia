@@ -10,7 +10,6 @@ import {
 } from 'react'
 import type { ChatMessage, OnboardingPhase, BusinessProfile, AgentResponse } from '@/lib/types'
 import { apiChatService } from '@/services/chat-service-api'
-import type { ChatHistoryItem } from '@/services/chat-service'
 
 interface ChatState {
   messages: ChatMessage[]
@@ -22,6 +21,10 @@ interface ChatState {
   mode: 'onboarding' | 'servicing' | 'coaching'
   testerFirstName: string | null
   approvedAmount: number
+  maxAmount: number
+  // Survey-provided context
+  businessType: string | null
+  loanPurpose: string | null
 }
 
 type ChatAction =
@@ -47,6 +50,9 @@ const INITIAL_STATE: ChatState = {
   mode: 'onboarding',
   testerFirstName: null,
   approvedAmount: 8000,
+  maxAmount: 12000,
+  businessType: null,
+  loanPurpose: null,
 }
 
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
@@ -92,13 +98,41 @@ function makeId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
+/** Add multi-bubble agent messages with staggered delays */
+async function addBubblesWithDelay(
+  messages: string[],
+  response: AgentResponse,
+  dispatchFn: React.Dispatch<ChatAction>,
+) {
+  for (let i = 0; i < messages.length; i++) {
+    // Brief pause between bubbles (not before the first one)
+    if (i > 0) {
+      dispatchFn({ type: 'SET_TYPING', typing: true })
+      await new Promise((r) => setTimeout(r, 400 + Math.random() * 400))
+      dispatchFn({ type: 'SET_TYPING', typing: false })
+    }
+
+    const msg: ChatMessage = {
+      id: makeId(),
+      role: 'agent',
+      content: messages[i],
+      timestamp: new Date(),
+      phase: response.phase,
+      // Offer flag only on the last bubble
+      isOffer: i === messages.length - 1 ? response.isOffer : false,
+      offerAmount: i === messages.length - 1 ? response.offerAmount : undefined,
+    }
+    dispatchFn({ type: 'ADD_MESSAGE', message: msg })
+  }
+}
+
 interface ChatContextValue {
   state: ChatState
   sendMessage: (content: string) => Promise<void>
   sendImage: (dataUrl: string) => Promise<void>
-  startOnboarding: (firstName: string, mode?: 'onboarding' | 'servicing') => Promise<void>
-  startServicing: (firstName: string, profile: Record<string, string>, approvedAmount: number) => Promise<void>
-  startCoaching: (firstName: string, profile: Record<string, string>, approvedAmount: number, isFirstVisit?: boolean) => Promise<void>
+  startOnboarding: (firstName: string, approvedAmount?: number, maxAmount?: number, businessType?: string, loanPurpose?: string) => Promise<void>
+  startServicing: (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount?: number) => Promise<void>
+  startCoaching: (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount?: number, isFirstVisit?: boolean) => Promise<void>
   openOverlay: () => void
   closeOverlay: () => void
   resetChat: () => void
@@ -109,63 +143,46 @@ const ChatContext = createContext<ChatContextValue | null>(null)
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, INITIAL_STATE)
   const startingRef = useRef(false)
+  const stateRef = useRef(state)
+  stateRef.current = state
 
-  const addAgentMessage = useCallback(
-    (response: AgentResponse) => {
-      const msg: ChatMessage = {
-        id: makeId(),
-        role: 'agent',
-        content: response.content,
-        timestamp: new Date(),
-        phase: response.phase,
-        quickReplies: response.quickReplies,
-        showPhotoUpload: response.showPhotoUpload,
-        isOffer: response.isOffer,
-        offerAmount: response.offerAmount,
-      }
-      dispatch({ type: 'ADD_MESSAGE', message: msg })
-
-      if (response.phase !== state.phase) {
+  const processResponse = useCallback(
+    async (response: AgentResponse) => {
+      const s = stateRef.current
+      if (response.phase !== s.phase) {
         dispatch({ type: 'SET_PHASE', phase: response.phase })
       }
       if (response.metadata?.collectedData) {
         dispatch({ type: 'UPDATE_PROFILE', data: response.metadata.collectedData })
       }
+
+      // Add bubbles with staggered animation
+      await addBubblesWithDelay(response.messages, response, dispatch)
+
       if (response.metadata?.nextAction === 'complete_onboarding') {
         dispatch({ type: 'COMPLETE_ONBOARDING' })
       }
     },
-    [state.phase]
+    []
   )
 
   const startOnboarding = useCallback(
-    async (firstName: string, mode: 'onboarding' | 'servicing' = 'onboarding') => {
-      if (state.messages.length > 0 || startingRef.current) return // already started
+    async (firstName: string, approvedAmount = 8000, maxAmount = 12000, businessType?: string, loanPurpose?: string) => {
+      if (stateRef.current.messages.length > 0 || startingRef.current) return
       startingRef.current = true
-
-      if (mode === 'servicing') {
-        dispatch({ type: 'SET_MODE', mode: 'servicing' })
-      }
 
       dispatch({ type: 'SET_TYPING', typing: true })
       await new Promise((r) => setTimeout(r, 1200))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = mode === 'servicing'
-        ? {
-            content: `Hi ${firstName}! I'm Thalia, your business assistant.\n\nI'm here to help with questions about your loan and business coaching. What can I help you with today?`,
-            phase: 'complete' as OnboardingPhase,
-            quickReplies: ['When is my next payment?', 'Business tips', 'How do I make a payment?']
-          }
-        : await apiChatService.getOpeningMessage(firstName)
-
-      addAgentMessage(response)
+      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose)
+      await processResponse(response)
     },
-    [state.messages.length, addAgentMessage]
+    [processResponse]
   )
 
   const startServicing = useCallback(
-    async (firstName: string, profile: Record<string, string>, approvedAmount: number) => {
+    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 12000) => {
       dispatch({ type: 'START_SERVICING', name: firstName, approvedAmount })
       startingRef.current = true
 
@@ -173,14 +190,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       await new Promise((r) => setTimeout(r, 1200))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, 'servicing')
-      addAgentMessage(response)
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'servicing')
+      await processResponse(response)
     },
-    [addAgentMessage]
+    [processResponse]
   )
 
   const startCoaching = useCallback(
-    async (firstName: string, profile: Record<string, string>, approvedAmount: number, isFirstVisit = true) => {
+    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 12000, isFirstVisit = true) => {
       dispatch({ type: 'START_COACHING', name: firstName, approvedAmount })
       startingRef.current = true
 
@@ -188,97 +205,85 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       await new Promise((r) => setTimeout(r, 1200))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, 'coaching', isFirstVisit)
-      addAgentMessage(response)
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'coaching', isFirstVisit)
+      await processResponse(response)
     },
-    [addAgentMessage]
+    [processResponse]
   )
 
   const sendMessage = useCallback(
     async (content: string) => {
-      // Add user message
+      const s = stateRef.current
       const userMsg: ChatMessage = {
         id: makeId(),
         role: 'user',
         content,
         timestamp: new Date(),
-        phase: state.phase
+        phase: s.phase,
       }
       dispatch({ type: 'ADD_MESSAGE', message: userMsg })
-
-      // Show typing indicator
       dispatch({ type: 'SET_TYPING', typing: true })
 
-      // Simulate realistic typing delay
       const delay = 800 + Math.random() * 1200
       await new Promise((r) => setTimeout(r, delay))
+      dispatch({ type: 'SET_TYPING', typing: false })
 
-      // Build history for API context
-      const history: ChatHistoryItem[] = state.messages.slice(-10).map((m) => ({
-        role: m.role === 'agent' ? 'assistant' : 'user',
-        content: m.content
-      }))
-
-      // Get AI response — pass profile context when in servicing/coaching mode
       const response = await apiChatService.sendMessage(
         content,
-        state.phase,
-        state.businessProfile,
-        state.mode,
-        history,
-        state.testerFirstName ?? undefined,
-        state.approvedAmount,
-        (state.mode === 'servicing' || state.mode === 'coaching')
-          ? (state.businessProfile as Record<string, string>)
-          : undefined
+        s.phase,
+        s.mode,
+        s.testerFirstName ?? undefined,
+        s.approvedAmount,
+        s.maxAmount,
+        (s.mode === 'servicing' || s.mode === 'coaching')
+          ? (s.businessProfile as Record<string, string>)
+          : undefined,
+        undefined,
+        s.businessType ?? undefined,
+        s.loanPurpose ?? undefined,
       )
 
-      dispatch({ type: 'SET_TYPING', typing: false })
-      addAgentMessage(response)
+      await processResponse(response)
     },
-    [state.phase, state.businessProfile, state.mode, state.messages, state.testerFirstName, state.approvedAmount, addAgentMessage]
+    [processResponse]
   )
 
   const sendImage = useCallback(
     async (dataUrl: string) => {
-      // Add user message with image
+      const s = stateRef.current
       const userMsg: ChatMessage = {
         id: makeId(),
         role: 'user',
         content: '',
         timestamp: new Date(),
-        phase: state.phase,
+        phase: s.phase,
         imageUrl: dataUrl,
       }
       dispatch({ type: 'ADD_MESSAGE', message: userMsg })
-
       dispatch({ type: 'SET_TYPING', typing: true })
+
       const delay = 800 + Math.random() * 1200
       await new Promise((r) => setTimeout(r, delay))
-
-      const history: ChatHistoryItem[] = state.messages.slice(-10).map((m) => ({
-        role: m.role === 'agent' ? 'assistant' : 'user',
-        content: m.content
-      }))
+      dispatch({ type: 'SET_TYPING', typing: false })
 
       const response = await apiChatService.sendMessage(
         '',
-        state.phase,
-        state.businessProfile,
-        state.mode,
-        history,
-        state.testerFirstName ?? undefined,
-        state.approvedAmount,
-        (state.mode === 'servicing' || state.mode === 'coaching')
-          ? (state.businessProfile as Record<string, string>)
+        s.phase,
+        s.mode,
+        s.testerFirstName ?? undefined,
+        s.approvedAmount,
+        s.maxAmount,
+        (s.mode === 'servicing' || s.mode === 'coaching')
+          ? (s.businessProfile as Record<string, string>)
           : undefined,
-        dataUrl
+        dataUrl,
+        s.businessType ?? undefined,
+        s.loanPurpose ?? undefined,
       )
 
-      dispatch({ type: 'SET_TYPING', typing: false })
-      addAgentMessage(response)
+      await processResponse(response)
     },
-    [state.phase, state.businessProfile, state.mode, state.messages, state.testerFirstName, state.approvedAmount, addAgentMessage]
+    [processResponse]
   )
 
   const openOverlay = useCallback(() => dispatch({ type: 'OPEN_OVERLAY' }), [])

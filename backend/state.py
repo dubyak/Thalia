@@ -8,21 +8,40 @@ class ExtractedFields(BaseModel):
     Set a field only when the customer provides a clear, confirmed value.
     Leave as null otherwise."""
 
-    businessType: Optional[str] = Field(
+    # Business profile questions (Phases 1-3)
+    sellingChannel: Optional[str] = Field(
         default=None,
-        description="The type of business the customer runs (e.g. 'Clothing store', 'Food stand')."
+        description="How/where the customer primarily operates or sells (e.g. 'Market stall', 'From home on social media')."
     )
-    weeklyRevenue: Optional[str] = Field(
+    tenure: Optional[str] = Field(
         default=None,
-        description="Customer's stated weekly revenue (e.g. 'About $5,000', 'Under $3,000')."
+        description="How long the customer has been running the business (e.g. '3 years', '6 months')."
     )
-    mainCosts: Optional[str] = Field(
+    typicalCustomer: Optional[str] = Field(
         default=None,
-        description="Customer's main business costs (e.g. 'Inventory and rent')."
+        description="Description of their typical customer (e.g. 'Neighbors, mostly women 25-40')."
     )
-    loanPurpose: Optional[str] = Field(
+
+    # Business health questions (Phases 4-7)
+    recentChanges: Optional[str] = Field(
         default=None,
-        description="What the customer plans to use the loan for (e.g. 'Restock inventory')."
+        description="What has changed in the business since their last loan (e.g. 'Added delivery', 'Nothing major')."
+    )
+    nearTermOutlook: Optional[str] = Field(
+        default=None,
+        description="Sales outlook for the next ~2 weeks (e.g. 'Good, holiday season coming', 'Slow, rainy season')."
+    )
+    outlookReason: Optional[str] = Field(
+        default=None,
+        description="If outlook is negative, the brief reason why. Only set when outlook is clearly negative."
+    )
+    cashCycleSpeed: Optional[str] = Field(
+        default=None,
+        description="How quickly they get cash back after spending on stock/supplies (e.g. 'Same week', '2-3 weeks')."
+    )
+    workingCapital: Optional[str] = Field(
+        default=None,
+        description="How much of their total working capital need Tala currently meets (e.g. 'About half', 'Most of it')."
     )
 
     def to_dict(self) -> dict[str, str]:
@@ -31,8 +50,13 @@ class ExtractedFields(BaseModel):
 
 
 class AgentDecision(BaseModel):
-    response: str = Field(
-        description="The message to send to the customer. Warm, conversational English. Short and empowering."
+    messages: list[str] = Field(
+        description=(
+            "Array of short messages to send as separate chat bubbles. "
+            "Each message should be 40-47 words max. "
+            "Break longer responses into 2-3 bubbles. "
+            "The LAST message in the array must end with a clear question or call to action — no dead ends."
+        )
     )
     extracted: ExtractedFields = Field(
         default_factory=ExtractedFields,
@@ -42,33 +66,21 @@ class AgentDecision(BaseModel):
         default=False,
         description=(
             "Set to true ONLY when the current phase objective is complete. "
-            "Phase 1: after businessType extracted. "
-            "Phase 2: after weeklyRevenue extracted (or already collected). "
-            "Phase 3: after mainCosts extracted. "
-            "Phase 4: after loanPurpose extracted. "
-            "Phase 5: always (optional document step). "
-            "Phase 6: after coaching demo exchange complete (2 turns). "
-            "Phase 7: after installment selection confirmed. "
-            "Phase 0, 8: advance after one good exchange."
+            "Phase 0: after welcome delivered. "
+            "Phase 1: after sellingChannel extracted. "
+            "Phase 2: after tenure extracted. "
+            "Phase 3: after typicalCustomer extracted. "
+            "Phase 4: after recentChanges extracted. "
+            "Phase 5: after nearTermOutlook extracted (and outlookReason if negative). "
+            "Phase 6: after cashCycleSpeed extracted. "
+            "Phase 7: after workingCapital extracted. "
+            "Phase 8: after evidence shared or skipped. "
+            "Phase 9: after coaching demo complete (3-4 turns). "
+            "Phase 10: after offer accepted and installment confirmed. "
+            "Phase 11: after closing delivered."
         )
     )
     offer_amount: int = Field(
         default=0,
-        description="Phase 7 only: calculated credit offer in MXN. 0 in all other phases."
-    )
-    quick_replies: list[str] = Field(
-        default_factory=list,
-        description=(
-            "2-4 short suggested reply options in English that directly answer the question you just asked. "
-            "Match the options to the specific question: "
-            "e.g. if asking business type -> ['Clothing store', 'Food/cooking', 'Beauty', 'Other']; "
-            "if asking weekly revenue -> ['Under $3,000', '$3,000–$8,000', '$8,000–$15,000', 'Over $15,000']; "
-            "if asking about costs -> ['Inventory/supplies', 'Rent + utilities', 'Staff wages', 'Other']; "
-            "if asking loan purpose -> ['Restock inventory', 'Buy equipment', 'Working capital', 'Other']; "
-            "if it's Phase 0 -> ['Let\\'s go!', 'How does this work?']; "
-            "if it's Phase 5 optional document -> ['Upload a photo', 'Skip this step']; "
-            "if it's Phase 4 loan purpose collected -> ['Show me Part 2']; "
-            "if it's Phase 7 offer -> ['1 payment – 30 days', '2 payments – 60 days', 'I have a question']; "
-            "if it's an open coaching question or transition message -> leave empty []."
-        )
+        description="Phase 10 only: credit offer amount in MXN. 0 in all other phases."
     )

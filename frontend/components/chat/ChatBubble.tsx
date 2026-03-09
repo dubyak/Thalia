@@ -1,9 +1,7 @@
 import type { ChatMessage } from '@/lib/types'
-import { OfferCard } from './OfferCard'
 
 interface ChatBubbleProps {
   message: ChatMessage
-  onOfferAccept?: (amount: number, installments: 1 | 2) => void
 }
 
 // Minimal markdown: bold, line breaks
@@ -31,7 +29,7 @@ function renderContent(text: string) {
   })
 }
 
-export function ChatBubble({ message, onOfferAccept }: ChatBubbleProps) {
+export function ChatBubble({ message }: ChatBubbleProps) {
   if (!message.content && !message.imageUrl) return null
   const isAgent = message.role === 'agent'
 
@@ -56,13 +54,6 @@ export function ChatBubble({ message, onOfferAccept }: ChatBubbleProps) {
             {renderContent(message.content)}
           </div>
         </div>
-
-        {message.isOffer && message.offerAmount && onOfferAccept && (
-          <OfferCard
-            amount={message.offerAmount}
-            onAccept={(installments) => onOfferAccept(message.offerAmount!, installments)}
-          />
-        )}
       </div>
     )
   }

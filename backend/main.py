@@ -37,23 +37,23 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     session_id: str
     message: str | None = None       # None for opening message
-    tester_name: str | None = None   # Optional after session is initialized
+    tester_name: str | None = None
     approved_amount: int = 8000
+    max_amount: int = 12000
     mode: str = "onboarding"
     collected: dict = {}             # Business profile from onboarding (for servicing)
-    weeklyRevenue: str | None = None
-    mainCosts: str | None = None
-    loanPurpose: str | None = None
+    # Survey-provided context (pre-chat)
+    business_type: str | None = None
+    loan_purpose: str | None = None
     is_first_visit: bool = True
     image_data: str | None = None    # Base64 data URL for vision
 
 
 class ChatResponse(BaseModel):
-    content: str
+    messages: list[str]              # Array of chat bubble texts
     phase: str
-    extracted: dict
+    collected: dict
     is_complete: bool
-    quick_replies: list[str]
     offer_amount: int = 0
     is_offer: bool = False
 
@@ -70,11 +70,11 @@ async def chat(req: ChatRequest):
         message=req.message,
         tester_name=req.tester_name,
         approved_amount=req.approved_amount,
+        max_amount=req.max_amount,
         mode=req.mode,
         collected=req.collected,
-        weekly_revenue=req.weeklyRevenue,
-        main_costs=req.mainCosts,
-        loan_purpose=req.loanPurpose,
+        business_type=req.business_type,
+        loan_purpose=req.loan_purpose,
         is_first_visit=req.is_first_visit,
         image_data=req.image_data,
     )
@@ -84,11 +84,10 @@ async def chat(req: ChatRequest):
     offer_amount = result.get("offer_amount", 0)
 
     return ChatResponse(
-        content=result["content"],
+        messages=result["messages"],
         phase=phase,
-        extracted=result.get("collected", {}),
+        collected=result.get("collected", {}),
         is_complete=is_complete,
-        quick_replies=result.get("quick_replies", []),
         offer_amount=offer_amount,
-        is_offer=offer_amount > 0 and phase == "7",
+        is_offer=offer_amount > 0 and phase == "10",
     )

@@ -12,17 +12,22 @@ import { ChevronLeft } from 'lucide-react'
 export default function OnboardingPage() {
   const { startOnboarding, resetChat, state } = useChat()
   const { tester } = useTester()
-  const { dispatch } = useFlow()
+  const { flow, dispatch } = useFlow()
   const router = useRouter()
   const startedRef = useRef(false)
 
-  // Start onboarding once per page mount (guard against StrictMode double-invocation)
+  // Start onboarding once per page mount — pass survey context to the agent
   useEffect(() => {
     if (!tester?.firstName || startedRef.current) return
     startedRef.current = true
     resetChat()
-    // Let the RESET dispatch settle before starting
-    setTimeout(() => startOnboarding(tester.firstName), 0)
+    setTimeout(() => startOnboarding(
+      tester.firstName,
+      tester.approvedAmount,
+      tester.maxAmount,
+      flow.surveyBusinessType ?? tester.businessType,
+      flow.surveyLoanPurpose,
+    ), 0)
   }, [tester?.firstName]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleComplete = () => {
