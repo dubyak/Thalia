@@ -1,18 +1,31 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { SendHorizonal, Camera } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { SendHorizonal, Camera, Mic } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const SpeechRecognition: any =
+  typeof window !== 'undefined'
+    ? (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
+    : undefined
 
 interface ChatInputProps {
   onSend: (message: string) => void
+  onImageSend?: (dataUrl: string) => void
   disabled?: boolean
   placeholder?: string
 }
 
-export function ChatInput({ onSend, disabled, placeholder = 'Escribe tu mensaje...' }: ChatInputProps) {
+export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type your message...' }: ChatInputProps) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<any>(null)
+  const hasSpeech = typeof SpeechRecognition !== 'undefined'
 
   const handleSend = () => {
     const trimmed = value.trim()
@@ -39,11 +52,91 @@ export function ChatInput({ onSend, disabled, placeholder = 'Escribe tu mensaje.
     }
   }, [value])
 
+  // Camera: open file picker / camera
+  const handleCameraClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !onImageSend) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      onImageSend(dataUrl)
+    }
+    reader.readAsDataURL(file)
+
+    // Reset so the same file can be re-selected
+    e.target.value = ''
+  }
+
+  // Microphone: speech recognition
+  const toggleListening = useCallback(() => {
+    if (!SpeechRecognition) return
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results as any[])
+        .map((r: any) => r[0].transcript)
+        .join('')
+      setValue((prev) => {
+        // Replace from where speech started, or append
+        if (prev.trim()) return prev + ' ' + transcript
+        return transcript
+      })
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognition.onerror = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsListening(true)
+  }, [isListening])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop()
+    }
+  }, [])
+
   return (
     <div className="flex items-center gap-2 px-3 py-3 bg-white border-t border-[#F1F5F9]">
+      {/* Hidden file input for camera / photo picker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {/* Camera button — orange-tinted circle */}
       <button
         type="button"
+        onClick={handleCameraClick}
+        disabled={disabled}
         className="flex items-center justify-center flex-shrink-0 touch-active"
         style={{ width: 36, height: 36, borderRadius: 15, background: '#FBE9DD' }}
       >
@@ -64,6 +157,27 @@ export function ChatInput({ onSend, disabled, placeholder = 'Escribe tu mensaje.
           style={{ maxHeight: '120px' }}
         />
       </div>
+
+      {/* Microphone button — teal-tinted circle */}
+      {hasSpeech && (
+        <button
+          type="button"
+          onClick={toggleListening}
+          disabled={disabled}
+          className={cn(
+            'flex items-center justify-center flex-shrink-0 transition-all touch-active',
+            isListening && 'animate-pulse'
+          )}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 15,
+            background: isListening ? '#1a989e' : '#D2F2F4',
+          }}
+        >
+          <Mic size={18} className={isListening ? 'text-white' : 'text-[#1a989e]'} />
+        </button>
+      )}
 
       {/* Send button — orange circle */}
       <button

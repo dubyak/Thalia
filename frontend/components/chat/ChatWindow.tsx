@@ -7,7 +7,7 @@ import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
-import { QuickReplyButtons } from './QuickReplyButtons'
+
 import { TypingIndicator } from './TypingIndicator'
 import { PhotoUploadPrompt } from './PhotoUploadPrompt'
 import { OnboardingProgress } from './OnboardingProgress'
@@ -23,7 +23,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = false }: ChatWindowProps) {
-  const { state, sendMessage } = useChat()
+  const { state, sendMessage, sendImage } = useChat()
   const { messages, isTyping, phase } = state
   const { dispatch: flowDispatch } = useFlow()
   const router = useRouter()
@@ -46,7 +46,6 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
   }, [state.isComplete, onComplete])
 
   const lastMessage = messages[messages.length - 1]
-  const lastQuickReplies = lastMessage?.role === 'agent' ? (lastMessage.quickReplies ?? []) : []
   const showPhotoUpload = lastMessage?.role === 'agent' && lastMessage.showPhotoUpload
   const showStarterGrid =
     state.mode === 'coaching' &&
@@ -102,13 +101,8 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
         <div ref={bottomRef} className="h-1" />
       </div>
 
-      {/* Quick replies */}
-      {!isTyping && lastQuickReplies.length > 0 && (
-        <QuickReplyButtons replies={lastQuickReplies} onSelect={sendMessage} />
-      )}
-
       {/* Input */}
-      <ChatInput onSend={sendMessage} disabled={isTyping || state.isComplete} />
+      <ChatInput onSend={sendMessage} onImageSend={sendImage} disabled={isTyping || state.isComplete} />
 
       {/* Terms modal */}
       {pendingOffer && (

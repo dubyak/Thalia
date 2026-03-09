@@ -43,18 +43,18 @@ class AgentDecision(BaseModel):
         description=(
             "Set to true ONLY when the current phase objective is complete. "
             "Phase 1: after businessType extracted. "
-            "Phase 1.5: always (optional step). "
             "Phase 2: after weeklyRevenue extracted (or already collected). "
             "Phase 3: after mainCosts extracted. "
-            "Phase 3.5: after loanPurpose extracted. "
-            "Phase 4: after coaching demo exchange complete (2 turns). "
-            "Phase 5: after installment selection confirmed. "
-            "Phase 0, 6: advance after one good exchange."
+            "Phase 4: after loanPurpose extracted. "
+            "Phase 5: always (optional document step). "
+            "Phase 6: after coaching demo exchange complete (2 turns). "
+            "Phase 7: after installment selection confirmed. "
+            "Phase 0, 8: advance after one good exchange."
         )
     )
     offer_amount: int = Field(
         default=0,
-        description="Phase 5 only: calculated credit offer in MXN. 0 in all other phases."
+        description="Phase 7 only: calculated credit offer in MXN. 0 in all other phases."
     )
     quick_replies: list[str] = Field(
         default_factory=list,
@@ -66,9 +66,9 @@ class AgentDecision(BaseModel):
             "if asking about costs -> ['Inventory/supplies', 'Rent + utilities', 'Staff wages', 'Other']; "
             "if asking loan purpose -> ['Restock inventory', 'Buy equipment', 'Working capital', 'Other']; "
             "if it's Phase 0 -> ['Let\\'s go!', 'How does this work?']; "
-            "if it's Phase 1.5 -> ['Upload a photo', 'Skip this step']; "
-            "if it's Phase 3.5 loan purpose collected -> ['Show me Part 2']; "
-            "if it's Phase 5 offer -> ['1 payment – 30 days', '2 payments – 60 days', 'I have a question']; "
+            "if it's Phase 5 optional document -> ['Upload a photo', 'Skip this step']; "
+            "if it's Phase 4 loan purpose collected -> ['Show me Part 2']; "
+            "if it's Phase 7 offer -> ['1 payment – 30 days', '2 payments – 60 days', 'I have a question']; "
             "if it's an open coaching question or transition message -> leave empty []."
         )
     )

@@ -30,7 +30,7 @@ export default function HomePage() {
   const amount = loan?.amount ?? tester?.approvedAmount ?? 8000
   const totalRepayment = loan?.totalRepayment ?? amount * 1.12
   const monthlyPayment = loan?.monthlyPayment ?? totalRepayment
-  const firstPaymentDate = loan?.firstPaymentDate ?? '1 de marzo'
+  const firstPaymentDate = loan?.firstPaymentDate ?? 'March 1'
 
   return (
     <div className="flex flex-col min-h-dvh bg-white">

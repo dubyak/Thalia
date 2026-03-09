@@ -7,7 +7,7 @@ export default function MorePage() {
       <div className="bg-white border-b border-[#e5e5e5]">
         <StatusBar />
         <div className="px-5 py-4">
-          <h1 className="text-[#1f1c2f] text-lg font-semibold">Más</h1>
+          <h1 className="text-[#1f1c2f] text-lg font-semibold">More</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
@@ -15,7 +15,7 @@ export default function MorePage() {
           <MoreHorizontal size={28} className="text-[#676d65]" />
         </div>
         <p className="text-[#676d65] text-sm font-light">
-          Más opciones y configuración — próximamente.
+          More options and settings — coming soon.
         </p>
       </div>
     </div>

@@ -32,7 +32,7 @@ function renderContent(text: string) {
 }
 
 export function ChatBubble({ message, onOfferAccept }: ChatBubbleProps) {
-  if (!message.content) return null
+  if (!message.content && !message.imageUrl) return null
   const isAgent = message.role === 'agent'
 
   if (isAgent) {
@@ -70,9 +70,17 @@ export function ChatBubble({ message, onOfferAccept }: ChatBubbleProps) {
   return (
     <div className="flex justify-end px-4 animate-fade-in">
       <div
-        className="max-w-[78%] text-[#314329] px-4 py-4 text-sm leading-snug"
+        className="max-w-[78%] text-[#314329] px-4 py-4 text-sm leading-snug overflow-hidden"
         style={{ background: '#F5F5F0', borderRadius: '16px 16px 0 16px' }}
       >
+        {message.imageUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={message.imageUrl}
+            alt="Shared photo"
+            className="rounded-lg max-h-48 w-auto mb-2"
+          />
+        )}
         {message.content}
       </div>
     </div>

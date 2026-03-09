@@ -195,9 +195,9 @@ def build_system_prompt(
             "RULE: In Case A, end with the loan purpose question. Never skip it."
         )
 
-    elif phase == "3.5":
+    elif phase == "4":
         instructions = (
-            "PHASE 3.5 — LOAN PURPOSE (Part 1, Question 4 — FINAL data question)\n"
+            "PHASE 4 — LOAN PURPOSE (Part 1, Question 4 — FINAL data question)\n"
             f"{already_collected}\n\n"
             "The loan purpose question was just asked. The customer's current message is their answer.\n\n"
             "CASE A — Message states a purpose (restocking, equipment, working capital, staff, etc.):\n"
@@ -214,9 +214,9 @@ def build_system_prompt(
             "RULE: In Case A, end with the Part 2 transition. Do not discuss the offer yet."
         )
 
-    elif phase == "3.75":
+    elif phase == "5":
         instructions = (
-            "PHASE 3.75 — OPTIONAL DOCUMENT (before Part 2)\n"
+            "PHASE 5 — OPTIONAL DOCUMENT (before Part 2)\n"
             f"{already_collected}\n\n"
             "The customer responded to the optional photo/document question.\n"
             "ANY response is acceptable — treat it as resolved and move on.\n"
@@ -228,13 +228,13 @@ def build_system_prompt(
             "RULE: Response must END with the Part 2 transition. Nothing in between."
         )
 
-    elif phase == "4":
+    elif phase == "6":
         loan_purpose = collected.get("loanPurpose", "")
         business_type = collected.get("businessType", "your business")
         coaching_context = loan_purpose if loan_purpose else business_type
 
         instructions = (
-            "PHASE 4 — COACHING DEMO (Part 2)\n"
+            "PHASE 6 — COACHING DEMO (Part 2)\n"
             f"{already_collected}\n\n"
             f"Context: loanPurpose={loan_purpose or 'unknown'}, businessType={business_type}\n\n"
             "TURN 1 — Customer sent a transition message ('Show me Part 2', 'ok', filler, etc.):\n"
@@ -254,9 +254,9 @@ def build_system_prompt(
             "RULE: Turn 1 = ask; Turn 2 = insight + segue. Never present the offer in this phase."
         )
 
-    elif phase == "5":
+    elif phase == "7":
         offer_instructions = (
-            "PHASE 5 — OFFER PRESENTATION\n"
+            "PHASE 7 — OFFER PRESENTATION\n"
             f"{already_collected}\n\n"
             f"The calculated credit offer is: {offer_fmt} MXN.\n\n"
             f"Present the offer of {offer_fmt} MXN clearly and warmly.\n"
@@ -277,9 +277,9 @@ def build_system_prompt(
         )
         instructions = offer_instructions
 
-    elif phase == "6":
+    elif phase == "8":
         instructions = (
-            "PHASE 6 — CLOSING\n"
+            "PHASE 8 — CLOSING\n"
             f"{already_collected}\n\n"
             f"Write a warm 2-sentence closing for {tester_name}:\n"
             "  1. Congratulate them — they're on their way.\n"

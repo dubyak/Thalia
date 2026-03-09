@@ -36,7 +36,7 @@ export default function LoginPage() {
         router.replace('/survey')
       }
     } else {
-      setError('Código no válido. Inténtalo de nuevo.')
+      setError('Invalid code. Please try again.')
       setLoading(false)
     }
   }
@@ -51,27 +51,27 @@ export default function LoginPage() {
           <span className="text-white font-bold text-2xl tracking-tight">T</span>
         </div>
         <h1 className="text-white text-2xl font-semibold">Tala</h1>
-        <p className="text-[#20bec6] text-sm mt-1 font-light">Prototipo MSME · México</p>
+        <p className="text-[#20bec6] text-sm mt-1 font-light">MSME Prototype · Mexico</p>
       </div>
 
       {/* Card */}
       <div className="flex-1 bg-[#f5f6f0] rounded-t-3xl px-6 pt-8">
-        <h2 className="text-[#1f1c2f] text-xl font-semibold mb-1">Bienvenida</h2>
+        <h2 className="text-[#1f1c2f] text-xl font-semibold mb-1">Welcome</h2>
         <p className="text-[#676d65] text-sm mb-8 font-light">
-          Ingresa tu código de prueba para comenzar.
+          Enter your test code to get started.
         </p>
 
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              Código de acceso
+              Access code
             </label>
             <input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              placeholder="Ej: TESTER01"
+              placeholder="e.g. TESTER01"
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
               autoCapitalize="characters"
               autoCorrect="off"
@@ -88,12 +88,12 @@ export default function LoginPage() {
             disabled={!code.trim() || loading}
             className="w-full h-14 rounded-xl bg-[#f06f14] text-white font-semibold text-base disabled:opacity-40 active:opacity-80 transition-opacity shadow-md"
           >
-            {loading ? 'Verificando...' : 'Continuar'}
+            {loading ? 'Verifying...' : 'Continue'}
           </button>
         </div>
 
         <p className="text-[#939490] text-xs text-center mt-8 font-light">
-          Prueba con <span className="font-medium text-[#676d65]">DEMO</span> para ver el flujo completo
+          Try <span className="font-medium text-[#676d65]">DEMO</span> to see the complete flow
         </p>
       </div>
     </div>

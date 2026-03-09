@@ -3,12 +3,14 @@ import { cn } from '@/lib/utils'
 
 const PHASE_LABELS: Record<string, string> = {
   '1': 'Intro',
-  '2': 'Tu negocio',
-  '3': 'Tu perfil',
-  '4': 'Tu situación',
-  '5': 'Evidencia',
-  '6': 'Oferta',
-  'complete': 'Completado'
+  '2': 'Your business',
+  '3': 'Your profile',
+  '4': 'Your loan',
+  '5': 'Evidence',
+  '6': 'Coaching',
+  '7': 'Offer',
+  '8': 'Closing',
+  'complete': 'Completed'
 }
 
 interface OnboardingProgressProps {
@@ -16,15 +18,15 @@ interface OnboardingProgressProps {
 }
 
 export function OnboardingProgress({ phase }: OnboardingProgressProps) {
-  const phaseNum = phase === 'complete' ? 6 : (phase as number)
-  const totalSteps = 6
+  const phaseNum = phase === 'complete' ? 8 : Number(phase)
+  const totalSteps = 8
   const progress = (phaseNum / totalSteps) * 100
 
   return (
     <div className="px-4 py-3 bg-white border-b border-[#e5e5e5]">
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-xs font-semibold text-[#1a989e]">
-          {phase === 'complete' ? 'Completado' : `Paso ${phaseNum} de ${totalSteps}`}
+          {phase === 'complete' ? 'Completed' : `Step ${phaseNum} of ${totalSteps}`}
         </span>
         <span className="text-xs text-[#939490] font-light">
           {PHASE_LABELS[String(phase)] ?? ''}

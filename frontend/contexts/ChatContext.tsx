@@ -95,6 +95,7 @@ function makeId() {
 interface ChatContextValue {
   state: ChatState
   sendMessage: (content: string) => Promise<void>
+  sendImage: (dataUrl: string) => Promise<void>
   startOnboarding: (firstName: string, mode?: 'onboarding' | 'servicing') => Promise<void>
   startServicing: (firstName: string, profile: Record<string, string>, approvedAmount: number) => Promise<void>
   startCoaching: (firstName: string, profile: Record<string, string>, approvedAmount: number, isFirstVisit?: boolean) => Promise<void>
@@ -238,6 +239,48 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     [state.phase, state.businessProfile, state.mode, state.messages, state.testerFirstName, state.approvedAmount, addAgentMessage]
   )
 
+  const sendImage = useCallback(
+    async (dataUrl: string) => {
+      // Add user message with image
+      const userMsg: ChatMessage = {
+        id: makeId(),
+        role: 'user',
+        content: '',
+        timestamp: new Date(),
+        phase: state.phase,
+        imageUrl: dataUrl,
+      }
+      dispatch({ type: 'ADD_MESSAGE', message: userMsg })
+
+      dispatch({ type: 'SET_TYPING', typing: true })
+      const delay = 800 + Math.random() * 1200
+      await new Promise((r) => setTimeout(r, delay))
+
+      const history: ChatHistoryItem[] = state.messages.slice(-10).map((m) => ({
+        role: m.role === 'agent' ? 'assistant' : 'user',
+        content: m.content
+      }))
+
+      const response = await apiChatService.sendMessage(
+        '',
+        state.phase,
+        state.businessProfile,
+        state.mode,
+        history,
+        state.testerFirstName ?? undefined,
+        state.approvedAmount,
+        (state.mode === 'servicing' || state.mode === 'coaching')
+          ? (state.businessProfile as Record<string, string>)
+          : undefined,
+        dataUrl
+      )
+
+      dispatch({ type: 'SET_TYPING', typing: false })
+      addAgentMessage(response)
+    },
+    [state.phase, state.businessProfile, state.mode, state.messages, state.testerFirstName, state.approvedAmount, addAgentMessage]
+  )
+
   const openOverlay = useCallback(() => dispatch({ type: 'OPEN_OVERLAY' }), [])
   const closeOverlay = useCallback(() => dispatch({ type: 'CLOSE_OVERLAY' }), [])
   const resetChat = useCallback(() => {
@@ -247,7 +290,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <ChatContext.Provider value={{ state, sendMessage, startOnboarding, startServicing, startCoaching, openOverlay, closeOverlay, resetChat }}>
+    <ChatContext.Provider value={{ state, sendMessage, sendImage, startOnboarding, startServicing, startCoaching, openOverlay, closeOverlay, resetChat }}>
       {children}
     </ChatContext.Provider>
   )

@@ -34,13 +34,13 @@ function getSessionId(): string {
 const QUICK_REPLIES: Record<string, string[]> = {
   '0': ["Let's go!", 'How does this work?'],
   '1': [],
-  '1.5': ['Upload a photo', 'Skip this step'],
   '2': ['Under $3,000', '$3,000–$8,000', '$8,000–$15,000', 'Over $15,000'],
   '3': [],
-  '3.5': ['Restock inventory', 'Buy equipment', 'Working capital', 'Other'],
-  '4': [],  // coaching demo — open question, no quick replies
-  '5': ['1 payment – 30 days', '2 payments – 60 days', 'I have a question'],
-  '6': [],
+  '4': ['Restock inventory', 'Buy equipment', 'Working capital', 'Other'],
+  '5': ['Upload a photo', 'Skip this step'],
+  '6': [],  // coaching demo — open question, no quick replies
+  '7': ['1 payment – 30 days', '2 payments – 60 days', 'I have a question'],
+  '8': [],
   'complete': [],
   'servicing': ['How do I pay?', 'When is my payment due?', 'Business tips'],
   'coaching': ['Review my cash flow', 'Ideas to sell more', 'Manage my costs', "Let's talk goals"],
@@ -159,7 +159,8 @@ export const apiChatService = {
     _history: unknown[],
     testerName?: string,
     approvedAmount = 8000,
-    collected?: Record<string, string>
+    collected?: Record<string, string>,
+    imageData?: string
   ): Promise<AgentResponse> {
     try {
       // #region agent log
@@ -175,6 +176,7 @@ export const apiChatService = {
           approved_amount: approvedAmount,
           mode,
           ...(collected && Object.keys(collected).length > 0 ? { collected } : {}),
+          ...(imageData ? { image_data: imageData } : {}),
         }),
       })
 

@@ -36,10 +36,11 @@ export interface ChatMessage {
   showPhotoUpload?: boolean
   isOffer?: boolean
   offerAmount?: number
+  imageUrl?: string
 }
 
 // Onboarding phases — string phases from backend
-export type OnboardingPhase = '0' | '1' | '1.5' | '2' | '3' | '3.5' | '4' | '5' | '6' | 'complete' | 1 | 2 | 3 | 4 | 5 | 6
+export type OnboardingPhase = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | 'complete' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
 // Data collected during onboarding
 export interface BusinessProfile {

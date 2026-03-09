@@ -11,7 +11,7 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     maxAmount: 12000,
     interestRateDaily: 0.0028,
     processingFeeRate: 0.04,
-    businessType: 'Retail / Tienda de abarrotes',
+    businessType: 'Retail / Grocery store',
     locale: 'es-MX'
   },
   {
@@ -23,7 +23,7 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     maxAmount: 9000,
     interestRateDaily: 0.0028,
     processingFeeRate: 0.04,
-    businessType: 'Food / Taquería',
+    businessType: 'Food / Taco shop',
     locale: 'es-MX'
   },
   {
@@ -35,7 +35,7 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     maxAmount: 15000,
     interestRateDaily: 0.0025,
     processingFeeRate: 0.04,
-    businessType: 'Services / Salón de belleza',
+    businessType: 'Services / Beauty salon',
     locale: 'es-MX'
   },
   // Demo tester for internal use
@@ -64,7 +64,7 @@ export const MX_BANKS = [
   { id: 'inbursa', name: 'Inbursa', color: '#00537e' },
   { id: 'azteca', name: 'Banco Azteca', color: '#f7941d' },
   { id: 'nu', name: 'Nu', color: '#820ad1' },
-  { id: 'other', name: 'Otro banco', color: '#676d65' }
+  { id: 'other', name: 'Other bank', color: '#676d65' }
 ]
 
 // Calculate loan details from config

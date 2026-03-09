@@ -45,6 +45,7 @@ class ChatRequest(BaseModel):
     mainCosts: str | None = None
     loanPurpose: str | None = None
     is_first_visit: bool = True
+    image_data: str | None = None    # Base64 data URL for vision
 
 
 class ChatResponse(BaseModel):
@@ -75,6 +76,7 @@ async def chat(req: ChatRequest):
         main_costs=req.mainCosts,
         loan_purpose=req.loanPurpose,
         is_first_visit=req.is_first_visit,
+        image_data=req.image_data,
     )
 
     phase = result["phase"]
@@ -88,5 +90,5 @@ async def chat(req: ChatRequest):
         is_complete=is_complete,
         quick_replies=result.get("quick_replies", []),
         offer_amount=offer_amount,
-        is_offer=offer_amount > 0 and phase == "5",
+        is_offer=offer_amount > 0 and phase == "7",
     )

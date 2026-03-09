@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 from state import AgentDecision
 from prompts import build_system_prompt
 
-PHASE_ORDER = ["0", "1", "2", "3", "3.5", "3.75", "4", "5", "6", "complete"]
+PHASE_ORDER = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "complete"]
 
 
 @dataclass
@@ -68,6 +68,7 @@ async def run_agent(
     main_costs: str | None = None,
     loan_purpose: str | None = None,
     is_first_visit: bool = True,
+    image_data: str | None = None,
 ) -> dict:
     # ── Get or create session ──────────────────────────────────────────
     if session_id not in sessions:
@@ -86,8 +87,15 @@ async def run_agent(
     session = sessions[session_id]
 
     # ── Append user message ────────────────────────────────────────────
-    if message:
-        session.messages.append({"role": "user", "content": message})
+    if message or image_data:
+        if image_data:
+            content = [
+                {"type": "text", "text": message or "I'm sharing a photo of my business."},
+                {"type": "image_url", "image_url": {"url": image_data}},
+            ]
+        else:
+            content = message
+        session.messages.append({"role": "user", "content": content})
 
     # ── Pull top-level fields into collected for prompt context ─────────
     if session.weekly_revenue:
@@ -97,9 +105,9 @@ async def run_agent(
     if session.loan_purpose:
         session.collected["loanPurpose"] = session.loan_purpose
 
-    # ── Calculate offer for Phase 5 ───────────────────────────────────
+    # ── Calculate offer for Phase 7 ───────────────────────────────────
     offer_amount = 0
-    if session.phase == "5":
+    if session.phase == "7":
         offer_amount = _calculate_offer(session.collected.get("weeklyRevenue"))
 
     # ── Build system prompt ────────────────────────────────────────────
@@ -154,19 +162,19 @@ async def run_agent(
                 session.phase = "3"
         elif session.phase == "3":
             if session.collected.get("mainCosts") and result.advance_phase:
-                session.phase = "3.5"
-        elif session.phase == "3.5":
-            if session.collected.get("loanPurpose") and result.advance_phase:
-                session.phase = "3.75"
-        elif session.phase == "3.75":
-            if result.advance_phase:
                 session.phase = "4"
         elif session.phase == "4":
-            if result.advance_phase:
+            if session.collected.get("loanPurpose") and result.advance_phase:
                 session.phase = "5"
         elif session.phase == "5":
             if result.advance_phase:
                 session.phase = "6"
+        elif session.phase == "6":
+            if result.advance_phase:
+                session.phase = "7"
+        elif session.phase == "7":
+            if result.advance_phase:
+                session.phase = "8"
         elif result.advance_phase:
             session.phase = _next_phase(session.phase)
 
@@ -180,5 +188,5 @@ async def run_agent(
         "phase": session.phase,
         "collected": session.collected,
         "quick_replies": result.quick_replies,
-        "offer_amount": offer_amount if session.phase == "5" or offer_amount > 0 else 0,
+        "offer_amount": offer_amount if session.phase == "7" or offer_amount > 0 else 0,
     }
