@@ -98,17 +98,19 @@ function makeId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
-/** Add multi-bubble agent messages with staggered delays */
+/** Add multi-bubble agent messages with staggered delays proportional to length */
 async function addBubblesWithDelay(
   messages: string[],
   response: AgentResponse,
   dispatchFn: React.Dispatch<ChatAction>,
 ) {
   for (let i = 0; i < messages.length; i++) {
-    // Brief pause between bubbles (not before the first one)
+    // Between bubbles: typing indicator with length-proportional delay
     if (i > 0) {
+      const wordCount = messages[i].split(/\s+/).length
+      const delay = Math.min(400 + wordCount * 15, 1200) + Math.random() * 200
       dispatchFn({ type: 'SET_TYPING', typing: true })
-      await new Promise((r) => setTimeout(r, 400 + Math.random() * 400))
+      await new Promise((r) => setTimeout(r, delay))
       dispatchFn({ type: 'SET_TYPING', typing: false })
     }
 
@@ -172,10 +174,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       startingRef.current = true
 
       dispatch({ type: 'SET_TYPING', typing: true })
-      await new Promise((r) => setTimeout(r, 1200))
+      const t0 = Date.now()
+      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose)
+      const elapsed = Date.now() - t0
+      if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose)
       await processResponse(response)
     },
     [processResponse]
@@ -187,10 +191,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       startingRef.current = true
 
       dispatch({ type: 'SET_TYPING', typing: true })
-      await new Promise((r) => setTimeout(r, 1200))
+      const t0 = Date.now()
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'servicing')
+      const elapsed = Date.now() - t0
+      if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'servicing')
       await processResponse(response)
     },
     [processResponse]
@@ -202,10 +208,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       startingRef.current = true
 
       dispatch({ type: 'SET_TYPING', typing: true })
-      await new Promise((r) => setTimeout(r, 1200))
+      const t0 = Date.now()
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'coaching', isFirstVisit)
+      const elapsed = Date.now() - t0
+      if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
 
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'coaching', isFirstVisit)
       await processResponse(response)
     },
     [processResponse]
@@ -222,12 +230,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         phase: s.phase,
       }
       dispatch({ type: 'ADD_MESSAGE', message: userMsg })
+
+      // Brief pause before typing starts (natural feel)
+      await new Promise((r) => setTimeout(r, 300))
       dispatch({ type: 'SET_TYPING', typing: true })
 
-      const delay = 800 + Math.random() * 1200
-      await new Promise((r) => setTimeout(r, delay))
-      dispatch({ type: 'SET_TYPING', typing: false })
-
+      // API call happens while typing indicator is visible
+      const t0 = Date.now()
       const response = await apiChatService.sendMessage(
         content,
         s.phase,
@@ -242,6 +251,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         s.businessType ?? undefined,
         s.loanPurpose ?? undefined,
       )
+
+      // Ensure minimum 800ms typing so it doesn't flash
+      const elapsed = Date.now() - t0
+      if (elapsed < 800) await new Promise((r) => setTimeout(r, 800 - elapsed))
+      dispatch({ type: 'SET_TYPING', typing: false })
 
       await processResponse(response)
     },
@@ -260,12 +274,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         imageUrl: dataUrl,
       }
       dispatch({ type: 'ADD_MESSAGE', message: userMsg })
+
+      await new Promise((r) => setTimeout(r, 300))
       dispatch({ type: 'SET_TYPING', typing: true })
 
-      const delay = 800 + Math.random() * 1200
-      await new Promise((r) => setTimeout(r, delay))
-      dispatch({ type: 'SET_TYPING', typing: false })
-
+      const t0 = Date.now()
       const response = await apiChatService.sendMessage(
         '',
         s.phase,
@@ -280,6 +293,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         s.businessType ?? undefined,
         s.loanPurpose ?? undefined,
       )
+
+      const elapsed = Date.now() - t0
+      if (elapsed < 800) await new Promise((r) => setTimeout(r, 800 - elapsed))
+      dispatch({ type: 'SET_TYPING', typing: false })
 
       await processResponse(response)
     },

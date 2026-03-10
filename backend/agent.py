@@ -44,6 +44,8 @@ class Session:
     coaching_turns: int = 0
     # Offer negotiation state
     offer_stage: str = "initial"  # initial | negotiating | accepted
+    # Interest rate for offer display
+    interest_rate_daily: float = 0.01  # 1% per day default
 
 
 sessions: dict[str, Session] = {}
@@ -125,10 +127,7 @@ async def run_agent(
     # ── Calculate offer amounts for Phase 10 ──────────────────────────
     offer_amount = 0
     if session.phase == "10":
-        if session.offer_stage == "initial":
-            offer_amount = _initial_offer(session.max_amount)
-        else:
-            offer_amount = session.max_amount
+        offer_amount = session.max_amount
 
     # ── Build system prompt ────────────────────────────────────────────
     system_prompt = build_system_prompt(
@@ -142,6 +141,7 @@ async def run_agent(
         offer_stage=session.offer_stage,
         is_first_visit=session.is_first_visit,
         coaching_turns=session.coaching_turns,
+        interest_rate_daily=session.interest_rate_daily,
     )
 
     # ── Call OpenAI with structured output ─────────────────────────────
@@ -202,20 +202,12 @@ async def run_agent(
                 session.phase = _next_phase(phase)
 
         elif phase == "10":
-            if session.offer_stage == "initial":
-                if result.advance_phase:
-                    session.offer_stage = "accepted"
-                    session.phase = _next_phase(phase)
-                else:
-                    last_msg = (message or "").lower()
-                    negotiate_signals = ["think", "not sure", "too low", "more", "higher", "need time", "less"]
-                    if any(sig in last_msg for sig in negotiate_signals):
-                        session.offer_stage = "negotiating"
-                        offer_amount = session.max_amount
-            elif session.offer_stage == "negotiating":
-                if result.advance_phase:
-                    session.offer_stage = "accepted"
-                    session.phase = _next_phase(phase)
+            # Agent presents offer, then UI handles config + terms acceptance.
+            # When user accepts via UI, frontend sends a synthetic message which
+            # triggers Phase 11 closing.
+            if result.advance_phase:
+                session.offer_stage = "accepted"
+                session.phase = _next_phase(phase)
 
         elif phase == "11":
             if result.advance_phase:

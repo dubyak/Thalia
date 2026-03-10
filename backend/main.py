@@ -89,5 +89,5 @@ async def chat(req: ChatRequest):
         collected=result.get("collected", {}),
         is_complete=is_complete,
         offer_amount=offer_amount,
-        is_offer=offer_amount > 0 and phase == "10",
+        is_offer=offer_amount > 0 and phase in ("10", "11"),
     )

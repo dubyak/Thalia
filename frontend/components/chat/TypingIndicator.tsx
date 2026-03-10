@@ -1,11 +1,20 @@
 export function TypingIndicator() {
   return (
-    <div className="flex items-end gap-2 px-4">
-      {/* Avatar */}
-      <div className="w-7 h-7 rounded-full bg-[#1a989e] flex items-center justify-center flex-shrink-0 mb-1">
-        <span className="text-white text-xs font-bold">T</span>
-      </div>
-      <div className="bg-white rounded-[4px_16px_16px_16px] px-4 py-3 shadow-sm">
+    <div className="flex items-end gap-2 px-4 animate-fade-in">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/thalia/SupportAgentWidget-Post-disbursement.svg"
+        alt="Thalia"
+        style={{ width: 28, height: 28, flexShrink: 0, marginBottom: 4 }}
+      />
+      <div
+        className="px-4 py-3"
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '16px 16px 16px 0',
+          boxShadow: '0 2px 10px 0 rgba(0,0,0,0.08)',
+        }}
+      >
         <div className="flex items-center gap-1">
           {[0, 1, 2].map((i) => (
             <div

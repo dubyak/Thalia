@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { Signal, Wifi, Battery } from 'lucide-react'
 
-export function StatusBar({ dark = false }: { dark?: boolean }) {
+export const StatusBar = memo(function StatusBar({ dark = false }: { dark?: boolean }) {
   const [time, setTime] = useState('')
 
   useEffect(() => {
@@ -36,4 +36,4 @@ export function StatusBar({ dark = false }: { dark?: boolean }) {
       </div>
     </div>
   )
-}
+})
