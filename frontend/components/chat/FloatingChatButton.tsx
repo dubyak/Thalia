@@ -17,7 +17,7 @@ export function FloatingChatButton() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/thalia/SupportAgentWidget-Post-disbursement.svg"
+        src="/thalia/SupportAgentWidget.svg"
         alt="Chat with Thalia"
         style={{ width: 72, height: 72, display: 'block' }}
       />

@@ -3,7 +3,7 @@ export function TypingIndicator() {
     <div className="flex items-end gap-2 px-4 animate-fade-in">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/thalia/SupportAgentWidget-Post-disbursement.svg"
+        src="/thalia/SupportAgentWidget.svg"
         alt="Thalia"
         style={{ width: 28, height: 28, flexShrink: 0, marginBottom: 4 }}
       />

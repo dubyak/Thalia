@@ -1,0 +1,5 @@
+# Frontend service: set this project's Root Directory to "frontend" in Railway
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30

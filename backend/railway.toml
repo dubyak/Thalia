@@ -1,0 +1,5 @@
+# Backend service: set this project's Root Directory to "backend" in Railway
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30

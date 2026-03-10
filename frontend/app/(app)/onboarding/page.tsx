@@ -54,7 +54,7 @@ export default function OnboardingPage() {
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/thalia/SupportAgentWidget-Post-disbursement.svg"
+            src="/thalia/SupportAgentWidget.svg"
             alt="Thalia"
             style={{ width: 36, height: 36, flexShrink: 0 }}
           />

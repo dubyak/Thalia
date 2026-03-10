@@ -1,0 +1,7 @@
+# Frontend: Nixpacks (no Docker). Set Root Directory = "frontend" in Railway.
+
+[phases.install]
+cmds = ["npm ci"]
+
+[start]
+cmd = "npm start"
