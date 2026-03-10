@@ -19,11 +19,8 @@ export function TypingIndicator() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-2 h-2 rounded-full bg-[#939490]"
-              style={{
-                animation: 'typing 1.2s ease-in-out infinite',
-                animationDelay: `${i * 0.2}s`
-              }}
+              className="w-2 h-2 rounded-full bg-[#939490] animate-typing"
+              style={{ animationDelay: `${i * 0.2}s` }}
             />
           ))}
         </div>

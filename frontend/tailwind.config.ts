@@ -66,8 +66,8 @@ const config: Config = {
           '100%': { transform: 'translateX(0)' }
         },
         'typing': {
-          '0%, 60%, 100%': { transform: 'translateY(0)' },
-          '30%': { transform: 'translateY(-6px)' }
+          '0%, 60%, 100%': { transform: 'translateY(0)', opacity: '0.4' },
+          '30%': { transform: 'translateY(-8px)', opacity: '1' }
         }
       },
       animation: {

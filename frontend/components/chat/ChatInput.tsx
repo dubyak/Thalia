@@ -73,6 +73,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
   }
 
   // Microphone: speech recognition
+  const prefixRef = useRef('')
   const toggleListening = useCallback(() => {
     if (!SpeechRecognition) return
 
@@ -84,18 +85,20 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
 
     const recognition = new SpeechRecognition()
     recognition.continuous = false
-    recognition.interimResults = true
+    recognition.interimResults = false
     recognition.lang = 'en-US'
 
+    // Capture whatever is already in the input so we can append to it
+    prefixRef.current = value.trim()
+
     recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results as any[])
-        .map((r: any) => r[0].transcript)
-        .join('')
-      setValue((prev) => {
-        // Replace from where speech started, or append
-        if (prev.trim()) return prev + ' ' + transcript
-        return transcript
-      })
+      const last = event.results[event.results.length - 1]
+      if (last?.isFinal || !recognition.interimResults) {
+        const transcript = last[0].transcript.trim()
+        if (transcript) {
+          setValue(prefixRef.current ? prefixRef.current + ' ' + transcript : transcript)
+        }
+      }
     }
 
     recognition.onend = () => {
@@ -103,15 +106,21 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
       recognitionRef.current = null
     }
 
-    recognition.onerror = () => {
+    recognition.onerror = (e: any) => {
+      console.warn('Speech recognition error:', e.error)
       setIsListening(false)
       recognitionRef.current = null
     }
 
     recognitionRef.current = recognition
-    recognition.start()
-    setIsListening(true)
-  }, [isListening])
+    try {
+      recognition.start()
+      setIsListening(true)
+    } catch (err) {
+      console.warn('Speech recognition start failed:', err)
+      recognitionRef.current = null
+    }
+  }, [isListening, value])
 
   // Cleanup on unmount
   useEffect(() => {
