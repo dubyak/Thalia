@@ -174,13 +174,12 @@ async def run_agent(
                 session.phase = _next_phase(phase)
 
         elif phase in PHASE_FIELD:
-            required_field = PHASE_FIELD[phase]
-            if session.collected.get(required_field) and result.advance_phase:
-                # Phase flexibility: skip ahead if later fields were volunteered
+            if result.advance_phase:
+                # Trust the agent's advance signal. Skip ahead past any
+                # later phases whose fields were already volunteered.
                 next_p = _next_phase(phase)
                 while next_p in PHASE_FIELD:
-                    next_field = PHASE_FIELD[next_p]
-                    if session.collected.get(next_field):
+                    if session.collected.get(PHASE_FIELD[next_p]):
                         next_p = _next_phase(next_p)
                     else:
                         break
