@@ -80,6 +80,8 @@ ONBOARDING_RESPONSES = [
     "Yes, I'd like to accept the offer",
     "1 payment over 30 days please",
     "Sounds great, thank you!",
+    "Thanks so much, I'm excited!",
+    "Bye!",
 ]
 
 MAX_ONBOARDING_TURNS = 25  # safety cap so the test doesn't run forever
