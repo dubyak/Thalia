@@ -229,9 +229,15 @@ async def run_agent(
         # Save the acknowledgment messages from the first call
         ack_messages = list(result.messages)
 
-        # Append the ack to conversation history so the next prompt sees it
+        # Append the ack to conversation history so the next prompt sees it.
+        # Include a marker so the next call knows not to re-acknowledge.
         ack_combined = "\n\n".join(ack_messages)
         session.messages.append({"role": "assistant", "content": ack_combined})
+        session.messages.append({
+            "role": "user",
+            "content": "(System note: the acknowledgment above was already sent to the customer. "
+                       "Do NOT repeat or rephrase it. Just ask your next question.)",
+        })
 
         # Build system prompt for the NEW phase
         new_system_prompt = build_system_prompt(
@@ -267,10 +273,18 @@ async def run_agent(
             session.collected[key] = value
 
         # Combine: acknowledgment bubbles + next question bubbles
-        result.messages = ack_messages + list(new_result.messages)
+        combined_msgs = ack_messages + list(new_result.messages)
+        # Deduplicate consecutive identical bubbles (guards against LLM repeating the ack)
+        deduped = [combined_msgs[0]] if combined_msgs else []
+        for msg in combined_msgs[1:]:
+            if msg != deduped[-1]:
+                deduped.append(msg)
+        result.messages = deduped
 
-        # Remove the ack we appended — it'll be re-appended below as the combined response
-        session.messages.pop()
+        # Remove the synthetic user note and ack we appended —
+        # they'll be re-appended below as the combined response
+        session.messages.pop()  # remove synthetic user note
+        session.messages.pop()  # remove ack
 
     # ── Append assistant messages to history ───────────────────────────
     combined = "\n\n".join(result.messages)

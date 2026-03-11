@@ -308,7 +308,6 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("tenure", collected, "how long they've been running the business") or
             "Ask: 'How long have you been running the business?'\n"
-            "Add context: 'This helps me tailor what we do next.'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['tenure'] — even if brief or informal.\n"
@@ -321,8 +320,8 @@ def build_system_prompt(
             "PHASE 3 — TYPICAL CUSTOMER (Business Profile, Q3)\n"
             f"{already_collected}\n\n"
             + (_already_have_field("typicalCustomer", collected, "their typical customer") or
-            "Ask: 'How would you describe your typical customer?'\n"
-            "Add context: 'Understanding who you serve helps me give better advice later.'\n"
+            "Ask (context first, then question): 'Understanding who you serve helps me give\n"
+            "  better advice later — how would you describe your typical customer?'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['typicalCustomer'] — even if brief, informal,\n"
@@ -337,6 +336,7 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("recentChanges", collected, "recent business changes") or
             "Ask: 'Has anything changed in your business since your last loan?'\n"
+            "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['recentChanges'] — even if brief or informal.\n"
@@ -374,8 +374,7 @@ def build_system_prompt(
                 "PHASE 5 — NEAR-TERM OUTLOOK (Business Health, Q2)\n"
                 f"{already_collected}\n\n"
                 + (_already_have_field("nearTermOutlook", collected, "their sales outlook") or
-                "Ask: 'What's your sales outlook for the next couple of weeks?'\n"
-                "Add context: 'This helps me understand your timing.'\n"
+                "Ask: 'Looking ahead a bit — what's your sales outlook for the next couple of weeks?'\n"
                 "Set advance_phase=false.\n\n"
                 "WHEN CUSTOMER ANSWERS:\n"
                 "  1. Extract into extracted['nearTermOutlook'].\n"
@@ -391,12 +390,13 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("cashCycleSpeed", collected, "their cash cycle speed") or
             "Ask: 'How quickly do you typically get cash back after spending on stock or supplies?'\n"
-            "Add context: 'This helps me understand your cash flow rhythm.'\n"
+            "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['cashCycleSpeed'] — even if brief or informal.\n"
             "     A short answer is still valid — extract and move on.\n"
-            "  2. Acknowledge warmly (1 sentence). Set advance_phase=true.\n")
+            "  2. Acknowledge warmly and tie their answer to why it matters (e.g. 'Two weeks to\n"
+            "     turn stock into cash — that's useful for sizing your offer right.'). Set advance_phase=true.\n")
         )
 
     elif phase == "7":
@@ -404,6 +404,7 @@ def build_system_prompt(
             "PHASE 7 — WORKING CAPITAL (Business Health, Q4 — last profile question)\n"
             f"{already_collected}\n\n"
             + (_already_have_field("workingCapital", collected, "their working capital needs") or
+            "Signal this is the last profile question (e.g. 'To round things out —' or 'Last one —').\n"
             "Ask: 'How much of your total working capital need is Tala currently meeting?'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
@@ -427,16 +428,20 @@ def build_system_prompt(
             "  - Receipt from a supplier purchase\n"
             "  - Photo of inventory, shop, or daily cash\n"
             "  State clearly: optional, helps tailor offer and advice, no negative impact if skipped.\n"
-            "  End with: 'Want to share something, or shall we continue?'\n"
+            "  End with: 'Would you like to share something, or skip ahead?'\n"
             "  Set advance_phase=false.\n\n"
             "WHEN CUSTOMER RESPONDS:\n"
             "  - If they share something (photo, text, or say they uploaded): Warmly confirm "
             "receipt: 'Thanks for sharing that — I can see [specific detail] and it helps. "
             "This strengthens your application.'\n"
-            "  - If they skip: 'No problem at all! We can continue.'\n"
-            "  - Transition: 'Great — while I prepare your offer, there's one more quick thing "
-            "I'd love to show you.'\n"
-            "  - Set advance_phase=true.\n"
+            "  - If they AGREE to share (e.g. 'sure', 'yes', 'ok') but haven't sent anything yet:\n"
+            "    Say: 'Great — go ahead and send a photo whenever you're ready. You can use the\n"
+            "    camera button below.' Set advance_phase=false (wait for the photo).\n"
+            "  - If they SKIP (e.g. 'no', 'skip', 'let's continue', 'not now'): 'No problem at\n"
+            "    all! We can continue.'\n"
+            "  - After sharing OR skipping, transition: 'Great — while I prepare your offer,\n"
+            "    there's one more quick thing I'd love to show you.'\n"
+            "  - Set advance_phase=true after sharing or skipping (NOT after agreeing to share).\n"
         )
 
     elif phase == "9":
@@ -456,18 +461,14 @@ def build_system_prompt(
             "  Use their business context to make it specific.\n"
             "  Set advance_phase=false.\n\n"
 
-            "TURN 2 (customer responds — coaching_turns=2):\n"
-            "  Give a brief, actionable insight (1-2 sentences) tied to their answer.\n"
-            "  Ask one more follow-up to deepen the value.\n"
-            "  Set advance_phase=false.\n\n"
-
-            "TURN 3+ (coaching_turns >= 3):\n"
-            "  Wrap up with a CONCRETE DELIVERABLE: a specific action plan, recommendation, "
-            "or task they can do this week.\n"
-            "  Close: 'This is exactly the kind of thinking I can help with every day from "
-            "your home screen. The more we talk, the better I can support you.'\n"
-            "  Transition: 'Now — I'm excited to share the offer we've put together for you!'\n"
-            "  Set advance_phase=true.\n"
+            "TURN 2+ (customer responds — coaching_turns >= 2):\n"
+            "  Wrap up the coaching demo. Do ALL of the following:\n"
+            "  1. Give a CONCRETE DELIVERABLE: a specific action plan, recommendation, or\n"
+            "     task they can do this week. Tie it to what they shared.\n"
+            "  2. Close with EXACTLY this line (do not skip or paraphrase): 'This is exactly\n"
+            "     the kind of thinking I can help with every day from your home screen.'\n"
+            "  3. Transition: 'Now — I'm excited to share the offer we've put together for you!'\n"
+            "  Do NOT ask another question. Set advance_phase=true.\n"
         )
 
     elif phase == "10":
