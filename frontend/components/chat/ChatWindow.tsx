@@ -83,10 +83,15 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     flowDispatch({ type: 'OFFER_ACCEPTED', config: loanConfig })
     flowDispatch({ type: 'TERMS_ACCEPTED' })
 
-    // Synthetic message triggers Phase 11 closing from the agent
+    // Synthetic message triggers Phase 11 closing from the agent.
+    // sendMessage awaits bubble animation, so when it resolves the closing is visible.
     await sendMessage(
       `I've accepted the loan of $${loanConfig.amount.toLocaleString()} MXN with ${loanConfig.installments} payment${loanConfig.installments > 1 ? 's' : ''}.`
     )
+
+    // Navigate to cashout directly — don't rely on Phase 11 advancing to "complete".
+    // Terms are already accepted; the agent closing message has already rendered above.
+    setTimeout(() => onComplete?.(), 2500)
   }
 
   return (
