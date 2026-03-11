@@ -10,6 +10,8 @@ def _collected_context(collected: dict) -> str:
     return "\n\nALREADY COLLECTED (do NOT ask about these again):\n" + "\n".join(lines)
 
 
+MARKET_CONTEXT = "Market: Mexico — customers are small business owners (MSMEs). Use MXN for currency. Reference local context where relevant: Semana Santa (not just 'Easter'), Day of the Dead, Christmas season; OXXO and SPEI for payments; WhatsApp for sales and customer communication; tianguis and local markets; and common Mexican MSME challenges like ingredient inflation and fuel costs.\n"
+
 # ── Conversation design principles (included in every onboarding prompt) ──
 
 CONVERSATION_RULES = """
@@ -127,6 +129,7 @@ def build_system_prompt(
         return (
             f"You are Thalia, a warm AI business assistant for Tala, a lending app.\n"
             f"Customer: {tester_name} | Today: {today}\n"
+            f"{MARKET_CONTEXT}"
             f"Active loan: {amount_fmt} MXN"
             f"{profile_section}\n\n"
 
@@ -206,6 +209,7 @@ def build_system_prompt(
             f"You are Thalia, a Socratic business coach at Tala.\n"
             f"Customer: {tester_name} | Business: {business_type} | Today: {today}"
             f"{profile_section}\n\n"
+            f"{MARKET_CONTEXT}\n"
 
             f"{opening}\n"
 
@@ -308,6 +312,7 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("tenure", collected, "how long they've been running the business") or
             "Ask: 'How long have you been running the business?'\n"
+            "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['tenure'] — even if brief or informal.\n"
@@ -375,6 +380,7 @@ def build_system_prompt(
                 f"{already_collected}\n\n"
                 + (_already_have_field("nearTermOutlook", collected, "their sales outlook") or
                 "Ask: 'Looking ahead a bit — what's your sales outlook for the next couple of weeks?'\n"
+                "Do NOT add a context clause — the framing already signals why you're asking.\n"
                 "Set advance_phase=false.\n\n"
                 "WHEN CUSTOMER ANSWERS:\n"
                 "  1. Extract into extracted['nearTermOutlook'].\n"
@@ -457,14 +463,21 @@ def build_system_prompt(
             "  Set advance_phase=false.\n\n"
 
             "TURN 1 (customer picked a topic — coaching_turns=1):\n"
-            "  Acknowledge their choice. Ask ONE Socratic question to dig deeper into the topic.\n"
-            "  Use their business context to make it specific.\n"
+            "  Acknowledge their choice. Ask ONE Socratic question that is hyper-specific to\n"
+            "  their situation — not a generic question about the topic. Use the collected context:\n"
+            "  their business type, selling channel, typical customer, near-term outlook, and\n"
+            "  loan purpose. Name specifics in the question (e.g. 'For a market stall selling\n"
+            "  to local families heading into Semana Santa...'). Generic questions are not acceptable.\n"
+            "  Optionally offer: 'If you want to share a quick photo of your shop or stock, I can\n"
+            "  give even more specific feedback — but we can go from what you've told me too.'\n"
             "  Set advance_phase=false.\n\n"
 
             "TURN 2+ (customer responds — coaching_turns >= 2):\n"
             "  Wrap up the coaching demo. Do ALL of the following:\n"
-            "  1. Give a CONCRETE DELIVERABLE: a specific action plan, recommendation, or\n"
-            "     task they can do this week. Tie it to what they shared.\n"
+            "  1. Give a CONCRETE DELIVERABLE: a specific action plan, recommendation, or task\n"
+            "     they can do this week. Explicitly tie it to at least 1-2 things they shared\n"
+            "     (their customer type, cash cycle, outlook, loan purpose, or selling channel).\n"
+            "     Generic advice that ignores their specific context is not acceptable.\n"
             "  2. Close with EXACTLY this line (do not skip or paraphrase): 'This is exactly\n"
             "     the kind of thinking I can help with every day from your home screen.'\n"
             "  3. Transition: 'Now — I'm excited to share the offer we've put together for you!'\n"
@@ -518,6 +531,7 @@ def build_system_prompt(
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"
         f"Customer: {tester_name} | Date: {today}\n"
+        f"{MARKET_CONTEXT}"
         f"{survey_ctx}\n"
         f"{ABSOLUTE_RULES}\n"
         f"{instructions}\n\n"
