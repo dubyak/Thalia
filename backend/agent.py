@@ -219,7 +219,7 @@ async def run_agent(
     # ── Auto-advance: if we advanced past a question phase, immediately ─
     # ── generate the next phase's question so the user doesn't hit a    ─
     # ── dead end and have to say "ok" to trigger the next question.     ─
-    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8"}
+    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8", "9"}
     if (
         session.mode == "onboarding"
         and phase in AUTO_ADVANCE_FROM
@@ -235,11 +235,12 @@ async def run_agent(
         session.messages.append({"role": "assistant", "content": ack_combined})
         session.messages.append({
             "role": "user",
-            "content": "(System note: the acknowledgment above was already sent to the customer. "
-                       "Do NOT repeat or rephrase it. Just ask your next question.)",
+            "content": "(System note: the previous response above was already sent to the customer. "
+                       "Do NOT repeat or rephrase it. Proceed immediately to your next required action.)",
         })
 
         # Build system prompt for the NEW phase
+        new_offer_amount = session.max_amount if session.phase == "10" else 0
         new_system_prompt = build_system_prompt(
             phase=session.phase,
             mode=session.mode,
@@ -247,7 +248,7 @@ async def run_agent(
             collected=session.collected,
             approved_amount=session.approved_amount,
             max_amount=session.max_amount,
-            offer_amount=0,
+            offer_amount=new_offer_amount,
             offer_stage=session.offer_stage,
             is_first_visit=session.is_first_visit,
             coaching_turns=session.coaching_turns,
@@ -291,6 +292,9 @@ async def run_agent(
     session.messages.append({"role": "assistant", "content": combined})
 
     # ── Return response ────────────────────────────────────────────────
+    # Recalculate offer_amount in case auto-advance landed on phase 10
+    if session.phase == "10":
+        offer_amount = session.max_amount
     return {
         "messages": result.messages,
         "phase": session.phase,
