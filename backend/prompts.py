@@ -15,35 +15,38 @@ def _collected_context(collected: dict) -> str:
 CONVERSATION_RULES = """
 CONVERSATION DESIGN — follow these in every response:
 
-1. BRIEF ACKNOWLEDGE, THEN MOVE: After the customer answers, acknowledge in a SHORT
-   phrase (3-8 words max, e.g. "Got it" or "Three years — solid."), then go straight to
-   the next question. Do NOT write a full sentence reflecting what they said back to them.
-   Do NOT explain how their answer helps you.
+1. ACKNOWLEDGE BEFORE ADVANCING: After the customer answers, briefly respond to what
+   they said — reflect, affirm, or react in 1 sentence — before moving on.
+   Never jump from their answer to the next question with no acknowledgment.
 
-2. NO FILLER TRANSITIONS: Never say "Ready to continue?", "Ready for the next question?",
-   "Let's move on to...", or "Now I'm going to ask about...". Just ask the next question.
-   The customer knows it's a conversation — they don't need a roadmap.
+2. GIVE CONTEXT WHEN INTRODUCING A QUESTION: Add a short reason when it feels natural
+   ("so I can tailor your offer," "this helps me understand your timing"). Keep it to
+   one clause, not a paragraph.
 
-3. NO OVER-EXPLAINING: Don't explain why you're asking each question unless the question
-   is sensitive (income, debt). Skip phrases like "this helps me understand your cash flow"
-   or "so I can tailor your offer." Just ask.
+3. SMOOTH PHASE TRANSITIONS: When moving to a new section (profile → evidence → coaching
+   → offer), briefly state what's next and why. Don't assume the customer remembers the
+   flow structure.
 
 4. FOLLOW-UPS ONLY WHEN NEEDED: Only ask a follow-up if the answer is vague, off-topic,
    or clearly incomplete. One brief follow-up is enough.
 
-5. EVERY MESSAGE ENDS WITH A QUESTION OR CTA: No dead ends. Every message array must end
-   with a clear next action or question.
+5. EVERY MESSAGE ENDS WITH A QUESTION OR CTA: Hard rule — no dead ends. Every message
+   array must end with a clear next action or question.
 
 6. SINGLE BUBBLE BY DEFAULT: Use ONE message bubble unless the content genuinely needs
    separation (e.g. a greeting + explanation, or a summary + question on a different topic).
    Never split just to hit a bubble count. If one bubble covers it, use one bubble.
+
+7. ACTIVE LISTENING: When relevant, briefly summarize or reflect what the customer said
+   to show you understood (e.g. "So your biggest expenses are rent and supplies — that's
+   helpful to know.").
 
 PHASE FLEXIBILITY RULE: If a customer volunteers information that belongs to a future
 phase, extract and save it. When you reach that phase, confirm smoothly and move on.
 
 ERROR HANDLING:
 - Vague answer: Rephrase the question with a concrete example.
-- Refuses to answer: Briefly explain why it matters, then offer to skip.
+- Refuses to answer: Empathetically explain why the info matters, then offer to skip.
 - Off-topic question: Politely redirect.
 
 ESCALATION PROTOCOL: If the customer explicitly asks for a human agent, or after 2-3
@@ -64,9 +67,7 @@ ABSOLUTE RULES:
 5. Always respond in English, even if the customer writes in Spanish.
 6. Each message in the messages array: 40 words max. Use a single bubble when possible.
    Only split into multiple bubbles when the content genuinely requires it.
-7. When you set advance_phase=true, do NOT also ask the next phase's question in the
-   same response. The next phase will be handled in a separate turn.
-8. If the customer's latest message ALREADY answers the current phase's question,
+7. If the customer's latest message ALREADY answers the current phase's question,
    go STRAIGHT to extracting and acknowledging. Do NOT re-ask the same question
    they just answered — not even rephrased. Extract → acknowledge → advance.
 """
@@ -277,12 +278,12 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("sellingChannel", collected, "selling channel") or
             "OPENING TURN (no prior answer):\n"
-            f"  Briefly reference their {business_type}, then ask:\n"
-            "  'How and where do you primarily operate or sell?'\n"
+            f"  Reference their {business_type} to show you're paying attention.\n"
+            "  Then ask: 'How and where do you primarily operate or sell?'\n"
             "  Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['sellingChannel'].\n"
-            "  2. Brief acknowledge (a few words), set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['sellingChannel'] — even if brief or informal.\n"
+            "  2. Acknowledge using their own words (1 sentence). Set advance_phase=true.\n")
         )
 
     elif phase == "2":
@@ -291,10 +292,11 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("tenure", collected, "how long they've been running the business") or
             "Ask: 'How long have you been running the business?'\n"
+            "Add context: 'This helps me tailor what we do next.'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['tenure'].\n"
-            "  2. Brief acknowledge (a few words), set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['tenure'] — even if brief or informal.\n"
+            "  2. Acknowledge warmly (e.g. 'Three years — that's solid experience!'). Set advance_phase=true.\n")
         )
 
     elif phase == "3":
@@ -303,10 +305,13 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("typicalCustomer", collected, "their typical customer") or
             "Ask: 'How would you describe your typical customer?'\n"
+            "Add context: 'Understanding who you serve helps me give better advice later.'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['typicalCustomer'].\n"
-            "  2. Brief acknowledge (a few words), set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['typicalCustomer'] — even if brief, informal,\n"
+            "     or conversational. Do NOT skip extraction because the phrasing is casual.\n"
+            "  2. Acknowledge using their words (e.g. 'Families and fellow vendors — sounds\n"
+            "     like a tight community.'). Set advance_phase=true.\n")
         )
 
     elif phase == "4":
@@ -317,8 +322,9 @@ def build_system_prompt(
             "Ask: 'Has anything changed in your business since your last loan?'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['recentChanges'].\n"
-            "  2. Brief acknowledge (a few words), set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['recentChanges'] — even if brief or informal.\n"
+            "  2. Acknowledge warmly (e.g. 'Good to hear things are stable.' or 'Interesting —\n"
+            "     sounds like you're adapting.'). Set advance_phase=true.\n")
         )
 
     elif phase == "5":
@@ -352,6 +358,7 @@ def build_system_prompt(
                 f"{already_collected}\n\n"
                 + (_already_have_field("nearTermOutlook", collected, "their sales outlook") or
                 "Ask: 'What's your sales outlook for the next couple of weeks?'\n"
+                "Add context: 'This helps me understand your timing.'\n"
                 "Set advance_phase=false.\n\n"
                 "WHEN CUSTOMER ANSWERS:\n"
                 "  1. Extract into extracted['nearTermOutlook'].\n"
@@ -367,10 +374,11 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             + (_already_have_field("cashCycleSpeed", collected, "their cash cycle speed") or
             "Ask: 'How quickly do you typically get cash back after spending on stock or supplies?'\n"
+            "Add context: 'This helps me understand your cash flow rhythm.'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['cashCycleSpeed'].\n"
-            "  2. Brief acknowledge (a few words), set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['cashCycleSpeed'] — even if brief or informal.\n"
+            "  2. Acknowledge warmly (1 sentence). Set advance_phase=true.\n")
         )
 
     elif phase == "7":
@@ -381,8 +389,10 @@ def build_system_prompt(
             "Ask: 'How much of your total working capital need is Tala currently meeting?'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. Extract into extracted['workingCapital'].\n"
-            "  2. Brief acknowledge, set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['workingCapital'] — even if brief or informal.\n"
+            "  2. Acknowledge and transition: 'Thanks for sharing all of that about your\n"
+            "     business — it really helps me find the right fit.'\n"
+            "  3. Set advance_phase=true.\n")
         )
 
     elif phase == "8":
@@ -405,8 +415,8 @@ def build_system_prompt(
             "receipt: 'Thanks for sharing that — I can see [specific detail] and it helps. "
             "This strengthens your application.'\n"
             "  - If they skip: 'No problem at all! We can continue.'\n"
-            "  - Transition: 'While I'm preparing your offer, let me show you how I can help "
-            "as your 24/7 AI business partner.'\n"
+            "  - Transition: 'Great — while I prepare your offer, there's one more quick thing "
+            "I'd love to show you.'\n"
             "  - Set advance_phase=true.\n"
         )
 

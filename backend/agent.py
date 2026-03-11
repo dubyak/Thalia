@@ -216,6 +216,62 @@ async def run_agent(
             if result.advance_phase:
                 session.phase = _next_phase(phase)
 
+    # ── Auto-advance: if we advanced past a question phase, immediately ─
+    # ── generate the next phase's question so the user doesn't hit a    ─
+    # ── dead end and have to say "ok" to trigger the next question.     ─
+    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8"}
+    if (
+        session.mode == "onboarding"
+        and phase in AUTO_ADVANCE_FROM
+        and result.advance_phase
+        and session.phase != phase  # phase actually changed
+    ):
+        # Save the acknowledgment messages from the first call
+        ack_messages = list(result.messages)
+
+        # Append the ack to conversation history so the next prompt sees it
+        ack_combined = "\n\n".join(ack_messages)
+        session.messages.append({"role": "assistant", "content": ack_combined})
+
+        # Build system prompt for the NEW phase
+        new_system_prompt = build_system_prompt(
+            phase=session.phase,
+            mode=session.mode,
+            tester_name=session.tester_name,
+            collected=session.collected,
+            approved_amount=session.approved_amount,
+            max_amount=session.max_amount,
+            offer_amount=0,
+            offer_stage=session.offer_stage,
+            is_first_visit=session.is_first_visit,
+            coaching_turns=session.coaching_turns,
+            interest_rate_daily=session.interest_rate_daily,
+        )
+
+        # Second API call — generate the next phase's question
+        new_api_messages = [{"role": "system", "content": new_system_prompt}] + session.messages
+        new_completion = await _client.beta.chat.completions.parse(
+            model="gpt-5.2",
+            temperature=0.3,
+            messages=new_api_messages,
+            response_format=AgentDecision,
+        )
+        new_result = new_completion.choices[0].message.parsed
+
+        preview2 = new_result.messages[0][:80] if new_result.messages else "(empty)"
+        print(f"[DEBUG] auto-advance → phase={session.phase} | msgs={len(new_result.messages)} | first={preview2}...")
+
+        # Merge any additional extracted fields from the auto-advance call
+        new_extracted = new_result.extracted.to_dict()
+        for key, value in new_extracted.items():
+            session.collected[key] = value
+
+        # Combine: acknowledgment bubbles + next question bubbles
+        result.messages = ack_messages + list(new_result.messages)
+
+        # Remove the ack we appended — it'll be re-appended below as the combined response
+        session.messages.pop()
+
     # ── Append assistant messages to history ───────────────────────────
     combined = "\n\n".join(result.messages)
     session.messages.append({"role": "assistant", "content": combined})

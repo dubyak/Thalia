@@ -1,6 +1,7 @@
 # Thalia — Agent Context
 
 > Context file for AI coding agents working in this repo.
+> **Living document** — update this file whenever you learn something new about the codebase, fix a non-obvious bug, or establish a pattern that future agents should follow. See the "Maintaining this file" section at the bottom.
 
 ## What this is
 
@@ -34,23 +35,21 @@ docs/              Product specs and deployment guides
 | File | Purpose |
 |------|---------|
 | `backend/main.py` | FastAPI app, `/chat` and `/health` endpoints, request/response models |
-| `backend/agent.py` | Core agent loop — session management, phase advancement, OpenAI call |
-| `backend/prompts.py` | System prompt builder — per-phase instructions for onboarding, coaching, servicing |
+| `backend/agent.py` | Core agent loop — session management, phase advancement, auto-advance, OpenAI call |
+| `backend/prompts.py` | System prompt builder — per-phase instructions for onboarding, coaching, servicing. Contains `CONVERSATION_RULES` and `ABSOLUTE_RULES` blocks that govern tone, warmth, and extraction behavior |
 | `backend/state.py` | Pydantic models for structured output: `AgentDecision`, `ExtractedFields` |
 
 ### Frontend
 
 | File | Purpose |
 |------|---------|
-| `frontend/contexts/ChatContext.tsx` | Chat state management — messages, sending, mode switching |
+| `frontend/contexts/ChatContext.tsx` | Chat state management — messages, sending, mode switching, multi-bubble staggered animation |
 | `frontend/contexts/FlowContext.tsx` | Journey state machine — tracks progress through the full flow |
 | `frontend/contexts/TesterContext.tsx` | Tester identity — code-based login, profile lookup |
 | `frontend/services/chat-service-api.ts` | HTTP client for the backend `/chat` endpoint |
-| `frontend/services/chat-service-mock.ts` | Offline mock for development without the backend |
-| `frontend/services/chat-service.ts` | Interface + factory for switching between API and mock |
 | `frontend/lib/types.ts` | Shared TypeScript types: `ChatMessage`, `FlowState`, `TesterProfile`, etc. |
 | `frontend/lib/constants.ts` | Tester profiles, Mexican bank list, loan calculator |
-| `frontend/components/chat/` | Chat UI — bubbles, input, quick replies, offer card, photo upload, typing indicator |
+| `frontend/components/chat/` | Chat UI — bubbles, input, camera/mic, offer card, photo upload, typing indicator |
 
 ### Docs
 
@@ -63,25 +62,43 @@ docs/              Product specs and deployment guides
 
 The backend supports three modes, set per session:
 
-1. **Onboarding** — Guided flow collecting business profile, presenting a credit offer. Phases: `0` (welcome) → `1` (business type) → `2` (revenue) → `3` (costs) → `4` (loan purpose) → `5` (optional doc) → `6` (coaching demo) → `7` (offer) → `8` (closing) → `complete`.
+1. **Onboarding** — Guided flow collecting business profile, presenting a credit offer. Phases 0-11 then `complete`:
+
+| Phase | Name | What it collects |
+|-------|------|-----------------|
+| 0 | Welcome | Nothing — greeting + flow explanation |
+| 1 | Selling channel | `sellingChannel` — how/where they sell |
+| 2 | Tenure | `tenure` — how long in business |
+| 3 | Typical customer | `typicalCustomer` — who they serve |
+| 4 | Recent changes | `recentChanges` — what's changed lately |
+| 5 | Near-term outlook | `nearTermOutlook` (+ `outlookReason` if negative) |
+| 6 | Cash-cycle speed | `cashCycleSpeed` — time to recover spend |
+| 7 | Working capital | `workingCapital` — how much Tala covers |
+| 8 | Business evidence | Optional photo/doc upload |
+| 9 | Coaching demo | 3-4 turn Socratic coaching preview |
+| 10 | Offer | Credit offer presentation + loan configurator |
+| 11 | Closing | Congratulations + next steps |
+
 2. **Coaching** — Socratic business coaching. Open-ended, references the business profile collected during onboarding.
 3. **Servicing** — Loan support (payments, OXXO/SPEI instructions, difficulty protocol).
 
 ## How the agent works
 
 1. Frontend sends `POST /chat` with `session_id`, `message`, `mode`, and any collected profile data.
-2. Backend builds a **phase-specific system prompt** (`prompts.py`) that tells the LLM exactly what to ask and when to advance.
-3. Backend calls OpenAI with **structured output** (`response_format=AgentDecision`) — the LLM returns a response, extracted fields, `advance_phase` flag, and quick reply suggestions.
-4. Backend merges extracted fields into the session, conditionally advances the phase, and returns the response.
-5. Frontend renders the message, quick replies, offer card, etc. based on the response metadata.
+2. The survey page (`/(app)/survey`) collects `businessType` + `loanPurpose` before onboarding starts — these flow through as context to the agent.
+3. Backend builds a **phase-specific system prompt** (`prompts.py`) that tells the LLM exactly what to ask and when to advance.
+4. Backend calls OpenAI with **structured output** (`response_format=AgentDecision`) — the LLM returns `messages` (array of bubble texts), `extracted` fields, and `advance_phase` flag.
+5. Backend merges extracted fields into the session and conditionally advances the phase.
+6. **Auto-advance**: When a profile/health phase (1-8) advances, the backend immediately makes a **second API call** with the new phase's system prompt to generate the next question. The acknowledgment + next question are combined into a single response. This prevents dead-end "Got it." messages that require the user to say "ok" to continue.
+7. Frontend renders multi-bubble responses with staggered animation (proportional to word count).
 
 ## Frontend flow (route structure)
 
 ```
 /(auth)/login          Tester code entry
-/(app)/survey          Loan purpose survey
+/(app)/survey          Business type + loan purpose (pre-chat)
 /(app)/opt-in          MSME experience opt-in
-/(app)/onboarding      Chat-based onboarding (agent phases 0-8)
+/(app)/onboarding      Chat-based onboarding (agent phases 0-11)
 /(app)/offer           Offer review
 /(app)/terms           Terms acceptance
 /(app)/cashout         Bank selection + confirmation + success
@@ -93,7 +110,7 @@ The backend supports three modes, set per session:
 - **Backend responses are English-only.** The system prompt enforces this even if the user writes in Spanish.
 - **Structured output everywhere.** The backend never parses free-text from the LLM — all decisions come through `AgentDecision` Pydantic model.
 - **Phase logic lives in the backend.** The frontend trusts the `phase` field returned by `/chat` and does not independently decide phase transitions.
-- **Quick replies are LLM-generated.** The system prompt guides what quick replies to produce per phase, but the LLM generates the actual text.
+- **Multi-bubble responses.** The agent returns `messages: list[str]`, rendered as separate chat bubbles with staggered animation. Use a single bubble unless content genuinely needs separation.
 - **Tester profiles are hardcoded.** `frontend/lib/constants.ts` has the tester list. Supabase integration is stubbed but not wired up.
 - **No auth.** Testers enter a code (e.g. `DEMO`, `TESTER01`) — there's no real authentication.
 
@@ -115,10 +132,47 @@ The frontend expects the backend at `http://localhost:8000` by default. Set `BAC
 
 ## Common tasks
 
-**Adding a new onboarding phase:** Update `PHASE_ORDER` in `agent.py`, add phase instructions in `prompts.py`, add advancement logic in `agent.py`'s `run_agent`, and update the `OnboardingPhase` type in `frontend/lib/types.ts`.
+**Adding a new onboarding phase:** Update `PHASE_ORDER` in `agent.py`, add phase instructions in `prompts.py`, add `ExtractedFields` entry in `state.py` if it collects data, add advancement logic in `agent.py`'s `run_agent`, update `PHASE_FIELD` map if applicable, and update the `OnboardingPhase` type in `frontend/lib/types.ts`.
 
 **Adding a new tester:** Add an entry to `DEFAULT_TESTERS` in `frontend/lib/constants.ts`.
 
-**Changing agent behavior:** Edit the phase-specific prompt blocks in `prompts.py`. The `AgentDecision` model in `state.py` controls what structured fields the LLM can return.
+**Changing agent behavior / conversation quality:** Edit `CONVERSATION_RULES`, `ABSOLUTE_RULES`, or the phase-specific prompt blocks in `prompts.py`. The `AgentDecision` model in `state.py` controls what structured fields the LLM can return.
 
-**Switching between mock and API chat service:** The factory in `frontend/services/chat-service.ts` controls this.
+**Tuning prompt rules:** Be careful with conflicting rules (e.g. "be brief" vs "be warm"). Test the full onboarding flow end-to-end after any prompt change — small wording changes have outsized effects on conversation quality.
+
+## Lessons learned (update as you go)
+
+These are hard-won insights from debugging and testing. Read before making changes.
+
+**Prompt engineering:**
+- Conversation rules that say "don't do X" (e.g. "do NOT write a full sentence reflecting what they said") are stronger signals to the LLM than rules that say "do Y." Negative rules can suppress desirable behavior — use them surgically.
+- The LLM can only handle one phase's instructions per call. It doesn't know what the next phase's question is. The auto-advance pattern in `agent.py` solves this by chaining two calls.
+- Extraction is fragile for casual/informal answers. Always include "ALWAYS extract... even if brief, informal, or conversational" in extraction instructions, or the model will silently skip extraction and re-ask the question.
+- Each phase prompt should include an example acknowledgment (e.g. "Three years — that's solid experience!") to set the right warmth level. Without examples, the model defaults to generic "Got it." responses.
+
+**Architecture:**
+- The auto-advance pattern (second API call when phase advances) eliminates dead-end responses at the cost of ~1-2s extra latency. This is worth it — dead ends cost far more user time.
+- Phase 8 (evidence) → Phase 9 (coaching) transition text must not duplicate. If Phase 8's transition introduces coaching, Phase 9's opening will repeat it.
+- `PHASE_FIELD` in `agent.py` maps phases to their required extracted field. If a field is already collected (volunteered early), the phase-skip logic in the advancement block will skip past it automatically.
+
+**Testing:**
+- Always test the full onboarding flow after prompt changes — not just the phase you modified. Prompt rules interact across phases.
+- Watch for: dead-end responses (user has to say "ok"), re-asked questions (extraction failure), duplicate transition text, robotic tone.
+- Run `cd backend && python -m pytest tests/test_agent_loops.py -v` for loop detection and phase stall tests.
+
+## Maintaining this file
+
+**When to update:** After completing any task that changes agent behavior, conversation flow, phase structure, or architectural patterns. If you learned something non-obvious while debugging, add it to "Lessons learned."
+
+**What to add:**
+- New patterns or conventions established during implementation
+- Bug patterns and their root causes (especially prompt-related)
+- Architectural decisions and their rationale
+- Common pitfalls to avoid
+
+**What NOT to add:**
+- Session-specific details (current task, temporary state)
+- Speculative ideas that weren't implemented
+- Duplicate information already in code comments
+
+**Rule: If you fix a bug that took more than one attempt to diagnose, add the root cause and fix pattern to "Lessons learned" so the next agent doesn't repeat the investigation.**
