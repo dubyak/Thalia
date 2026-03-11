@@ -10,7 +10,7 @@ const SLIDES = [
   {
     image: '/thalia/Thalia-onboarding-screen-1.png',
     title: "Hi! I'm Thalía, your business assistant",
-    desc: "I'm here to help you get your money quickly and easily.",
+    desc: "I'm here to help you get your loan and grow your business.",
     hasPrivacy: false,
   },
   {

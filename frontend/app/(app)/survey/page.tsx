@@ -24,11 +24,12 @@ const LOAN_PURPOSE_OPTIONS = [
   { id: 'other', label: 'Something else' },
 ]
 
-type Step = 'loan-use' | 'loan-purpose'
+type Step = 'loan-use' | 'business-type' | 'loan-purpose'
 
 export default function SurveyPage() {
   const [step, setStep] = useState<Step>('loan-use')
   const [selected, setSelected] = useState<string | null>(null)
+  const [businessType, setBusinessType] = useState('')
   const [loanPurpose, setLoanPurpose] = useState<string | null>(null)
   const { dispatch } = useFlow()
   const { tester } = useTester()
@@ -37,8 +38,13 @@ export default function SurveyPage() {
   const handleLoanUseSelect = (id: string) => {
     setSelected(id)
     if (id === 'business') {
-      setTimeout(() => setStep('loan-purpose'), 400)
+      setTimeout(() => setStep('business-type'), 400)
     }
+  }
+
+  const handleBusinessTypeContinue = () => {
+    if (!businessType.trim()) return
+    setStep('loan-purpose')
   }
 
   const handlePurposeSelect = (id: string) => {
@@ -51,7 +57,7 @@ export default function SurveyPage() {
     dispatch({
       type: 'SURVEY_COMPLETE',
       choice: 'business',
-      businessType: tester?.businessType,
+      businessType: businessType.trim(),
       loanPurpose: purposeLabel,
     })
     router.push('/intro')
@@ -62,7 +68,49 @@ export default function SurveyPage() {
     router.push('/home')
   }
 
-  // Step 2: Loan purpose for business users
+  // Step 2: Business type (free text)
+  if (step === 'business-type') {
+    return (
+      <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
+        <div className="bg-[#083032]">
+          <StatusBar dark />
+          <div className="px-5 pb-6 pt-2">
+            <p className="text-[#20bec6] text-sm font-light mb-1">
+              Great choice
+            </p>
+            <h1 className="text-white text-xl font-semibold leading-snug">
+              What type of business do you have?
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex-1 px-4 py-5">
+          <input
+            type="text"
+            value={businessType}
+            onChange={(e) => setBusinessType(e.target.value)}
+            placeholder="e.g. Bakery, Market stall, Online shop"
+            className="w-full p-4 rounded-2xl border-2 border-[#e5e5e5] bg-white text-[#1b1b1b] text-base font-semibold placeholder:font-normal placeholder:text-[#999] focus:border-[#00A69C] focus:outline-none transition-colors"
+            autoFocus
+          />
+        </div>
+
+        {businessType.trim() && (
+          <div className="px-4 pb-8">
+            <button
+              onClick={handleBusinessTypeContinue}
+              className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
+              style={{ background: '#F06B22' }}
+            >
+              Continue
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Step 3: Loan purpose for business users
   if (step === 'loan-purpose') {
     return (
       <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
