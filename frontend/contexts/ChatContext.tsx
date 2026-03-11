@@ -37,6 +37,7 @@ type ChatAction =
   | { type: 'CLOSE_OVERLAY' }
   | { type: 'SET_MODE'; mode: 'onboarding' | 'servicing' | 'coaching' }
   | { type: 'RESET' }
+  | { type: 'START_ONBOARDING'; name: string; approvedAmount: number; maxAmount: number; businessType?: string; loanPurpose?: string }
   | { type: 'START_SERVICING'; name: string; approvedAmount: number }
   | { type: 'START_COACHING'; name: string; approvedAmount: number }
 
@@ -75,6 +76,16 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, mode: action.mode }
     case 'RESET':
       return INITIAL_STATE
+    case 'START_ONBOARDING':
+      return {
+        ...INITIAL_STATE,
+        mode: 'onboarding',
+        testerFirstName: action.name,
+        approvedAmount: action.approvedAmount,
+        maxAmount: action.maxAmount,
+        businessType: action.businessType ?? null,
+        loanPurpose: action.loanPurpose ?? null,
+      }
     case 'START_SERVICING':
       return {
         ...INITIAL_STATE,
@@ -173,6 +184,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       if (stateRef.current.messages.length > 0 || startingRef.current) return
       startingRef.current = true
 
+      dispatch({ type: 'START_ONBOARDING', name: firstName, approvedAmount, maxAmount, businessType, loanPurpose })
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
       const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose)
