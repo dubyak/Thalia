@@ -70,6 +70,8 @@ ABSOLUTE RULES:
 7. If the customer's latest message ALREADY answers the current phase's question,
    go STRAIGHT to extracting and acknowledging. Do NOT re-ask the same question
    they just answered — not even rephrased. Extract → acknowledge → advance.
+8. When you set advance_phase=true, your response must ONLY be a warm acknowledgment.
+   Do NOT ask a new question — the system will handle the next question automatically.
 """
 
 
@@ -283,6 +285,8 @@ def build_system_prompt(
             "  Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['sellingChannel'] — even if brief or informal.\n"
+            "     Accept combination answers (e.g. 'market stall and online') as complete —\n"
+            "     do NOT ask which is primary. Extract the full answer as-is.\n"
             "  2. Acknowledge using their own words (1 sentence). Set advance_phase=true.\n")
         )
 
@@ -296,6 +300,7 @@ def build_system_prompt(
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['tenure'] — even if brief or informal.\n"
+            "     A short answer is still valid — extract and move on.\n"
             "  2. Acknowledge warmly (e.g. 'Three years — that's solid experience!'). Set advance_phase=true.\n")
         )
 
@@ -309,7 +314,7 @@ def build_system_prompt(
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['typicalCustomer'] — even if brief, informal,\n"
-            "     or conversational. Do NOT skip extraction because the phrasing is casual.\n"
+            "     or conversational. A short or casual answer is still valid — extract and move on.\n"
             "  2. Acknowledge using their words (e.g. 'Families and fellow vendors — sounds\n"
             "     like a tight community.'). Set advance_phase=true.\n")
         )
@@ -323,8 +328,8 @@ def build_system_prompt(
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['recentChanges'] — even if brief or informal.\n"
-            "  2. Acknowledge warmly (e.g. 'Good to hear things are stable.' or 'Interesting —\n"
-            "     sounds like you're adapting.'). Set advance_phase=true.\n")
+            "     'Nothing' or 'same' is a valid answer — extract and move on.\n"
+            "  2. Acknowledge warmly (e.g. 'Good to hear things are stable.'). Set advance_phase=true.\n")
         )
 
     elif phase == "5":
@@ -378,6 +383,7 @@ def build_system_prompt(
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['cashCycleSpeed'] — even if brief or informal.\n"
+            "     A short answer is still valid — extract and move on.\n"
             "  2. Acknowledge warmly (1 sentence). Set advance_phase=true.\n")
         )
 
@@ -390,6 +396,7 @@ def build_system_prompt(
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['workingCapital'] — even if brief or informal.\n"
+            "     A short answer is still valid — extract and move on.\n"
             "  2. Acknowledge and transition: 'Thanks for sharing all of that about your\n"
             "     business — it really helps me find the right fit.'\n"
             "  3. Set advance_phase=true.\n")
