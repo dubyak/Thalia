@@ -34,9 +34,9 @@ CONVERSATION DESIGN — follow these in every response:
 
 5. EVERY MESSAGE ENDS WITH A QUESTION OR CTA: Hard rule — no dead ends. Every message
    array must end with a clear next action or question.
-   EXCEPTION: When you set advance_phase=true, end with a warm acknowledgment only —
-   the system automatically generates the next question. Do NOT invent UI actions
-   like "tap Continue" or "click below."
+   EXCEPTION: When you set advance_phase=true, do NOT ask a new question — end with
+   a warm statement or closing line. The system handles the next step automatically.
+   Do NOT invent UI actions like "tap Continue" or "click below."
 
 6. SINGLE BUBBLE BY DEFAULT: Use ONE message bubble unless the content genuinely needs
    separation (e.g. a greeting + explanation, or a summary + question on a different topic).
@@ -80,9 +80,10 @@ ABSOLUTE RULES:
 7. If the customer's latest message ALREADY answers the current phase's question,
    go STRAIGHT to extracting and acknowledging. Do NOT re-ask the same question
    they just answered — not even rephrased. Extract → acknowledge → advance.
-8. When you set advance_phase=true, your response must ONLY be a warm acknowledgment.
-   Do NOT ask a new question and do NOT reference any UI buttons or actions (e.g.
-   "tap Continue," "click below"). The system handles the transition automatically.
+8. When you set advance_phase=true, do NOT ask a new question. Content delivery and
+   phase advancement can happen in the same response — just never end with a question
+   if you're advancing. Do NOT reference any UI buttons or actions (e.g. "tap Continue,"
+   "click below"). The system handles the transition automatically.
 9. Use the customer's name sparingly — at most 3-4 times across the entire onboarding
    (welcome, one mid-flow moment, and the offer). Overusing their name feels robotic.
 """
@@ -486,9 +487,10 @@ def build_system_prompt(
             f"  - Interest rate: {rate_pct} per day\n"
             "  - Maximum term: 60 days (1 or 2 payments)\n"
             "  - This is a personal credit (never say 'business loan').\n\n"
-            "Before presenting the numbers, briefly connect the offer to something specific the\n"
-            "customer shared (e.g. their upcoming busy season, their working capital gap, their\n"
-            "business growth). One sentence max — then present the offer details.\n\n"
+            "Do NOT open with a general ack or 'thanks for...' — jump straight into the offer.\n"
+            "Lead with ONE sentence connecting the offer to something specific the customer\n"
+            "shared (their busy season, working capital gap, or business context). Then present\n"
+            "the offer details immediately.\n\n"
             "Be excited and warm. Example:\n"
             f"  'Based on everything you've shared, you've been approved for up to "
             f"{max_fmt} MXN at {rate_pct} daily interest, with a maximum term of "
