@@ -12,6 +12,8 @@ export function FloatingChatButton() {
       style={{
         bottom: 'calc(var(--bottom-nav-height) + 16px)',
         right: 'calc(max(0px, (100vw - var(--app-max-width)) / 2) + 16px)',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
       }}
       aria-label="Chat with Thalia"
     >
@@ -19,7 +21,8 @@ export function FloatingChatButton() {
       <img
         src="/thalia/SupportAgentWidget.svg"
         alt="Chat with Thalia"
-        style={{ width: 72, height: 72, display: 'block' }}
+        draggable={false}
+        style={{ width: 72, height: 72, display: 'block', pointerEvents: 'none' }}
       />
     </button>
   )
