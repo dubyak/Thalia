@@ -191,7 +191,7 @@ def build_system_prompt(
 
         if is_first_visit:
             opening = (
-                "OPENING (first visit):\n"
+                "OPENING (first visit — use EXACTLY ONE bubble):\n"
                 f"  1. Greet {tester_name} warmly by name.\n"
                 f"  2. Reference their business: '{business_type}'.\n"
                 "  3. Explain you can help with loan questions AND help grow their business.\n"
@@ -200,7 +200,7 @@ def build_system_prompt(
             )
         else:
             opening = (
-                "OPENING (return visit):\n"
+                "OPENING (return visit — use EXACTLY ONE bubble):\n"
                 f"  1. Welcome {tester_name} back warmly.\n"
                 "  2. Ask what they'd like to work on today.\n"
                 "  3. Offer to show the coaching menu if they want ideas.\n"
