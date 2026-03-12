@@ -156,6 +156,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
       {/* Modals */}
       <LoanConfigModal
         open={configOpen}
+        approvedAmount={state.approvedAmount}
         maxAmount={state.maxAmount}
         onClose={() => setConfigOpen(false)}
         onContinue={handleConfigContinue}

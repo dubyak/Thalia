@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 
 interface LoanConfigModalProps {
   open: boolean
+  approvedAmount: number
   maxAmount: number
   onClose: () => void
   onContinue: (amount: number, installments: 1 | 2) => void
@@ -16,9 +17,9 @@ interface LoanConfigModalProps {
 const MIN_AMOUNT = 1000
 const STEP = 500
 
-export function LoanConfigModal({ open, maxAmount, onClose, onContinue }: LoanConfigModalProps) {
+export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onContinue }: LoanConfigModalProps) {
   const { tester } = useTester()
-  const [amount, setAmount] = useState(maxAmount)
+  const [amount, setAmount] = useState(approvedAmount)
   const [installments, setInstallments] = useState<1 | 2>(1)
 
   const rate = tester?.interestRateDaily ?? 0.01
