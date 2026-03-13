@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import { RootLayoutProviders } from '@/components/RootLayoutProviders'
 import './globals.css'
 
 const jakarta = Plus_Jakarta_Sans({
@@ -41,7 +42,7 @@ export default function RootLayout({
           className="relative w-full bg-[#f5f6f0] min-h-dvh overflow-hidden"
           style={{ maxWidth: 'var(--app-max-width)' }}
         >
-          {children}
+          <RootLayoutProviders>{children}</RootLayoutProviders>
         </div>
       </body>
     </html>
