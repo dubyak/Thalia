@@ -47,6 +47,8 @@ class ChatRequest(BaseModel):
     loan_purpose: str | None = None
     is_first_visit: bool = True
     image_data: str | None = None    # Base64 data URL for vision
+    customer_id: str | None = None   # Supabase customer UUID
+    customer_name: str | None = None # "First Last" for logging
 
 
 class ChatResponse(BaseModel):
@@ -77,6 +79,8 @@ async def chat(req: ChatRequest):
         loan_purpose=req.loan_purpose,
         is_first_visit=req.is_first_visit,
         image_data=req.image_data,
+        customer_id=req.customer_id,
+        customer_name=req.customer_name,
     )
 
     phase = result["phase"]

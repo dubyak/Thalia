@@ -80,6 +80,8 @@ async def run_agent(
     loan_purpose: str | None = None,
     is_first_visit: bool = True,
     image_data: str | None = None,
+    customer_id: str | None = None,
+    customer_name: str | None = None,
 ) -> dict:
     # ── Get or create session ──────────────────────────────────────────
     if session_id not in sessions:
