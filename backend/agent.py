@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass, field
 
 from openai import AsyncOpenAI
+from opentelemetry import trace
 
 from state import AgentDecision
 from prompts import build_system_prompt
@@ -83,6 +84,13 @@ async def run_agent(
     customer_id: str | None = None,
     customer_name: str | None = None,
 ) -> dict:
+    # ── Set Arize trace attributes ─────────────────────────────────────
+    current_span = trace.get_current_span()
+    if current_span and current_span.is_recording():
+        current_span.set_attribute('customer_id', customer_id or 'unknown')
+        current_span.set_attribute('customer_name', customer_name or 'unknown')
+        current_span.set_attribute('session_id', session_id)
+
     # ── Get or create session ──────────────────────────────────────────
     if session_id not in sessions:
         sessions[session_id] = Session(

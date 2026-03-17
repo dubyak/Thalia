@@ -37,9 +37,6 @@ export default function SurveyPage() {
 
   const handleLoanUseSelect = (id: string) => {
     setSelected(id)
-    if (id === 'business') {
-      setTimeout(() => setStep('business-type'), 400)
-    }
   }
 
   const handleBusinessTypeContinue = () => {
@@ -207,10 +204,10 @@ export default function SurveyPage() {
         })}
       </div>
 
-      {selected && selected !== 'business' && (
+      {selected && (
         <div className="px-4 pb-8">
           <button
-            onClick={handlePersonalContinue}
+            onClick={selected === 'business' ? () => setStep('business-type') : handlePersonalContinue}
             className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
             style={{ background: '#F06B22' }}
           >
