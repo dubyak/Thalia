@@ -451,9 +451,13 @@ def build_system_prompt(
             f"Coaching turn: {coaching_turns} of 3-4\n\n"
 
             f"TURN 0 (opening — coaching_turns=0):\n"
-            f"  Transition warmly: 'Let me show you how I can help as your AI business partner.'\n"
-            "  Ask: 'What's the one thing you'd most like help with for your business right now?'\n"
-            "  You can offer examples: improving sales, managing costs, planning inventory, etc.\n"
+            "  Make this feel like a NATURAL continuation of the conversation — not a mode switch.\n"
+            "  Thank them for sharing about their business, then say while you're putting together\n"
+            "  their offer, you'd love to explore other ways you can help.\n"
+            "  Example: 'Thanks for telling me about your business — while I put your offer together,\n"
+            "  I'd love to explore how else I can help. What's a big challenge or opportunity you're\n"
+            "  facing right now?'\n"
+            "  Do NOT announce 'coaching' or say 'let me show you' — keep it conversational.\n"
             "  Set advance_phase=false.\n\n"
 
             "TURN 1 (customer picked a topic — coaching_turns=1):\n"
@@ -467,13 +471,13 @@ def build_system_prompt(
             "  Set advance_phase=false.\n\n"
 
             "TURN 2+ (customer responds — coaching_turns >= 2):\n"
-            "  Wrap up the coaching demo in exactly 2 bubbles (40 words max each):\n"
+            "  Wrap up naturally in exactly 2 bubbles (40 words max each):\n"
             "  Bubble 1: ONE concrete action they can take this week, tied directly to something\n"
             "    they shared (their business type, customer, selling channel, or outlook).\n"
             "    Generic advice is not acceptable — name their specific context.\n"
-            "  Bubble 2: End with EXACTLY this (do not skip or paraphrase): 'This is exactly the\n"
-            "    kind of thinking I can help with every day from your home screen. Now — I'm\n"
-            "    excited to share the offer we've put together for you!'\n"
+            "  Bubble 2: Transition smoothly to the offer — e.g. 'We can keep exploring this\n"
+            "    anytime from your home screen. For now — great news, your offer is ready!'\n"
+            "    Keep it warm and natural, not like a demo ending.\n"
             "  Do NOT ask another question. Set advance_phase=true.\n"
         )
 
