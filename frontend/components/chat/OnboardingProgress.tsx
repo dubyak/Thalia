@@ -41,7 +41,7 @@ export function OnboardingProgress({ phase }: OnboardingProgressProps) {
     <div className="px-4 py-3 bg-white border-b border-[#e5e5e5]">
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-xs font-semibold text-[#1a989e]">
-          {phase === 'complete' ? 'Completed' : `Step ${step} of ${TOTAL_STEPS}`}
+          {phase === 'complete' ? 'Completed' : `${TOTAL_STEPS - step} ${TOTAL_STEPS - step === 1 ? 'step' : 'steps'} left`}
         </span>
         <span className="text-xs text-[#939490] font-light">
           {STEP_LABELS[step] ?? ''}

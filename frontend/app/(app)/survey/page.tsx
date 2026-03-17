@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, ChevronRight } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
@@ -71,7 +71,15 @@ export default function SurveyPage() {
       <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
         <div className="bg-[#083032]">
           <StatusBar dark />
-          <div className="px-5 pb-6 pt-2">
+          <div className="px-5 pt-2">
+            <button
+              onClick={() => setStep('loan-use')}
+              className="w-8 h-8 flex items-center justify-center touch-active -ml-1"
+            >
+              <ChevronLeft size={22} className="text-white" />
+            </button>
+          </div>
+          <div className="px-5 pb-6 pt-0">
             <p className="text-[#20bec6] text-sm font-light mb-1">
               Great choice
             </p>
@@ -113,7 +121,15 @@ export default function SurveyPage() {
       <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
         <div className="bg-[#083032]">
           <StatusBar dark />
-          <div className="px-5 pb-6 pt-2">
+          <div className="px-5 pt-2">
+            <button
+              onClick={() => setStep('business-type')}
+              className="w-8 h-8 flex items-center justify-center touch-active -ml-1"
+            >
+              <ChevronLeft size={22} className="text-white" />
+            </button>
+          </div>
+          <div className="px-5 pb-6 pt-0">
             <p className="text-[#20bec6] text-sm font-light mb-1">
               Almost there 👍
             </p>

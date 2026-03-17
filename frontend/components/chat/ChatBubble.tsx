@@ -1,32 +1,9 @@
 import type { ChatMessage } from '@/lib/types'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ChatBubbleProps {
   message: ChatMessage
-}
-
-// Minimal markdown: bold, line breaks
-function renderContent(text: string) {
-  if (!text) return null
-  const parts = text.split(/(\*\*[^*]+\*\*)/g)
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
-    }
-    // Handle newlines and bullet points
-    const lines = part.split('\n')
-    return lines.map((line, j) => {
-      if (line.startsWith('• ') || line.startsWith('- ')) {
-        return (
-          <div key={`${i}-${j}`} className="flex gap-1.5 mt-1">
-            <span className="mt-0.5">•</span>
-            <span>{line.slice(2)}</span>
-          </div>
-        )
-      }
-      if (line === '') return j > 0 ? <div key={`${i}-${j}`} className="h-1" /> : null
-      return <span key={`${i}-${j}`}>{line}{j < lines.length - 1 ? ' ' : ''}</span>
-    })
-  })
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
@@ -36,22 +13,17 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   if (isAgent) {
     return (
       <div className="animate-fade-in">
-        <div className="flex items-end gap-2 px-4">
+        <div className="flex items-start gap-2 px-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/thalia/SupportAgentWidget.svg"
             alt="Thalia"
-            style={{ width: 28, height: 28, flexShrink: 0, marginBottom: 4 }}
+            style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}
           />
-          <div
-            className="max-w-[78%] text-[#314329] px-4 py-4 text-sm leading-snug"
-            style={{
-              background: '#FFFFFF',
-              borderRadius: '16px 16px 16px 0',
-              boxShadow: '0 2px 10px 0 rgba(0,0,0,0.08)',
-            }}
-          >
-            {renderContent(message.content)}
+          <div className="flex-1 min-w-0 agent-markdown text-sm text-[#314329] leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
           </div>
         </div>
       </div>
