@@ -1,11 +1,10 @@
-import { supabase } from '@/lib/supabase-client'
+import { getSupabase } from '@/lib/supabase-client'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
     const { firstName, lastName } = await request.json()
 
-    // Validate input
     if (!firstName?.trim() || !lastName?.trim()) {
       return NextResponse.json(
         { error: 'First and last name required' },
@@ -13,13 +12,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if Supabase is configured
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const supabase = getSupabase()
+    if (!supabase) {
       console.warn('Supabase not configured — proceeding without DB insert')
       return NextResponse.json({ customerId: null })
     }
 
-    // Insert into Supabase customers table
     const { data, error } = await supabase
       .from('customers')
       .insert({
@@ -31,14 +29,12 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Supabase insert error:', error)
-      // Graceful fallback — return success but no customerId
       return NextResponse.json({ customerId: null })
     }
 
     return NextResponse.json({ customerId: data.id })
   } catch (err) {
     console.error('Error in /api/customer/create:', err)
-    // Graceful fallback
     return NextResponse.json({ customerId: null })
   }
 }
