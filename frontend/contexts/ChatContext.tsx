@@ -11,6 +11,7 @@ import {
 import type { ChatMessage, OnboardingPhase, BusinessProfile, AgentResponse } from '@/lib/types'
 import { apiChatService } from '@/services/chat-service-api'
 import { useTester } from '@/contexts/TesterContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 
 interface ChatState {
   messages: ChatMessage[]
@@ -240,6 +241,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const sendMessage = useCallback(
     async (content: string) => {
       const s = stateRef.current
+      const { customer } = useCustomer()
       const userMsg: ChatMessage = {
         id: makeId(),
         role: 'user',
@@ -269,6 +271,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         s.businessType ?? undefined,
         s.loanPurpose ?? undefined,
         localeRef.current,
+        customer.customerId || undefined,
+        customer.firstName && customer.lastName
+          ? `${customer.firstName} ${customer.lastName}`
+          : undefined,
       )
 
       // Ensure minimum 800ms typing so it doesn't flash

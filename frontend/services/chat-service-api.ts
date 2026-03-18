@@ -132,6 +132,8 @@ export const apiChatService = {
     businessType?: string,
     loanPurpose?: string,
     locale = 'en',
+    customerId?: string,
+    customerName?: string,
   ): Promise<AgentResponse> {
     try {
       const res = await fetch('/api/chat', {
@@ -145,6 +147,8 @@ export const apiChatService = {
           max_amount: maxAmount,
           mode,
           locale,
+          customer_id: customerId,
+          customer_name: customerName,
           ...(collected && Object.keys(collected).length > 0 ? { collected } : {}),
           ...(imageData ? { image_data: imageData } : {}),
           ...(businessType ? { business_type: businessType } : {}),
