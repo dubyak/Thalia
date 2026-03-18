@@ -2,46 +2,54 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTester } from '@/contexts/TesterContext'
-import { useFlow } from '@/contexts/FlowContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
-export default function LoginPage() {
-  const [code, setCode] = useState('')
-  const [error, setError] = useState('')
+export default function NamePage() {
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [loading, setLoading] = useState(false)
-  const { setTesterByCode } = useTester()
-  const { flow } = useFlow()
+  const { dispatch: customerDispatch } = useCustomer()
   const router = useRouter()
   const { t } = useTranslation()
 
-  const handleLogin = async () => {
-    if (!code.trim()) return
+  const handleSubmit = async () => {
+    if (!firstName.trim() || !lastName.trim()) return
     setLoading(true)
-    setError('')
 
-    await new Promise((r) => setTimeout(r, 600))
-
-    const success = setTesterByCode(code.trim())
-    if (success) {
-      // Resume from where they left off
-      if (flow.disbursementComplete) {
-        router.replace('/home')
-      } else if (flow.termsAccepted) {
-        router.replace('/cashout')
-      } else if (flow.onboardingComplete) {
-        router.replace('/offer')
-      } else if (flow.msmeOptIn) {
-        router.replace('/onboarding')
-      } else {
-        router.replace('/survey')
+    try {
+      const response = await fetch('/api/customer/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim()
+        })
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        console.warn('Supabase insert failed:', data.error)
       }
-    } else {
-      setError(t('login.invalidCode'))
-      setLoading(false)
+      customerDispatch({
+        type: 'SET_NAME',
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        customerId: data.customerId || undefined
+      })
+    } catch (err) {
+      console.warn('Failed to create customer record:', err)
+      customerDispatch({
+        type: 'SET_NAME',
+        firstName: firstName.trim(),
+        lastName: lastName.trim()
+      })
     }
+
+    router.push('/survey')
   }
+
+  const isValid = firstName.trim().length > 0 && lastName.trim().length > 0
 
   return (
     <div className="flex flex-col min-h-dvh bg-[#083032]">
@@ -65,38 +73,45 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              {t('login.accessCode')}
+            <label htmlFor="first-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
+              {t('login.firstName')}
             </label>
             <input
+              id="first-name"
               type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              placeholder={t('login.placeholder')}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
+              placeholder={t('login.firstNamePlaceholder')}
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck={false}
+              disabled={loading}
             />
           </div>
 
-          {error && (
-            <p className="text-[#ff2056] text-sm font-medium">{error}</p>
-          )}
+          <div>
+            <label htmlFor="last-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
+              {t('login.lastName')}
+            </label>
+            <input
+              id="last-name"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
+              placeholder={t('login.lastNamePlaceholder')}
+              className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
+              disabled={loading}
+            />
+          </div>
 
           <button
-            onClick={handleLogin}
-            disabled={!code.trim() || loading}
+            onClick={handleSubmit}
+            disabled={!isValid || loading}
             className="w-full h-14 rounded-xl bg-[#f06f14] text-white font-semibold text-base disabled:opacity-40 active:opacity-80 transition-opacity shadow-md"
           >
-            {loading ? t('login.verifying') : t('common.continue')}
+            {loading ? t('login.submitting') : t('common.continue')}
           </button>
         </div>
-
-        <p className="text-[#939490] text-xs text-center mt-8 font-light">
-          {t('login.hint')}
-        </p>
       </div>
     </div>
   )

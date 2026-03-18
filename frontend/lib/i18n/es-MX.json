@@ -10,13 +10,13 @@
     "completed": "Completado"
   },
   "login": {
-    "welcome": "Bienvenido/a",
-    "subtitle": "Ingresa tu código de prueba para comenzar.",
-    "accessCode": "Código de acceso",
-    "placeholder": "ej. TESTER01",
-    "invalidCode": "Código inválido. Inténtalo de nuevo.",
-    "verifying": "Verificando...",
-    "hint": "Prueba DEMO para ver el flujo completo",
+    "welcome": "¿Cómo te llamas?",
+    "subtitle": "Usaremos tu nombre para personalizar tu experiencia.",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "firstNamePlaceholder": "ej. María",
+    "lastNamePlaceholder": "ej. García",
+    "submitting": "Iniciando...",
     "brand": "Tala",
     "tagline": "Prototipo MiPyME · México"
   },
@@ -177,14 +177,13 @@
     "placeholder": "Información de cuenta y configuración — próximamente."
   },
   "landing": {
-    "title": "Comencemos",
-    "subtitle": "¿Cómo te llamas?",
-    "firstName": "Nombre",
-    "lastName": "Apellido",
-    "firstNamePlaceholder": "ej. María",
-    "lastNamePlaceholder": "ej. García",
-    "submit": "Iniciar Demo",
-    "submitting": "Iniciando...",
+    "title": "Bienvenido/a",
+    "subtitle": "Ingresa tu código de acceso para comenzar.",
+    "accessCode": "Código de acceso",
+    "placeholder": "ej. DEMO",
+    "invalidCode": "Código inválido. Inténtalo de nuevo.",
+    "verifying": "Verificando...",
+    "submit": "Continuar",
     "tagline": "Prototipo MiPyME · México"
   },
   "reset": {

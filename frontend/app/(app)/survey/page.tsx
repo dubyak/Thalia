@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { useFlow } from '@/contexts/FlowContext'
-import { useTester } from '@/contexts/TesterContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
@@ -17,7 +17,7 @@ export default function SurveyPage() {
   const [businessType, setBusinessType] = useState('')
   const [loanPurpose, setLoanPurpose] = useState<string | null>(null)
   const { dispatch } = useFlow()
-  const { tester } = useTester()
+  const { customer } = useCustomer()
   const router = useRouter()
   const { t } = useTranslation()
 
@@ -190,7 +190,7 @@ export default function SurveyPage() {
         <StatusBar dark />
         <div className="px-5 pb-6 pt-2">
           <p className="text-[#20bec6] text-sm font-light mb-1">
-            {t('survey.greeting', { name: tester?.firstName ?? 'welcome' })} 👋
+            {t('survey.greeting', { name: customer.firstName ?? '' })} 👋
           </p>
           <h1 className="text-white text-xl font-semibold leading-snug">
             {t('survey.loanUseTitle')}

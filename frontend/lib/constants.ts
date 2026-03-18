@@ -1,67 +1,29 @@
 import type { TesterProfile } from './types'
 
-// Default tester profiles (used before Supabase is wired up)
+// Demo access codes — one per locale. All users get the same $10,000 limit.
 export const DEFAULT_TESTERS: TesterProfile[] = [
-  {
-    id: 'tester-01',
-    code: 'TESTER01',
-    name: 'María López',
-    firstName: 'María',
-    approvedAmount: 8000,
-    maxAmount: 12000,
-    interestRateDaily: 0.0083,
-    processingFeeRate: 0.0299,
-    businessType: 'Retail / Grocery store',
-    locale: 'es-MX'
-  },
-  {
-    id: 'tester-02',
-    code: 'TESTER02',
-    name: 'Carlos Ramírez',
-    firstName: 'Carlos',
-    approvedAmount: 6000,
-    maxAmount: 9000,
-    interestRateDaily: 0.0083,
-    processingFeeRate: 0.0299,
-    businessType: 'Food / Taco shop',
-    locale: 'es-MX'
-  },
-  {
-    id: 'tester-03',
-    code: 'TESTER03',
-    name: 'Ana García',
-    firstName: 'Ana',
-    approvedAmount: 10000,
-    maxAmount: 15000,
-    interestRateDaily: 0.0070,
-    processingFeeRate: 0.0299,
-    businessType: 'Services / Beauty salon',
-    locale: 'es-MX'
-  },
-  // Demo tester — Spanish (default for MX testers)
+  // Spanish demo
   {
     id: 'demo',
     code: 'DEMO',
-    name: 'Isabel Torres',
-    firstName: 'Isabel',
-    approvedAmount: 8000,
-    maxAmount: 12000,
+    name: 'Demo',
+    firstName: 'Demo',
+    approvedAmount: 10000,
+    maxAmount: 11000,
     interestRateDaily: 0.0083,
     processingFeeRate: 0.0299,
-    businessType: 'Retail',
     locale: 'es-MX'
   },
-  // Demo tester — English (for internal/English-language testing)
+  // English demo
   {
     id: 'demo-en',
     code: 'DEMOEN',
-    name: 'Isabel Torres',
-    firstName: 'Isabel',
-    approvedAmount: 8000,
-    maxAmount: 12000,
+    name: 'Demo',
+    firstName: 'Demo',
+    approvedAmount: 10000,
+    maxAmount: 11000,
     interestRateDaily: 0.0083,
     processingFeeRate: 0.0299,
-    businessType: 'Retail',
     locale: 'en'
   }
 ]

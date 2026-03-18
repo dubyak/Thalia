@@ -10,13 +10,13 @@
     "completed": "Completed"
   },
   "login": {
-    "welcome": "Welcome",
-    "subtitle": "Enter your test code to get started.",
-    "accessCode": "Access code",
-    "placeholder": "e.g. TESTER01",
-    "invalidCode": "Invalid code. Please try again.",
-    "verifying": "Verifying...",
-    "hint": "Try DEMO to see the complete flow",
+    "welcome": "What's your name?",
+    "subtitle": "We'll use your name to personalize your experience.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "firstNamePlaceholder": "e.g. María",
+    "lastNamePlaceholder": "e.g. García",
+    "submitting": "Starting...",
     "brand": "Tala",
     "tagline": "MSME Prototype · Mexico"
   },
@@ -177,14 +177,13 @@
     "placeholder": "Account information and settings — coming soon."
   },
   "landing": {
-    "title": "Let's get started",
-    "subtitle": "What's your name?",
-    "firstName": "First name",
-    "lastName": "Last name",
-    "firstNamePlaceholder": "e.g. María",
-    "lastNamePlaceholder": "e.g. García",
-    "submit": "Start Demo",
-    "submitting": "Starting...",
+    "title": "Welcome",
+    "subtitle": "Enter your access code to get started.",
+    "accessCode": "Access code",
+    "placeholder": "e.g. DEMO",
+    "invalidCode": "Invalid code. Please try again.",
+    "verifying": "Checking...",
+    "submit": "Continue",
     "tagline": "MSME Prototype · Mexico"
   },
   "reset": {

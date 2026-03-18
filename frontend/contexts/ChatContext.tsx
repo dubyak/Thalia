@@ -52,8 +52,8 @@ const INITIAL_STATE: ChatState = {
   overlayOpen: false,
   mode: 'onboarding',
   testerFirstName: null,
-  approvedAmount: 8000,
-  maxAmount: 12000,
+  approvedAmount: 10000,
+  maxAmount: 11000,
   businessType: null,
   loanPurpose: null,
 }

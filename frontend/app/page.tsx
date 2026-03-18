@@ -2,66 +2,33 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCustomer } from '@/contexts/CustomerContext'
+import { useTester } from '@/contexts/TesterContext'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 import { LanguageToggle } from '@/components/app-shell/LanguageToggle'
 
 export default function LandingPage() {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
+  const [code, setCode] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { dispatch: customerDispatch } = useCustomer()
+  const { setTesterByCode } = useTester()
   const router = useRouter()
   const { t } = useTranslation()
 
   const handleSubmit = async () => {
-    if (!firstName.trim() || !lastName.trim()) return
-
+    if (!code.trim()) return
     setLoading(true)
+    setError('')
 
-    try {
-      // Call Route Handler to insert Supabase customer record
-      const response = await fetch('/api/customer/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim()
-        })
-      })
+    await new Promise((r) => setTimeout(r, 400))
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Graceful fallback: proceed even if Supabase insert fails
-        console.warn('Supabase insert failed:', data.error)
-      }
-
-      // Store name in context (with or without customerId)
-      customerDispatch({
-        type: 'SET_NAME',
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        customerId: data.customerId || undefined
-      })
-
-      // Navigate to login
+    const success = setTesterByCode(code.trim())
+    if (success) {
       router.push('/login')
-    } catch (err) {
-      // Graceful fallback on network error
-      console.warn('Failed to create customer record:', err)
-      customerDispatch({
-        type: 'SET_NAME',
-        firstName: firstName.trim(),
-        lastName: lastName.trim()
-      })
-      router.push('/login')
-    } finally {
+    } else {
+      setError(t('landing.invalidCode'))
       setLoading(false)
     }
   }
-
-  const isValid = firstName.trim().length > 0 && lastName.trim().length > 0
 
   return (
     <div className="flex flex-col min-h-dvh bg-[#083032]">
@@ -88,43 +55,34 @@ export default function LandingPage() {
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="first-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              {t('landing.firstName')}
+            <label htmlFor="access-code" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
+              {t('landing.accessCode')}
             </label>
             <input
-              id="first-name"
+              id="access-code"
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
-              placeholder={t('landing.firstNamePlaceholder')}
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === 'Enter' && code.trim() && handleSubmit()}
+              placeholder={t('landing.placeholder')}
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
               disabled={loading}
             />
           </div>
 
-          <div>
-            <label htmlFor="last-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              {t('landing.lastName')}
-            </label>
-            <input
-              id="last-name"
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
-              placeholder={t('landing.lastNamePlaceholder')}
-              className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
-              disabled={loading}
-            />
-          </div>
+          {error && (
+            <p className="text-[#ff2056] text-sm font-medium">{error}</p>
+          )}
 
           <button
             onClick={handleSubmit}
-            disabled={!isValid || loading}
+            disabled={!code.trim() || loading}
             className="w-full h-14 rounded-xl bg-[#f06f14] text-white font-semibold text-base disabled:opacity-40 active:opacity-80 transition-opacity shadow-md"
           >
-            {loading ? t('landing.submitting') : t('landing.submit')}
+            {loading ? t('landing.verifying') : t('landing.submit')}
           </button>
         </div>
       </div>

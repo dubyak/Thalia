@@ -35,8 +35,8 @@ class Session:
     phase: str = "0"
     mode: str = "onboarding"
     tester_name: str = "there"
-    approved_amount: int = 8000
-    max_amount: int = 12000
+    approved_amount: int = 10000
+    max_amount: int = 11000
     collected: dict = field(default_factory=dict)
     is_first_visit: bool = True
     # Survey-provided context (not asked in chat)
@@ -76,8 +76,8 @@ async def run_agent(
     message: str | None = None,
     *,
     tester_name: str | None = None,
-    approved_amount: int = 8000,
-    max_amount: int = 12000,
+    approved_amount: int = 10000,
+    max_amount: int = 11000,
     mode: str = "onboarding",
     collected: dict | None = None,
     business_type: str | None = None,
