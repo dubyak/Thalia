@@ -7,6 +7,7 @@ import { useTester } from '@/contexts/TesterContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { StatusBar } from '@/components/app-shell/StatusBar'
+import { ResetMenu } from '@/components/app-shell/ResetMenu'
 import { ChevronLeft } from 'lucide-react'
 
 export default function OnboardingPage() {
@@ -45,26 +46,33 @@ export default function OnboardingPage() {
       {/* Header — Thalia avatar + name + status */}
       <div className="bg-white border-b border-[#f0f0f0] flex-shrink-0">
         <StatusBar />
-        <div className="px-4 py-3 flex items-center gap-3">
+        <div className="px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => router.push('/survey')}
             className="w-8 h-8 flex items-center justify-center touch-active -ml-1"
           >
             <ChevronLeft size={22} className="text-[#1f1c2f]" />
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/thalia/SupportAgentWidget.svg"
-            alt="Thalia"
-            style={{ width: 36, height: 36, flexShrink: 0 }}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-[#1f1c2f] font-semibold text-sm leading-tight">Thalia</p>
-            <p className="text-[#1a989e] text-xs font-medium flex items-center gap-1 leading-tight">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1a989e]" />
-              Business assistant
-            </p>
+
+          {/* Avatar + name in center */}
+          <div className="flex items-center gap-3 flex-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/thalia/SupportAgentWidget.svg"
+              alt="Thalia"
+              style={{ width: 36, height: 36, flexShrink: 0 }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-[#1f1c2f] font-semibold text-sm leading-tight">Thalia</p>
+              <p className="text-[#1a989e] text-xs font-medium flex items-center gap-1 leading-tight">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1a989e]" />
+                Business assistant
+              </p>
+            </div>
           </div>
+
+          {/* Reset menu on right */}
+          <ResetMenu variant="icon" />
         </div>
       </div>
 
