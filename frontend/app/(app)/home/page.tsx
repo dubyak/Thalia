@@ -1,30 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { StatusBar } from '@/components/app-shell/StatusBar'
+import { ResetMenu } from '@/components/app-shell/ResetMenu'
 import { formatMXN } from '@/lib/constants'
-import { HelpCircle, User, ChevronRight, Flame, ArrowRight, RotateCcw } from 'lucide-react'
+import { HelpCircle, User, ChevronRight, Flame, ArrowRight } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function HomePage() {
-  const { flow, dispatch: flowDispatch } = useFlow()
+  const { flow } = useFlow()
   const { tester } = useTester()
-  const { resetChat } = useChat()
-  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => { setMounted(true) }, [])
-
-  const handleReset = () => {
-    resetChat()
-    flowDispatch({ type: 'RESET' })
-    router.push('/survey')
-  }
 
   const loan = mounted ? flow.loanConfig : undefined
   const amount = loan?.amount ?? tester?.approvedAmount ?? 8000
@@ -48,13 +39,7 @@ export default function HomePage() {
               <User size={16} className="text-[#939490]" />
             </button>
             {/* Prototype reset — for usability testing only */}
-            <button
-              onClick={handleReset}
-              className="w-8 h-8 rounded-full border border-[#fbe9dd] bg-[#fff8f4] flex items-center justify-center touch-active"
-              title="Restart prototype"
-            >
-              <RotateCcw size={14} className="text-[#f06f14]" />
-            </button>
+            <ResetMenu variant="icon" />
           </div>
         </div>
       </div>
