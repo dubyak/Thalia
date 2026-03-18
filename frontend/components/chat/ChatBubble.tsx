@@ -12,7 +12,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
 
   if (isAgent) {
     return (
-      <div className="animate-fade-in">
+      <div className="animate-fade-in" data-role="agent">
         <div className="flex items-end gap-2 px-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -38,7 +38,7 @@ export function ChatBubble({ message }: ChatBubbleProps) {
   }
 
   return (
-    <div className="flex justify-end px-4 animate-fade-in">
+    <div className="flex justify-end px-4 animate-fade-in" data-role="user">
       <div
         className="max-w-[78%] text-[#314329] px-4 py-4 text-sm leading-snug overflow-hidden"
         style={{ background: '#F5F5F0', borderRadius: '16px 16px 0 16px' }}
