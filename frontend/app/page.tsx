@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCustomer } from '@/contexts/CustomerContext'
-import { StatusBar } from '@/components/app-shell/StatusBar'
+import { useTranslation } from '@/lib/i18n/useTranslation'
+import { LanguageToggle } from '@/components/app-shell/LanguageToggle'
 
 export default function LandingPage() {
   const [firstName, setFirstName] = useState('')
@@ -11,6 +12,7 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false)
   const { dispatch: customerDispatch } = useCustomer()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSubmit = async () => {
     if (!firstName.trim() || !lastName.trim()) return
@@ -63,28 +65,31 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-[#083032]">
-      <StatusBar dark />
+      {/* Language toggle — top right */}
+      <div className="flex justify-end px-5 pt-3">
+        <LanguageToggle dark />
+      </div>
 
       {/* Logo area */}
-      <div className="flex flex-col items-center pt-16 pb-10">
+      <div className="flex flex-col items-center pt-10 pb-10">
         <div className="w-16 h-16 rounded-2xl bg-[#1a989e] flex items-center justify-center mb-4 shadow-lg">
           <span className="text-white font-bold text-2xl tracking-tight">T</span>
         </div>
         <h1 className="text-white text-2xl font-semibold">Tala</h1>
-        <p className="text-[#20bec6] text-sm mt-1 font-light">MSME Prototype · Mexico</p>
+        <p className="text-[#20bec6] text-sm mt-1 font-light">{t('landing.tagline')}</p>
       </div>
 
       {/* Card */}
       <div className="flex-1 bg-[#f5f6f0] rounded-t-3xl px-6 pt-8">
-        <h2 className="text-[#1f1c2f] text-xl font-semibold mb-1">Let's get started</h2>
+        <h2 className="text-[#1f1c2f] text-xl font-semibold mb-1">{t('landing.title')}</h2>
         <p className="text-[#676d65] text-sm mb-8 font-light">
-          What's your name?
+          {t('landing.subtitle')}
         </p>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="first-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              First name
+              {t('landing.firstName')}
             </label>
             <input
               id="first-name"
@@ -92,7 +97,7 @@ export default function LandingPage() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
-              placeholder="e.g. María"
+              placeholder={t('landing.firstNamePlaceholder')}
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
               disabled={loading}
             />
@@ -100,7 +105,7 @@ export default function LandingPage() {
 
           <div>
             <label htmlFor="last-name" className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              Last name
+              {t('landing.lastName')}
             </label>
             <input
               id="last-name"
@@ -108,7 +113,7 @@ export default function LandingPage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && isValid && handleSubmit()}
-              placeholder="e.g. García"
+              placeholder={t('landing.lastNamePlaceholder')}
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
               disabled={loading}
             />
@@ -119,7 +124,7 @@ export default function LandingPage() {
             disabled={!isValid || loading}
             className="w-full h-14 rounded-xl bg-[#f06f14] text-white font-semibold text-base disabled:opacity-40 active:opacity-80 transition-opacity shadow-md"
           >
-            {loading ? 'Starting...' : 'Start Demo'}
+            {loading ? t('landing.submitting') : t('landing.submit')}
           </button>
         </div>
       </div>

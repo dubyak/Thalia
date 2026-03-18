@@ -168,6 +168,22 @@
     "title": "Mi perfil",
     "placeholder": "Información de cuenta y configuración — próximamente."
   },
+  "landing": {
+    "title": "Comencemos",
+    "subtitle": "¿Cómo te llamas?",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "firstNamePlaceholder": "ej. María",
+    "lastNamePlaceholder": "ej. García",
+    "submit": "Iniciar Demo",
+    "submitting": "Iniciando...",
+    "tagline": "Prototipo MiPyME · México"
+  },
+  "reset": {
+    "restartDemo": "Reiniciar Demo",
+    "newCustomer": "Nuevo Cliente",
+    "ariaLabel": "Opciones de reinicio"
+  },
   "chat": {
     "offerLabel": "Tu oferta",
     "choosePlan": "Elige tu plan de pago",

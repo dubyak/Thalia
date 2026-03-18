@@ -10,7 +10,7 @@ import {
 } from 'react'
 import type { ChatMessage, OnboardingPhase, BusinessProfile, AgentResponse } from '@/lib/types'
 import { apiChatService } from '@/services/chat-service-api'
-import { useTester } from '@/contexts/TesterContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useCustomer } from '@/contexts/CustomerContext'
 
 interface ChatState {
@@ -161,10 +161,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const stateRef = useRef(state)
   stateRef.current = state
 
-  // Read locale from tester profile
-  const { tester } = useTester()
-  const localeRef = useRef(tester?.locale ?? 'en')
-  localeRef.current = tester?.locale ?? 'en'
+  // Read locale from app-wide locale context
+  const { locale } = useLocale()
+  const localeRef = useRef(locale)
+  localeRef.current = locale
 
   const processResponse = useCallback(
     async (response: AgentResponse) => {

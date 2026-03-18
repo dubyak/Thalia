@@ -168,6 +168,22 @@
     "title": "My profile",
     "placeholder": "Account information and settings — coming soon."
   },
+  "landing": {
+    "title": "Let's get started",
+    "subtitle": "What's your name?",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "firstNamePlaceholder": "e.g. María",
+    "lastNamePlaceholder": "e.g. García",
+    "submit": "Start Demo",
+    "submitting": "Starting...",
+    "tagline": "MSME Prototype · Mexico"
+  },
+  "reset": {
+    "restartDemo": "Restart Demo",
+    "newCustomer": "New Customer",
+    "ariaLabel": "Reset options"
+  },
   "chat": {
     "offerLabel": "Your offer",
     "choosePlan": "Choose your payment plan",

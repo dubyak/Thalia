@@ -6,6 +6,7 @@ import { useFlow } from '@/contexts/FlowContext'
 import { useChat } from '@/contexts/ChatContext'
 import { useCustomer } from '@/contexts/CustomerContext'
 import { RotateCcw } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ResetMenuProps {
   variant?: 'icon' | 'compact'  // icon = button, compact = in-header
@@ -17,6 +18,7 @@ export function ResetMenu({ variant = 'icon' }: ResetMenuProps) {
   const { dispatch: flowDispatch } = useFlow()
   const { resetChat } = useChat()
   const { dispatch: customerDispatch } = useCustomer()
+  const { t } = useTranslation()
 
   const handleRestartDemo = () => {
     // Clear flow only, keep customer name
@@ -40,9 +42,9 @@ export function ResetMenu({ variant = 'icon' }: ResetMenuProps) {
       <div className="relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
-          aria-label="Reset options"
+          aria-label={t('reset.ariaLabel')}
           className="w-8 h-8 rounded-full border border-[#fbe9dd] bg-[#fff8f4] flex items-center justify-center touch-active"
-          title="Reset options"
+          title={t('reset.ariaLabel')}
         >
           <RotateCcw size={14} className="text-[#f06f14]" />
         </button>
@@ -61,13 +63,13 @@ export function ResetMenu({ variant = 'icon' }: ResetMenuProps) {
                 onClick={handleRestartDemo}
                 className="w-full px-4 py-3 text-left text-sm font-medium text-[#1f1c2f] hover:bg-[#f5f6f0] border-b border-[#e8e8e6] touch-active"
               >
-                Restart Demo
+                {t('reset.restartDemo')}
               </button>
               <button
                 onClick={handleNewCustomer}
                 className="w-full px-4 py-3 text-left text-sm font-medium text-[#1f1c2f] hover:bg-[#f5f6f0] touch-active"
               >
-                New Customer
+                {t('reset.newCustomer')}
               </button>
             </div>
           </>

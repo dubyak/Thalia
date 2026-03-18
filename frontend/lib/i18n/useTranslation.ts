@@ -1,14 +1,12 @@
 import { useMemo } from 'react'
-import { useTester } from '@/contexts/TesterContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { createT, type TFunction } from './index'
 
 /**
- * Returns { t, locale } based on the current tester's locale.
- * Falls back to 'en' if no tester is logged in.
+ * Returns { t, locale } based on the app-wide locale setting.
  */
 export function useTranslation(): { t: TFunction; locale: string } {
-  const { tester } = useTester()
-  const locale = tester?.locale ?? 'en'
+  const { locale } = useLocale()
   const t = useMemo(() => createT(locale), [locale])
   return { t, locale }
 }
