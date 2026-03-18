@@ -45,11 +45,15 @@ docs/              Product specs and deployment guides
 |------|---------|
 | `frontend/contexts/ChatContext.tsx` | Chat state management — messages, sending, mode switching, multi-bubble staggered animation |
 | `frontend/contexts/FlowContext.tsx` | Journey state machine — tracks progress through the full flow |
+| `frontend/contexts/CustomerContext.tsx` | Customer identity — persists firstName, lastName, customerId separately from flow state (survives resets) |
 | `frontend/contexts/TesterContext.tsx` | Tester identity — code-based login, profile lookup |
-| `frontend/services/chat-service-api.ts` | HTTP client for the backend `/chat` endpoint |
+| `frontend/services/chat-service-api.ts` | HTTP client for the backend `/chat` endpoint; passes `customer_id` and `customer_name` for personalization |
 | `frontend/lib/types.ts` | Shared TypeScript types: `ChatMessage`, `FlowState`, `TesterProfile`, etc. |
 | `frontend/lib/constants.ts` | Tester profiles, Mexican bank list, loan calculator |
 | `frontend/components/chat/` | Chat UI — bubbles, input, camera/mic, offer card, photo upload, typing indicator |
+| `frontend/components/app-shell/ResetMenu.tsx` | Two-option reset menu: "Restart Demo" (soft reset) or "New Customer" (hard reset) |
+| `frontend/app/page.tsx` | Landing page — collects first and last name, calls `/api/customer/create` Route Handler, stores in CustomerContext |
+| `frontend/app/api/customer/create/route.ts` | Route Handler — inserts customer record into Supabase with graceful fallback |
 
 ### Docs
 
@@ -95,15 +99,18 @@ The backend supports three modes, set per session:
 ## Frontend flow (route structure)
 
 ```
+/                      Landing page — collect customer name, start demo button
 /(auth)/login          Tester code entry
 /(app)/survey          Business type + loan purpose (pre-chat)
 /(app)/opt-in          MSME experience opt-in
-/(app)/onboarding      Chat-based onboarding (agent phases 0-11)
+/(app)/onboarding      Chat-based onboarding (agent phases 0-11) — reset menu available
 /(app)/offer           Offer review
 /(app)/terms           Terms acceptance
 /(app)/cashout         Bank selection + confirmation + success
-/(app)/home            Post-disbursement home (coaching entry point)
+/(app)/home            Post-disbursement home (coaching entry point) — reset menu available
 ```
+
+**Customer name persistence flow:** Landing page → CustomerContext (localStorage: `tala_customer_state`) → ChatContext.sendMessage() → backend `/chat` → Arize span attributes.
 
 ## Conventions
 
@@ -113,6 +120,9 @@ The backend supports three modes, set per session:
 - **Multi-bubble responses.** The agent returns `messages: list[str]`, rendered as separate chat bubbles with staggered animation. Use a single bubble unless content genuinely needs separation.
 - **Tester profiles are hardcoded.** `frontend/lib/constants.ts` has the tester list. Supabase integration is stubbed but not wired up. `DEMOEN` tester uses `locale: 'en'`; all others use `locale: 'es-MX'`.
 - **No auth.** Testers enter a code (e.g. `DEMO`, `DEMOEN`, `TESTER01`) — there's no real authentication.
+- **Customer name persistence.** CustomerContext stores customer identity (firstName, lastName, customerId) in a separate localStorage key (`tala_customer_state`) from FlowContext, so names survive flow resets. This enables: (1) personalized agent responses ("Hi María!"), (2) customer identification in Arize traces for usability testing, (3) soft resets that keep the customer but clear flow progress. The context is SSR-safe and handles corrupted localStorage gracefully.
+- **Dual-reset pattern.** The ResetMenu offers two options: (1) **"Restart Demo"** dispatches `RESET` to FlowContext only, returning to survey page with name/customerId intact (soft reset for flow testing). (2) **"New Customer"** dispatches `CLEAR_NAME` to CustomerContext and `RESET` to FlowContext, clearing all state and returning to landing page (hard reset for new customer sessions). Use soft reset for demo refinement; hard reset for usability testing sessions.
+- **Graceful Supabase fallback.** The `/api/customer/create` Route Handler checks if Supabase env vars exist before attempting insert. If not configured or if insert fails, it returns `{ customerId: null }` and the app continues normally. This allows the prototype to function without database setup during development while still persisting customer data in localStorage.
 
 ## Internationalization (i18n)
 
@@ -162,6 +172,12 @@ The frontend expects the backend at `http://localhost:8000` by default. Set `BAC
 
 **Tuning prompt rules:** Be careful with conflicting rules (e.g. "be brief" vs "be warm"). Test the full onboarding flow end-to-end after any prompt change — small wording changes have outsized effects on conversation quality.
 
+**Adding customer data to agent personalization:** Customer firstName + lastName are available in the `/chat` request body as `customer_id` and `customer_name`. To personalize agent responses, access these in `agent.py`'s `run_agent()` function and thread them into `build_system_prompt()`. The data flows from landing page → CustomerContext → ChatContext.sendMessage() → chat-service-api.ts → backend.
+
+**Modifying reset behavior:** Edit `ResetMenu.tsx` in `frontend/components/app-shell/`. The `handleRestartDemo()` function controls soft reset behavior (currently calls `dispatch({ type: 'RESET' })` only); `handleNewCustomer()` controls hard reset (calls both `CLEAR_NAME` and `RESET`). To add a third reset option, duplicate one of these handlers and customize the dispatch calls and navigation path.
+
+**Wiring Supabase integration:** The `/api/customer/create` Route Handler has the pattern — check env vars, validate input, attempt insert, return gracefully on failure. To add more customer-related endpoints (e.g., fetch customer profile, update preferences), follow the same pattern in `frontend/app/api/customer/` with corresponding backend updates to accept customer data in `/chat` requests.
+
 ## Lessons learned (update as you go)
 
 These are hard-won insights from debugging and testing. Read before making changes.
@@ -176,6 +192,9 @@ These are hard-won insights from debugging and testing. Read before making chang
 - The auto-advance pattern (second API call when phase advances) eliminates dead-end responses at the cost of ~1-2s extra latency. This is worth it — dead ends cost far more user time.
 - Phase 8 (evidence) → Phase 9 (coaching) transition text must not duplicate. If Phase 8's transition introduces coaching, Phase 9's opening will repeat it.
 - `PHASE_FIELD` in `agent.py` maps phases to their required extracted field. If a field is already collected (volunteered early), the phase-skip logic in the advancement block will skip past it automatically.
+- **Separate identity state from flow state.** CustomerContext lives in its own localStorage key (`tala_customer_state`) independent from FlowContext. This allows customer identity to survive FlowContext resets without duplication logic. Pattern: Create a new context for any data that should outlive a reset, implement CLEAR_NAME / RESET as separate actions, keep contexts composable.
+- **Graceful fallback for optional dependencies.** External services (Supabase, Arize) should not block core functionality. Pattern: (1) Check if config/env vars exist before using service, (2) Return sensible defaults (null customerId, empty trace) on failure, (3) Log warnings for debugging, (4) Let the app continue normally. This allows prototypes to work offline or with partial setup during development.
+- **Customer data threading via context refs.** Passing customer name through the agent requires access in ChatContext's `sendMessage()` callback. Solution: Use `const { customer } = useCustomer()` inside the callback and pass to the API. Don't put customer data in ChatContext state — keep contexts separate to avoid duplication and merge conflicts.
 
 **Testing:**
 - Always test the full onboarding flow after prompt changes — not just the phase you modified. Prompt rules interact across phases.
