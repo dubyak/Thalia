@@ -107,12 +107,34 @@ The backend supports three modes, set per session:
 
 ## Conventions
 
-- **Backend responses are English-only.** The system prompt enforces this even if the user writes in Spanish.
+- **Locale-aware responses.** The tester profile's `locale` field (e.g. `"en"`, `"es-MX"`) controls both the LLM agent's output language and all frontend UI strings. The backend `build_system_prompt()` accepts a `locale` param; the frontend uses `useTranslation()` hook with JSON string dictionaries.
 - **Structured output everywhere.** The backend never parses free-text from the LLM — all decisions come through `AgentDecision` Pydantic model.
 - **Phase logic lives in the backend.** The frontend trusts the `phase` field returned by `/chat` and does not independently decide phase transitions.
 - **Multi-bubble responses.** The agent returns `messages: list[str]`, rendered as separate chat bubbles with staggered animation. Use a single bubble unless content genuinely needs separation.
-- **Tester profiles are hardcoded.** `frontend/lib/constants.ts` has the tester list. Supabase integration is stubbed but not wired up.
-- **No auth.** Testers enter a code (e.g. `DEMO`, `TESTER01`) — there's no real authentication.
+- **Tester profiles are hardcoded.** `frontend/lib/constants.ts` has the tester list. Supabase integration is stubbed but not wired up. `DEMOEN` tester uses `locale: 'en'`; all others use `locale: 'es-MX'`.
+- **No auth.** Testers enter a code (e.g. `DEMO`, `DEMOEN`, `TESTER01`) — there's no real authentication.
+
+## Internationalization (i18n)
+
+The app uses a two-layer locale system controlled by the tester profile's `locale` field:
+
+**Backend (LLM output language):**
+
+- `backend/prompts.py` has a `LOCALE_CONFIG` dict with per-locale strings (product terms, phase copy, servicing scripts).
+- `_t(locale, key)` helper resolves locale-specific strings. LLM instructions stay in English; only output language and exact copy phrases switch.
+- `build_system_prompt(locale=...)` threads locale through all prompt construction.
+- Locale flows: `ChatRequest.locale` → `Session.locale` → `build_system_prompt()`.
+
+**Frontend (UI strings):**
+
+- `frontend/lib/i18n/en.json` and `frontend/lib/i18n/es-MX.json` — parallel JSON string dictionaries (~150 keys each).
+- `frontend/lib/i18n/index.ts` — `createT(locale)` function with dot-path key resolution and `{placeholder}` interpolation. Falls back to English.
+- `frontend/lib/i18n/useTranslation.ts` — React hook that reads locale from the tester profile via `useTester()`.
+- All page components use `const { t } = useTranslation()` and `t('section.key', { param: value })`.
+- `frontend/services/chat-service-api.ts` passes `locale` in every `/chat` request body.
+- `frontend/contexts/ChatContext.tsx` reads locale from tester profile via a ref and passes it to all API calls.
+
+**Adding a new translatable string:** Add the key to both `en.json` and `es-MX.json`, then use `t('section.key')` in the component.
 
 ## Running locally
 

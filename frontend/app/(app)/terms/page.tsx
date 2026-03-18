@@ -9,21 +9,7 @@ import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { formatMXN } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-
-const TERMS = [
-  {
-    id: 'credit-agreement',
-    text: 'I accept the Simple Credit Agreement, including the loan amount, term, daily interest rate, applicable fees, and the established payment schedule.'
-  },
-  {
-    id: 'privacy-policy',
-    text: 'I accept the Privacy Policy and authorize Tala to send me notifications related to my account, payments, and available products through registered channels.'
-  },
-  {
-    id: 'data-authorization',
-    text: 'I expressly authorize TALA to discount, endorse, assign, or transfer the collection rights arising from this agreement, in accordance with applicable law.'
-  }
-]
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function TermsPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({})
@@ -31,8 +17,15 @@ export default function TermsPage() {
   const { dispatch, flow } = useFlow()
   const { tester } = useTester()
   const router = useRouter()
+  const { t } = useTranslation()
 
-  const allChecked = TERMS.every((t) => checked[t.id])
+  const TERMS = [
+    { id: 'credit-agreement', text: t('terms.term1') },
+    { id: 'privacy-policy', text: t('terms.term2') },
+    { id: 'data-authorization', text: t('terms.term3') },
+  ]
+
+  const allChecked = TERMS.every((tm) => checked[tm.id])
 
   const toggle = (id: string) => {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -53,7 +46,7 @@ export default function TermsPage() {
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-white flex-shrink-0 border-b border-[#e5e5e5]">
         <StatusBar />
-        <BackHeader title="Terms and conditions" />
+        <BackHeader title={t('terms.title')} />
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -64,11 +57,11 @@ export default function TermsPage() {
           </div>
           <div>
             <p className="text-[#20bec6] text-xs font-semibold uppercase tracking-wider">
-              Your loan
+              {t('terms.yourLoan')}
             </p>
             <p className="text-white font-bold text-xl">{formatMXN(amount)}</p>
             <p className="text-[#939490] text-xs font-light">
-              {loan?.installments ?? 1} {(loan?.installments ?? 1) === 1 ? 'payment' : 'payments'} · First payment: {loan?.firstPaymentDate ?? '30 days'}
+              {(loan?.installments ?? 1) === 1 ? t('terms.payment', { n: 1 }) : t('terms.payments', { n: loan?.installments ?? 1 })} · {t('terms.firstPaymentLabel', { date: loan?.firstPaymentDate ?? '30 days' })}
             </p>
           </div>
         </div>
@@ -101,7 +94,7 @@ export default function TermsPage() {
         {/* Credit bureau notice */}
         <div className="mx-4 mb-6 bg-[#f8fafc] rounded-xl px-4 py-3 border border-[#e5e5e5]">
           <p className="text-xs text-[#939490] font-light leading-relaxed">
-            By accepting, I authorize Tala México S.A. de C.V. SOFOM E.N.R. to consult and report my credit history to the Credit Information Society (Buró de Crédito), in accordance with the Law to Regulate Credit Information Societies.
+            {t('terms.creditBureau')}
           </p>
         </div>
 
@@ -116,11 +109,11 @@ export default function TermsPage() {
                 : 'bg-[#e5e5e5] text-[#c2c6c0]'
             )}
           >
-            {loading ? 'Processing...' : 'Accept and continue'}
+            {loading ? t('terms.processing') : t('terms.acceptAndContinue')}
           </button>
           {!allChecked && (
             <p className="text-center text-xs text-[#939490] mt-2 font-light">
-              Accept all terms to continue
+              {t('terms.acceptAll')}
             </p>
           )}
         </div>

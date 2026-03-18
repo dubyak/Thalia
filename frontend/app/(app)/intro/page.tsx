@@ -5,38 +5,40 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useFlow } from '@/contexts/FlowContext'
 import { StatusBar } from '@/components/app-shell/StatusBar'
-
-const SLIDES = [
-  {
-    image: '/thalia/Thalia-onboarding-screen-1.png',
-    title: "Hi! I'm Thalía, your business assistant",
-    desc: "I'm here to help you get your loan and grow your business.",
-    hasPrivacy: false,
-  },
-  {
-    image: '/thalia/Thalia-onboarding-screen-2.png',
-    title: 'Grow your business with me',
-    desc: 'Get tips to improve your sales and help your business move forward.',
-    hasPrivacy: false,
-  },
-  {
-    image: '/thalia/Thalia-onboarding-screen-3.png',
-    title: "I'll be your partner every step of the way",
-    desc: 'I can help you manage your loan and adjust your payments if you ever need help.',
-    hasPrivacy: false,
-  },
-  {
-    image: '/thalia/Thalia-onboarding-screen-4.png',
-    title: 'Shall we chat so you can get your loan?',
-    desc: 'Chatting with me is 100% secure. Your safety and trust are my top priority.',
-    hasPrivacy: true,
-  },
-]
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function IntroPage() {
   const [slide, setSlide] = useState(0)
   const { dispatch } = useFlow()
   const router = useRouter()
+  const { t } = useTranslation()
+
+  const SLIDES = [
+    {
+      image: '/thalia/Thalia-onboarding-screen-1.png',
+      title: t('intro.slide1Title'),
+      desc: t('intro.slide1Desc'),
+      hasPrivacy: false,
+    },
+    {
+      image: '/thalia/Thalia-onboarding-screen-2.png',
+      title: t('intro.slide2Title'),
+      desc: t('intro.slide2Desc'),
+      hasPrivacy: false,
+    },
+    {
+      image: '/thalia/Thalia-onboarding-screen-3.png',
+      title: t('intro.slide3Title'),
+      desc: t('intro.slide3Desc'),
+      hasPrivacy: false,
+    },
+    {
+      image: '/thalia/Thalia-onboarding-screen-4.png',
+      title: t('intro.slide4Title'),
+      desc: t('intro.slide4Desc'),
+      hasPrivacy: true,
+    },
+  ]
 
   const isLast = slide === SLIDES.length - 1
   const current = SLIDES[slide]
@@ -98,14 +100,14 @@ export default function IntroPage() {
             <div className="flex items-center gap-2">
               <span className="text-lg">🌿</span>
               <p className="text-sm font-semibold" style={{ color: '#314329' }}>
-                About your privacy
+                {t('intro.privacyTitle')}
               </p>
             </div>
             <p className="text-xs leading-relaxed" style={{ color: '#314329' }}>
-              Tala prioritizes the privacy of your data. The information you share is confidential.
+              {t('intro.privacyDesc')}
             </p>
             <button className="text-xs font-semibold text-left touch-active" style={{ color: '#00A69C' }}>
-              View Privacy Policy
+              {t('intro.privacyLink')}
             </button>
           </div>
         )}
@@ -138,7 +140,7 @@ export default function IntroPage() {
             background: '#F06F14',
           }}
         >
-          {isLast ? "Let's go" : 'Next'}
+          {isLast ? t('intro.letsGo') : t('intro.next')}
         </button>
 
         {isLast ? (
@@ -147,7 +149,7 @@ export default function IntroPage() {
             className="text-sm font-medium py-1 touch-active"
             style={{ color: '#757575' }}
           >
-            Not now
+            {t('intro.notNow')}
           </button>
         ) : (
           <div className="h-6" />

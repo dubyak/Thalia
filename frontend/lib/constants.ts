@@ -38,7 +38,7 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     businessType: 'Services / Beauty salon',
     locale: 'es-MX'
   },
-  // Demo tester for internal use
+  // Demo tester — Spanish (default for MX testers)
   {
     id: 'demo',
     code: 'DEMO',
@@ -50,6 +50,19 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     processingFeeRate: 0.04,
     businessType: 'Retail',
     locale: 'es-MX'
+  },
+  // Demo tester — English (for internal/English-language testing)
+  {
+    id: 'demo-en',
+    code: 'DEMOEN',
+    name: 'Isabel Torres',
+    firstName: 'Isabel',
+    approvedAmount: 8000,
+    maxAmount: 12000,
+    interestRateDaily: 0.0028,
+    processingFeeRate: 0.04,
+    businessType: 'Retail',
+    locale: 'en'
   }
 ]
 
@@ -72,7 +85,8 @@ export function calculateLoan(
   amount: number,
   installments: 1 | 2,
   interestRateDaily: number,
-  processingFeeRate: number
+  processingFeeRate: number,
+  locale: string = 'es-MX'
 ) {
   const days = installments * 30
   const interest = amount * interestRateDaily * days
@@ -82,14 +96,15 @@ export function calculateLoan(
   const totalRepayment = amount + interest + iva + processingFee + feeIva
   const monthlyPayment = totalRepayment / installments
 
+  const dateLocale = locale === 'es-MX' ? 'es-MX' : 'en-US'
   const today = new Date()
-  const disbursementDate = today.toLocaleDateString('en-US', {
+  const disbursementDate = today.toLocaleDateString(dateLocale, {
     month: 'long',
     day: 'numeric'
   })
   const firstPayment = new Date(today)
   firstPayment.setDate(firstPayment.getDate() + 30)
-  const firstPaymentDate = firstPayment.toLocaleDateString('en-US', {
+  const firstPaymentDate = firstPayment.toLocaleDateString(dateLocale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric'

@@ -49,6 +49,7 @@ class ChatRequest(BaseModel):
     image_data: str | None = None    # Base64 data URL for vision
     customer_id: str | None = None   # Supabase customer UUID
     customer_name: str | None = None # "First Last" for logging
+    locale: str = "en"               # "en" or "es-MX"
 
 
 class ChatResponse(BaseModel):
@@ -81,6 +82,7 @@ async def chat(req: ChatRequest):
         image_data=req.image_data,
         customer_id=req.customer_id,
         customer_name=req.customer_name,
+        locale=req.locale,
     )
 
     phase = result["phase"]

@@ -1,13 +1,18 @@
+'use client'
+
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { User } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function ProfilePage() {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-white border-b border-[#e5e5e5]">
         <StatusBar />
         <div className="px-5 py-4">
-          <h1 className="text-[#1f1c2f] text-lg font-semibold">My profile</h1>
+          <h1 className="text-[#1f1c2f] text-lg font-semibold">{t('profile.title')}</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
@@ -15,7 +20,7 @@ export default function ProfilePage() {
           <User size={28} className="text-[#676d65]" />
         </div>
         <p className="text-[#676d65] text-sm font-light">
-          Account information and settings — coming soon.
+          {t('profile.placeholder')}
         </p>
       </div>
     </div>

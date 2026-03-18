@@ -7,22 +7,7 @@ import { StatusBar } from '@/components/app-shell/StatusBar'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { cn } from '@/lib/utils'
-
-const LOAN_USE_OPTIONS = [
-  { id: 'business', label: 'For my business', emoji: '🏪' },
-  { id: 'personal', label: 'Personal expenses', emoji: '🏠' },
-  { id: 'education', label: 'Education', emoji: '📚' },
-  { id: 'health', label: 'Health', emoji: '💊' },
-  { id: 'other', label: 'Other', emoji: '✨' },
-]
-
-const LOAN_PURPOSE_OPTIONS = [
-  { id: 'restock', label: 'Restock inventory' },
-  { id: 'equipment', label: 'Buy equipment' },
-  { id: 'working-capital', label: 'Working capital' },
-  { id: 'expand', label: 'Expand the business' },
-  { id: 'other', label: 'Something else' },
-]
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 type Step = 'loan-use' | 'business-type' | 'loan-purpose'
 
@@ -34,6 +19,23 @@ export default function SurveyPage() {
   const { dispatch } = useFlow()
   const { tester } = useTester()
   const router = useRouter()
+  const { t } = useTranslation()
+
+  const LOAN_USE_OPTIONS = [
+    { id: 'business', label: t('survey.loanUse.business'), emoji: '🏪' },
+    { id: 'personal', label: t('survey.loanUse.personal'), emoji: '🏠' },
+    { id: 'education', label: t('survey.loanUse.education'), emoji: '📚' },
+    { id: 'health', label: t('survey.loanUse.health'), emoji: '💊' },
+    { id: 'other', label: t('survey.loanUse.other'), emoji: '✨' },
+  ]
+
+  const LOAN_PURPOSE_OPTIONS = [
+    { id: 'restock', label: t('survey.loanPurpose.restock') },
+    { id: 'equipment', label: t('survey.loanPurpose.equipment') },
+    { id: 'working-capital', label: t('survey.loanPurpose.workingCapital') },
+    { id: 'expand', label: t('survey.loanPurpose.expand') },
+    { id: 'other', label: t('survey.loanPurpose.other') },
+  ]
 
   const handleLoanUseSelect = (id: string) => {
     setSelected(id)
@@ -81,10 +83,10 @@ export default function SurveyPage() {
           </div>
           <div className="px-5 pb-6 pt-0">
             <p className="text-[#20bec6] text-sm font-light mb-1">
-              Great choice
+              {t('survey.greatChoice')}
             </p>
             <h1 className="text-white text-xl font-semibold leading-snug">
-              What type of business do you have?
+              {t('survey.businessTypeTitle')}
             </h1>
           </div>
         </div>
@@ -94,7 +96,7 @@ export default function SurveyPage() {
             type="text"
             value={businessType}
             onChange={(e) => setBusinessType(e.target.value)}
-            placeholder="e.g. Bakery, Market stall, Online shop"
+            placeholder={t('survey.businessTypePlaceholder')}
             className="w-full p-4 rounded-2xl border-2 border-[#e5e5e5] bg-white text-[#1b1b1b] text-base font-semibold placeholder:font-normal placeholder:text-[#999] focus:border-[#00A69C] focus:outline-none transition-colors"
             autoFocus
           />
@@ -107,7 +109,7 @@ export default function SurveyPage() {
               className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
               style={{ background: '#F06B22' }}
             >
-              Continue
+              {t('common.continue')}
             </button>
           </div>
         )}
@@ -131,10 +133,10 @@ export default function SurveyPage() {
           </div>
           <div className="px-5 pb-6 pt-0">
             <p className="text-[#20bec6] text-sm font-light mb-1">
-              Almost there 👍
+              {t('survey.almostThere')} 👍
             </p>
             <h1 className="text-white text-xl font-semibold leading-snug">
-              What do you plan to use the loan for?
+              {t('survey.loanPurposeTitle')}
             </h1>
           </div>
         </div>
@@ -173,7 +175,7 @@ export default function SurveyPage() {
               className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
               style={{ background: '#F06B22' }}
             >
-              Continue
+              {t('common.continue')}
             </button>
           </div>
         )}
@@ -188,10 +190,10 @@ export default function SurveyPage() {
         <StatusBar dark />
         <div className="px-5 pb-6 pt-2">
           <p className="text-[#20bec6] text-sm font-light mb-1">
-            Hi, {tester?.firstName ?? 'welcome'} 👋
+            {t('survey.greeting', { name: tester?.firstName ?? 'welcome' })} 👋
           </p>
           <h1 className="text-white text-xl font-semibold leading-snug">
-            What will you use this loan for?
+            {t('survey.loanUseTitle')}
           </h1>
         </div>
       </div>
@@ -227,7 +229,7 @@ export default function SurveyPage() {
             className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
             style={{ background: '#F06B22' }}
           >
-            Continue
+            {t('common.continue')}
           </button>
         </div>
       )}

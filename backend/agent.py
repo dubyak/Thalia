@@ -47,6 +47,8 @@ class Session:
     offer_stage: str = "initial"  # initial | negotiating | accepted
     # Interest rate for offer display
     interest_rate_daily: float = 0.01  # 1% per day default
+    # Locale for language switching
+    locale: str = "en"
 
 
 sessions: dict[str, Session] = {}
@@ -83,6 +85,7 @@ async def run_agent(
     image_data: str | None = None,
     customer_id: str | None = None,
     customer_name: str | None = None,
+    locale: str = "en",
 ) -> dict:
     # ── Set Arize trace attributes ─────────────────────────────────────
     current_span = trace.get_current_span()
@@ -103,6 +106,7 @@ async def run_agent(
             is_first_visit=is_first_visit,
             business_type=business_type,
             loan_purpose=loan_purpose,
+            locale=locale,
         )
 
     session = sessions[session_id]
@@ -152,6 +156,7 @@ async def run_agent(
         is_first_visit=session.is_first_visit,
         coaching_turns=session.coaching_turns,
         interest_rate_daily=session.interest_rate_daily,
+        locale=session.locale,
     )
 
     # ── Call OpenAI with structured output ─────────────────────────────
@@ -263,6 +268,7 @@ async def run_agent(
             is_first_visit=session.is_first_visit,
             coaching_turns=session.coaching_turns,
             interest_rate_daily=session.interest_rate_daily,
+            locale=session.locale,
         )
 
         # Second API call — generate the next phase's question

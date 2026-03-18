@@ -2,17 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, User, MoreHorizontal } from 'lucide-react'
+import { Home, BookOpen, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const tabs = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/learn', label: 'Learn', icon: BookOpen },
-  { href: '/profile', label: 'Profile', icon: User },
-]
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { t } = useTranslation()
+
+  const tabs = [
+    { href: '/home', label: t('nav.home'), icon: Home },
+    { href: '/learn', label: t('nav.learn'), icon: BookOpen },
+    { href: '/profile', label: t('nav.profile'), icon: User },
+  ]
 
   return (
     <nav

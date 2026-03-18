@@ -5,18 +5,18 @@ import { useRouter } from 'next/navigation'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
-import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
-import { ChatOverlay } from '@/components/chat/ChatOverlay'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { formatMXN } from '@/lib/constants'
 import { HelpCircle, User, ChevronRight, Flame, ArrowRight, RotateCcw } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function HomePage() {
   const { flow, dispatch: flowDispatch } = useFlow()
   const { tester } = useTester()
-  const { openOverlay, resetChat } = useChat()
+  const { resetChat } = useChat()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -62,7 +62,7 @@ export default function HomePage() {
       <div className="flex-1 overflow-y-auto pb-24">
         {/* Payment due card */}
         <div className="mx-5 mt-5 mb-4 bg-white rounded-2xl p-4" style={{ boxShadow: '0 2px 4px 0 rgba(0,0,0,0.25)' }}>
-          <p className="text-sm font-semibold mb-1" style={{ color: '#314329' }}>Payment due {firstPaymentDate}</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: '#314329' }}>{t('home.paymentDue', { date: firstPaymentDate })}</p>
           <p className="font-semibold leading-tight mb-4" style={{ color: '#314329', fontSize: 40, lineHeight: '48px' }}>
             {formatMXN(monthlyPayment)}
           </p>
@@ -70,10 +70,10 @@ export default function HomePage() {
             className="text-white font-bold text-sm touch-active active:opacity-80 mb-3 flex items-center justify-center"
             style={{ width: 280, height: 38, borderRadius: 100, background: '#F06F14' }}
           >
-            Make a payment
+            {t('home.makePayment')}
           </button>
           <button className="flex items-center gap-1 text-sm font-medium touch-active" style={{ color: '#00A69C' }}>
-            View credit details
+            {t('home.viewDetails')}
             <ArrowRight size={14} />
           </button>
         </div>
@@ -90,13 +90,13 @@ export default function HomePage() {
             </div>
             <div className="flex-1">
               <p className="text-white font-semibold text-sm leading-snug mb-0.5">
-                Your growth is in your hands
+                {t('home.headline')}
               </p>
               <p className="text-white/60 text-xs font-light leading-snug">
-                Start a payment streak to unlock higher limits
+                {t('home.subtitle')}
               </p>
               <button className="mt-2 flex items-center gap-1 text-[#20bec6] text-xs font-semibold touch-active">
-                Grow with Tala
+                {t('home.growCta')}
                 <ArrowRight size={12} />
               </button>
             </div>
@@ -115,10 +115,10 @@ export default function HomePage() {
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-3">
               <p className="text-white font-semibold text-xs mb-1 leading-snug">
-                Add to your repayment streak!
+                {t('home.streakTitle')}
               </p>
               <p className="text-white/70 text-[10px] font-light leading-relaxed">
-                You have paid {'{x}'} loans on time in a row. Keep the streak going!
+                {t('home.streakDesc', { x: '{x}' })}
               </p>
             </div>
           </div>
@@ -128,10 +128,10 @@ export default function HomePage() {
             <div className="absolute top-4 right-4 text-lg">💳</div>
             <div className="absolute bottom-0 left-0 right-0 p-3">
               <p className="text-[#083032] font-semibold text-xs mb-1 leading-snug">
-                Know the ways you can pay?
+                {t('home.waysTitle')}
               </p>
               <p className="text-[#676d65] text-[10px] font-light leading-relaxed">
-                From your bank's app or at the nearest OXXO. Tap to discover your ideal method.
+                {t('home.waysDesc')}
               </p>
             </div>
           </div>
@@ -143,14 +143,12 @@ export default function HomePage() {
             <div className="w-9 h-9 rounded-xl bg-[#fbe9dd] flex items-center justify-center flex-shrink-0">
               <HelpCircle size={18} className="text-[#f06f14]" />
             </div>
-            <p className="flex-1 text-left font-semibold text-sm text-[#1f1c2f]">Help center</p>
+            <p className="flex-1 text-left font-semibold text-sm text-[#1f1c2f]">{t('home.helpCenter')}</p>
             <ChevronRight size={18} className="text-[#c9c8c6]" />
           </button>
         </div>
       </div>
 
-      <FloatingChatButton />
-      <ChatOverlay />
     </div>
   )
 }

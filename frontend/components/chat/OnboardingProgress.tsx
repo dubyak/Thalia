@@ -1,4 +1,7 @@
+'use client'
+
 import type { OnboardingPhase } from '@/lib/types'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 // Map phases to visible progress steps
 const PHASE_TO_STEP: Record<string, number> = {
@@ -17,14 +20,14 @@ const PHASE_TO_STEP: Record<string, number> = {
   'complete': 7,
 }
 
-const STEP_LABELS: Record<number, string> = {
-  1: 'Welcome',
-  2: 'About your business',
-  3: 'Business health',
-  4: 'Evidence',
-  5: 'Coaching preview',
-  6: 'Your offer',
-  7: 'Done',
+const STEP_LABEL_KEYS: Record<number, string> = {
+  1: 'progress.welcome',
+  2: 'progress.aboutBusiness',
+  3: 'progress.businessHealth',
+  4: 'progress.evidence',
+  5: 'progress.coachingPreview',
+  6: 'progress.yourOffer',
+  7: 'progress.done',
 }
 
 const TOTAL_STEPS = 7
@@ -34,17 +37,23 @@ interface OnboardingProgressProps {
 }
 
 export function OnboardingProgress({ phase }: OnboardingProgressProps) {
+  const { t } = useTranslation()
   const step = PHASE_TO_STEP[String(phase)] ?? 1
   const progress = (step / TOTAL_STEPS) * 100
+  const remaining = TOTAL_STEPS - step
 
   return (
     <div className="px-4 py-3 bg-white border-b border-[#e5e5e5]">
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-xs font-semibold text-[#1a989e]">
-          {phase === 'complete' ? 'Completed' : `${TOTAL_STEPS - step} ${TOTAL_STEPS - step === 1 ? 'step' : 'steps'} left`}
+          {phase === 'complete'
+            ? t('common.completed')
+            : remaining === 1
+              ? t('progress.stepLeft', { count: remaining })
+              : t('progress.stepsLeft', { count: remaining })}
         </span>
         <span className="text-xs text-[#939490] font-light">
-          {STEP_LABELS[step] ?? ''}
+          {t(STEP_LABEL_KEYS[step] ?? '')}
         </span>
       </div>
       <div className="w-full h-1.5 bg-[#e5e5e5] rounded-full overflow-hidden">

@@ -6,19 +6,21 @@ import { CheckCircle2, ChevronRight } from 'lucide-react'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { formatMXN } from '@/lib/constants'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function CashoutSuccessPage() {
   const [animating, setAnimating] = useState(true)
   const { flow, dispatch } = useFlow()
   const { tester } = useTester()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const loan = flow.loanConfig
   const amount = loan?.amount ?? tester?.approvedAmount ?? 8000
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimating(false), 800)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setAnimating(false), 800)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleGoHome = () => {
@@ -44,30 +46,30 @@ export default function CashoutSuccessPage() {
         </div>
 
         <h1 className="text-white text-2xl font-bold text-center mb-2">
-          Your loan is on its way!
+          {t('cashout.loanOnWay')}
         </h1>
         <p className="text-[#20bec6] text-4xl font-bold mb-2">{formatMXN(amount)}</p>
         <p className="text-[#939490] text-sm font-light text-center leading-relaxed max-w-[260px]">
-          You will receive your money in your bank account shortly. We will notify you when it is available.
+          {t('cashout.receiveNotice')}
         </p>
       </div>
 
       {/* Summary card */}
       <div className="mx-4 bg-white/10 rounded-2xl p-5 mb-6 space-y-3">
         <p className="text-[#20bec6] text-xs font-semibold uppercase tracking-wider">
-          Loan details
+          {t('cashout.loanDetails')}
         </p>
-        <SummaryRow label="Amount" value={formatMXN(amount)} />
+        <SummaryRow label={t('cashout.amountLabel')} value={formatMXN(amount)} />
         <SummaryRow
-          label="Payments"
-          value={`${loan?.installments ?? 1} ${(loan?.installments ?? 1) === 1 ? 'payment' : 'payments'}`}
+          label={t('cashout.paymentsLabel')}
+          value={(loan?.installments ?? 1) === 1 ? t('cashout.payment', { n: 1 }) : t('cashout.payments', { n: loan?.installments ?? 2 })}
         />
         <SummaryRow
-          label="First payment"
+          label={t('cashout.firstPayment')}
           value={loan?.firstPaymentDate ?? '30 days'}
         />
         <SummaryRow
-          label="Monthly payment"
+          label={t('cashout.monthlyPayment')}
           value={formatMXN(loan?.monthlyPayment ?? amount * 1.12)}
         />
       </div>
@@ -78,7 +80,7 @@ export default function CashoutSuccessPage() {
           <span className="text-white text-xs font-bold">T</span>
         </div>
         <p className="text-sm text-[#d2f2f4] font-light leading-relaxed">
-          Congratulations! Remember I can help you with business coaching any time. 🎉
+          {t('cashout.congratsMsg')} 🎉
         </p>
       </div>
 
@@ -87,7 +89,7 @@ export default function CashoutSuccessPage() {
           onClick={handleGoHome}
           className="w-full h-14 rounded-xl bg-[#f06f14] text-white font-semibold text-base shadow-md touch-active active:opacity-80 flex items-center justify-center gap-2"
         >
-          Go to home
+          {t('cashout.goHome')}
           <ChevronRight size={18} />
         </button>
       </div>

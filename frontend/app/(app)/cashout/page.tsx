@@ -8,11 +8,13 @@ import { BackHeader } from '@/components/app-shell/BackHeader'
 import { useFlow } from '@/contexts/FlowContext'
 import { MX_BANKS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function CashoutPage() {
   const [selected, setSelected] = useState<string | null>(null)
   const { dispatch } = useFlow()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSelect = (bankId: string) => {
     setSelected(bankId)
@@ -28,20 +30,20 @@ export default function CashoutPage() {
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-white flex-shrink-0 border-b border-[#e5e5e5]">
         <StatusBar />
-        <BackHeader title="Select your bank" />
+        <BackHeader title={t('cashout.selectBank')} />
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 pt-5 pb-3">
           <p className="text-[#676d65] text-sm font-light">
-            You will receive your loan in the bank account you select.
+            {t('cashout.selectBankDesc')}
           </p>
         </div>
 
         {/* Popular banks label */}
         <div className="px-4 pb-2">
           <p className="text-xs font-semibold text-[#939490] uppercase tracking-wider">
-            Popular banks
+            {t('cashout.popularBanks')}
           </p>
         </div>
 
@@ -84,7 +86,7 @@ export default function CashoutPage() {
         {/* Disclaimer */}
         <div className="mx-4 mb-6 bg-white rounded-xl px-4 py-3 border border-[#e5e5e5]">
           <p className="text-xs text-[#939490] font-light leading-relaxed">
-            Tala may disburse loans directly or through its subsidiaries, affiliates, agents, or representatives. Bank transfers made outside business hours (Mon–Fri, 9am–5pm) are processed the next business day.
+            {t('cashout.disclaimer')}
           </p>
         </div>
 
@@ -99,7 +101,7 @@ export default function CashoutPage() {
                 : 'bg-[#e5e5e5] text-[#c2c6c0]'
             )}
           >
-            Continue
+            {t('common.continue')}
             {selected && <ChevronRight size={18} />}
           </button>
         </div>

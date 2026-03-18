@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatMXN } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface OfferCardProps {
   amount: number
@@ -12,6 +13,7 @@ interface OfferCardProps {
 export function OfferCard({ amount, onAccept }: OfferCardProps) {
   const [selected, setSelected] = useState<1 | 2 | null>(null)
   const [accepted, setAccepted] = useState(false)
+  const { t } = useTranslation()
 
   const handleSelect = (installments: 1 | 2) => {
     if (accepted) return
@@ -31,13 +33,13 @@ export function OfferCard({ amount, onAccept }: OfferCardProps) {
     >
       {/* Amount */}
       <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#20bec6' }}>
-        Your offer
+        {t('chat.offerLabel')}
       </p>
       <p className="text-3xl font-bold text-white mb-1">
         {formatMXN(amount)}
       </p>
       <p className="text-xs font-light mb-4" style={{ color: '#939490' }}>
-        Choose your payment plan
+        {t('chat.choosePlan')}
       </p>
 
       {/* Installment buttons */}
@@ -55,7 +57,7 @@ export function OfferCard({ amount, onAccept }: OfferCardProps) {
               accepted && 'opacity-50 cursor-not-allowed'
             )}
           >
-            {n === 1 ? '1 payment · 30 days' : '2 payments · 60 days'}
+            {n === 1 ? t('chat.onePayment') : t('chat.twoPayments')}
           </button>
         ))}
       </div>
@@ -73,7 +75,7 @@ export function OfferCard({ amount, onAccept }: OfferCardProps) {
           )}
           style={!accepted ? { background: '#f06f14' } : undefined}
         >
-          {accepted ? 'Reviewing terms...' : 'Accept offer →'}
+          {accepted ? t('chat.reviewingTerms') : `${t('chat.acceptOffer')} →`}
         </button>
       )}
     </div>

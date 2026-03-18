@@ -9,11 +9,13 @@ import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { MX_BANKS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function CashoutConfirmPage() {
   const { flow, dispatch } = useFlow()
   const { tester } = useTester()
   const router = useRouter()
+  const { t } = useTranslation()
 
   const [clabe, setClabe] = useState('')
   const [saveAccount, setSaveAccount] = useState(false)
@@ -25,7 +27,7 @@ export default function CashoutConfirmPage() {
 
   const handleConfirm = async () => {
     if (clabe.length < 16) {
-      setError('Please enter a valid card number or CLABE (minimum 16 digits).')
+      setError(t('cashout.clabeError'))
       return
     }
     setError('')
@@ -39,7 +41,7 @@ export default function CashoutConfirmPage() {
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-white flex-shrink-0 border-b border-[#e5e5e5]">
         <StatusBar />
-        <BackHeader title="Confirm your information" />
+        <BackHeader title={t('cashout.confirmTitle')} />
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -54,7 +56,7 @@ export default function CashoutConfirmPage() {
                 <div className="w-4 h-4 rounded-full" style={{ backgroundColor: selectedBank.color }} />
               </div>
               <div>
-                <p className="text-xs text-[#939490] font-light">Selected bank</p>
+                <p className="text-xs text-[#939490] font-light">{t('cashout.selectedBank')}</p>
                 <p className="font-semibold text-[#1f1c2f]">{selectedBank.name}</p>
               </div>
             </div>
@@ -63,20 +65,20 @@ export default function CashoutConfirmPage() {
           {/* Pre-filled name */}
           <div>
             <label className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              Account holder name
+              {t('cashout.accountHolder')}
             </label>
             <div className="h-14 bg-[#f8fafc] border border-[#e5e5e5] rounded-xl px-4 flex items-center">
               <span className="text-[#1f1c2f] font-medium">{name}</span>
             </div>
             <p className="text-xs text-[#939490] mt-1.5 font-light">
-              Make sure the bank account is in your name.
+              {t('cashout.accountHolderHint')}
             </p>
           </div>
 
           {/* Phone */}
           <div>
             <label className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              Registered phone
+              {t('cashout.phone')}
             </label>
             <div className="h-14 bg-[#f8fafc] border border-[#e5e5e5] rounded-xl px-4 flex items-center">
               <span className="text-[#1f1c2f] font-medium">+52 55 1234 5678</span>
@@ -86,7 +88,7 @@ export default function CashoutConfirmPage() {
           {/* CLABE / card number */}
           <div>
             <label className="block text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-2">
-              Card number or CLABE
+              {t('cashout.clabeLabel')}
             </label>
             <input
               type="tel"
@@ -119,7 +121,7 @@ export default function CashoutConfirmPage() {
               : <Square size={20} className="text-[#c2c6c0] flex-shrink-0" />
             }
             <span className="text-sm text-[#676d65] font-light text-left">
-              Save this account for my next loan
+              {t('cashout.saveAccount')}
             </span>
           </button>
 
@@ -127,7 +129,7 @@ export default function CashoutConfirmPage() {
           <div className="bg-[#fbe9dd] rounded-xl px-4 py-3 flex items-start gap-2">
             <AlertCircle size={14} className="text-[#f06f14] flex-shrink-0 mt-0.5" />
             <p className="text-xs text-[#9e6a53] font-light leading-relaxed">
-              Transfers made outside business hours (Mon–Fri, 9am–5pm) are processed the next business day.
+              {t('cashout.processingNotice')}
             </p>
           </div>
         </div>
@@ -143,13 +145,13 @@ export default function CashoutConfirmPage() {
                 : 'bg-[#e5e5e5] text-[#c2c6c0]'
             )}
           >
-            {loading ? 'Verifying...' : 'Receive my loan'}
+            {loading ? t('login.verifying') : t('cashout.receiveLoan')}
           </button>
           <button
             onClick={() => router.back()}
             className="w-full h-12 rounded-xl text-[#939490] font-medium text-sm touch-active"
           >
-            Review my loan
+            {t('cashout.reviewLoan')}
           </button>
         </div>
       </div>

@@ -1,0 +1,179 @@
+{
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "skip": "Skip",
+    "cancel": "Cancel",
+    "done": "Done",
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "completed": "Completed"
+  },
+  "login": {
+    "welcome": "Welcome",
+    "subtitle": "Enter your test code to get started.",
+    "accessCode": "Access code",
+    "placeholder": "e.g. TESTER01",
+    "invalidCode": "Invalid code. Please try again.",
+    "verifying": "Verifying...",
+    "hint": "Try DEMO to see the complete flow",
+    "brand": "Tala",
+    "tagline": "MSME Prototype · Mexico"
+  },
+  "survey": {
+    "greeting": "Hi, {name}",
+    "loanUseTitle": "What will you use this loan for?",
+    "loanUse": {
+      "business": "For my business",
+      "personal": "Personal expenses",
+      "education": "Education",
+      "health": "Health",
+      "other": "Other"
+    },
+    "greatChoice": "Great choice",
+    "businessTypeTitle": "What type of business do you have?",
+    "businessTypePlaceholder": "e.g. Bakery, Market stall, Online shop",
+    "almostThere": "Almost there",
+    "loanPurposeTitle": "What do you plan to use the loan for?",
+    "loanPurpose": {
+      "restock": "Restock inventory",
+      "equipment": "Buy equipment",
+      "workingCapital": "Working capital",
+      "expand": "Expand the business",
+      "other": "Something else"
+    }
+  },
+  "intro": {
+    "slide1Title": "Hi! I'm Thalia, your business assistant",
+    "slide1Desc": "I'm here to help you get your loan and grow your business.",
+    "slide2Title": "Grow your business with me",
+    "slide2Desc": "Get tips to improve your sales and help your business move forward.",
+    "slide3Title": "I'll be your partner every step of the way",
+    "slide3Desc": "I can help you manage your loan and adjust your payments if you ever need help.",
+    "slide4Title": "Shall we chat so you can get your loan?",
+    "slide4Desc": "Chatting with me is 100% secure. Your safety and trust are my top priority.",
+    "privacyTitle": "About your privacy",
+    "privacyDesc": "Tala prioritizes the privacy of your data. The information you share is confidential.",
+    "privacyLink": "View Privacy Policy",
+    "letsGo": "Let's go",
+    "next": "Next",
+    "notNow": "Not now"
+  },
+  "onboarding": {
+    "agentName": "Thalia",
+    "agentStatus": "Business assistant"
+  },
+  "progress": {
+    "welcome": "Welcome",
+    "aboutBusiness": "About your business",
+    "businessHealth": "Business health",
+    "evidence": "Evidence",
+    "coachingPreview": "Coaching preview",
+    "yourOffer": "Your offer",
+    "done": "Done",
+    "stepsLeft": "{count} steps left",
+    "stepLeft": "{count} step left"
+  },
+  "offer": {
+    "title": "Your offer",
+    "congrats": "Congratulations, {name}!",
+    "approvedFor": "You're approved for up to {amount}",
+    "dailyRate": "Daily interest rate: {rate}%",
+    "numPayments": "Number of payments",
+    "onePayment": "1 payment · 30 days",
+    "twoPayments": "2 payments · 60 days",
+    "amount": "Amount",
+    "paymentSummary": "Payment summary",
+    "loanAmount": "Loan amount",
+    "processingFee": "Processing fee",
+    "interest": "Interest",
+    "vat": "VAT",
+    "totalRepay": "Total to repay",
+    "monthlyPayment": "Monthly payment",
+    "firstPayment": "First payment: {date}",
+    "acceptOffer": "Accept this offer",
+    "disclaimer": "By accepting, you will be taken to the terms and conditions.",
+    "thaliaMsg": "Based on your business, this loan can help you buy inventory and stay on top of your suppliers.",
+    "payment": "{n} payment",
+    "payments": "{n} payments",
+    "days": "{n} days"
+  },
+  "terms": {
+    "title": "Terms and conditions",
+    "yourLoan": "Your loan",
+    "term1": "I accept the Simple Credit Agreement, including the loan amount, term, daily interest rate, applicable fees, and the established payment schedule.",
+    "term2": "I accept the Privacy Policy and authorize Tala to send me notifications related to my account, payments, and available products through registered channels.",
+    "term3": "I expressly authorize TALA to discount, endorse, assign, or transfer the collection rights arising from this agreement, in accordance with applicable law.",
+    "creditBureau": "By accepting, I authorize Tala México S.A. de C.V. SOFOM E.N.R. to consult and report my credit history to the Credit Information Society (Buró de Crédito), in accordance with the Law to Regulate Credit Information Societies.",
+    "acceptAndContinue": "Accept and continue",
+    "processing": "Processing...",
+    "acceptAll": "Accept all terms to continue",
+    "payment": "{n} payment",
+    "payments": "{n} payments",
+    "firstPaymentLabel": "First payment: {date}"
+  },
+  "cashout": {
+    "selectBank": "Select your bank",
+    "selectBankDesc": "You will receive your loan in the bank account you select.",
+    "popularBanks": "Popular banks",
+    "otherBank": "Other bank",
+    "disclaimer": "Tala may disburse loans directly or through its subsidiaries, affiliates, agents, or representatives. Bank transfers made outside business hours (Mon-Fri, 9am-5pm) are processed the next business day.",
+    "confirmTitle": "Confirm your information",
+    "selectedBank": "Selected bank",
+    "accountHolder": "Account holder name",
+    "accountHolderHint": "Make sure the bank account is in your name.",
+    "phone": "Registered phone",
+    "clabeLabel": "Card number or CLABE",
+    "clabeError": "Please enter a valid card number or CLABE (minimum 16 digits).",
+    "saveAccount": "Save this account for my next loan",
+    "processingNotice": "Transfers made outside business hours (Mon-Fri, 9am-5pm) are processed the next business day.",
+    "receiveLoan": "Receive my loan",
+    "reviewLoan": "Review my loan",
+    "loanOnWay": "Your loan is on its way!",
+    "receiveNotice": "You will receive your money in your bank account shortly. We will notify you when it is available.",
+    "loanDetails": "Loan details",
+    "amountLabel": "Amount",
+    "paymentsLabel": "Payments",
+    "firstPayment": "First payment",
+    "monthlyPayment": "Monthly payment",
+    "congratsMsg": "Congratulations! Remember I can help you with business coaching any time.",
+    "goHome": "Go to home",
+    "payment": "{n} payment",
+    "payments": "{n} payments"
+  },
+  "home": {
+    "brand": "TALA",
+    "paymentDue": "Payment due {date}",
+    "makePayment": "Make a payment",
+    "viewDetails": "View credit details",
+    "headline": "Your growth is in your hands",
+    "subtitle": "Start a payment streak to unlock higher limits",
+    "growCta": "Grow with Tala",
+    "streakTitle": "Add to your repayment streak!",
+    "streakDesc": "You have paid {x} loans on time in a row. Keep the streak going!",
+    "waysTitle": "Know the ways you can pay?",
+    "waysDesc": "From your bank's app or at the nearest OXXO. Tap to discover your ideal method.",
+    "helpCenter": "Help center"
+  },
+  "nav": {
+    "home": "Home",
+    "learn": "Learn",
+    "profile": "Profile"
+  },
+  "learn": {
+    "title": "Learn",
+    "placeholder": "Financial education and business coaching resources — coming soon."
+  },
+  "profile": {
+    "title": "My profile",
+    "placeholder": "Account information and settings — coming soon."
+  },
+  "chat": {
+    "offerLabel": "Your offer",
+    "choosePlan": "Choose your payment plan",
+    "onePayment": "1 payment · 30 days",
+    "twoPayments": "2 payments · 60 days",
+    "acceptOffer": "Accept offer",
+    "reviewingTerms": "Reviewing terms..."
+  }
+}

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { ChatMessage, OnboardingPhase, BusinessProfile, AgentResponse } from '@/lib/types'
 import { apiChatService } from '@/services/chat-service-api'
+import { useTester } from '@/contexts/TesterContext'
 
 interface ChatState {
   messages: ChatMessage[]
@@ -159,6 +160,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const stateRef = useRef(state)
   stateRef.current = state
 
+  // Read locale from tester profile
+  const { tester } = useTester()
+  const localeRef = useRef(tester?.locale ?? 'en')
+  localeRef.current = tester?.locale ?? 'en'
+
   const processResponse = useCallback(
     async (response: AgentResponse) => {
       const s = stateRef.current
@@ -187,7 +193,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'START_ONBOARDING', name: firstName, approvedAmount, maxAmount, businessType, loanPurpose })
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
-      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose)
+      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose, localeRef.current)
       const elapsed = Date.now() - t0
       if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
@@ -204,7 +210,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'servicing')
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'servicing', true, localeRef.current)
       const elapsed = Date.now() - t0
       if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
@@ -221,7 +227,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
-      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'coaching', isFirstVisit)
+      const response = await apiChatService.getServicingOpening(firstName, profile, approvedAmount, maxAmount, 'coaching', isFirstVisit, localeRef.current)
       const elapsed = Date.now() - t0
       if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
@@ -262,6 +268,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         undefined,
         s.businessType ?? undefined,
         s.loanPurpose ?? undefined,
+        localeRef.current,
       )
 
       // Ensure minimum 800ms typing so it doesn't flash
@@ -304,6 +311,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         dataUrl,
         s.businessType ?? undefined,
         s.loanPurpose ?? undefined,
+        localeRef.current,
       )
 
       const elapsed = Date.now() - t0

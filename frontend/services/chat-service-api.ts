@@ -53,7 +53,8 @@ export const apiChatService = {
     approvedAmount = 8000,
     maxAmount = 12000,
     mode: 'servicing' | 'coaching' = 'servicing',
-    isFirstVisit = true
+    isFirstVisit = true,
+    locale = 'en'
   ): Promise<AgentResponse> {
     this.resetSession()
 
@@ -69,6 +70,7 @@ export const apiChatService = {
           mode,
           collected: profile,
           is_first_visit: isFirstVisit,
+          locale,
         }),
       })
       if (!res.ok) throw new Error(`Backend ${res.status}`)
@@ -88,6 +90,7 @@ export const apiChatService = {
     maxAmount = 12000,
     businessType?: string,
     loanPurpose?: string,
+    locale = 'en',
   ): Promise<AgentResponse> {
     this.resetSession()
 
@@ -103,6 +106,7 @@ export const apiChatService = {
           mode: 'onboarding',
           business_type: businessType,
           loan_purpose: loanPurpose,
+          locale,
         }),
       })
       if (!res.ok) throw new Error(`Backend ${res.status}`)
@@ -127,6 +131,7 @@ export const apiChatService = {
     imageData?: string,
     businessType?: string,
     loanPurpose?: string,
+    locale = 'en',
   ): Promise<AgentResponse> {
     try {
       const res = await fetch('/api/chat', {
@@ -139,6 +144,7 @@ export const apiChatService = {
           approved_amount: approvedAmount,
           max_amount: maxAmount,
           mode,
+          locale,
           ...(collected && Object.keys(collected).length > 0 ? { collected } : {}),
           ...(imageData ? { image_data: imageData } : {}),
           ...(businessType ? { business_type: businessType } : {}),

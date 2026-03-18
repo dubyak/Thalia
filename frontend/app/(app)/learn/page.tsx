@@ -1,13 +1,18 @@
+'use client'
+
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { BookOpen } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function LearnPage() {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col min-h-dvh bg-[#f5f6f0]">
       <div className="bg-white border-b border-[#e5e5e5]">
         <StatusBar />
         <div className="px-5 py-4">
-          <h1 className="text-[#1f1c2f] text-lg font-semibold">Learn</h1>
+          <h1 className="text-[#1f1c2f] text-lg font-semibold">{t('learn.title')}</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
@@ -15,7 +20,7 @@ export default function LearnPage() {
           <BookOpen size={28} className="text-[#1a989e]" />
         </div>
         <p className="text-[#676d65] text-sm font-light">
-          Financial education and business coaching resources — coming soon.
+          {t('learn.placeholder')}
         </p>
       </div>
     </div>
