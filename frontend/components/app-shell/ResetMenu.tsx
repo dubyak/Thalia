@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useFlow } from '@/contexts/FlowContext'
 import { useChat } from '@/contexts/ChatContext'
 import { useCustomer } from '@/contexts/CustomerContext'
-import { RotateCcw, X } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 
 interface ResetMenuProps {
   variant?: 'icon' | 'compact'  // icon = button, compact = in-header
@@ -40,6 +40,7 @@ export function ResetMenu({ variant = 'icon' }: ResetMenuProps) {
       <div className="relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
+          aria-label="Reset options"
           className="w-8 h-8 rounded-full border border-[#fbe9dd] bg-[#fff8f4] flex items-center justify-center touch-active"
           title="Reset options"
         >
