@@ -1,3 +1,4 @@
+?
 from datetime import datetime
 
 
@@ -10,11 +11,105 @@ def _collected_context(collected: dict) -> str:
     return "\n\nALREADY COLLECTED (do NOT ask about these again):\n" + "\n".join(lines)
 
 
-MARKET_CONTEXT = "Market: Mexico — customers are small business owners (MSMEs). Use MXN for currency. Reference local context where relevant: Semana Santa (not just 'Easter'), Day of the Dead, Christmas season; OXXO and SPEI for payments; WhatsApp for sales and customer communication; tianguis and local markets; and common Mexican MSME challenges like ingredient inflation and fuel costs.\n"
+# ── Locale-aware terminology and copy ─────────────────────────────────────
+
+LOCALE_CONFIG = {
+    "en": {
+        "language_instruction": "Always respond in English, even if the customer writes in Spanish.",
+        "language_critical": "CRITICAL: Respond in English only. Use the messages array format (40 words max per bubble, single bubble when possible).",
+        "product_name": "personal credit",
+        "product_never_say": 'Never say "business loan" or "business credit." The product is a personal credit.\n   Use "credit" or "loan" without the "business" qualifier.',
+        "escalation": "I can connect you with our support team at soporte@tala.com.mx or via WhatsApp in the app.",
+        "market_context": "Market: Mexico — customers are small business owners (MSMEs). Use MXN for currency. Reference local context where relevant: Semana Santa (not just 'Easter'), Day of the Dead, Christmas season; OXXO and SPEI for payments; WhatsApp for sales and customer communication; tianguis and local markets; and common Mexican MSME challenges like ingredient inflation and fuel costs.\n",
+        # Phase 0 exact copy
+        "p0_part1": "Part 1 — About 5 minutes of questions to find the best credit offer.",
+        "p0_part2": "Part 2 — You'll work on a real business challenge together so they can\n  see how you help day-to-day as their AI business partner.",
+        "p0_cta": "It only takes a few minutes — tap the button below when you're ready!",
+        # Phase 8
+        "p8_intro": "One last optional thing before your offer: sharing a quick piece of evidence can help me personalize it even more.",
+        "p8_skip_cta": "No negative impact if you skip — would you like to share something, or skip ahead?",
+        # Phase 10 offer
+        "p10_product_reminder": "This is a personal credit (never say 'business loan').",
+        "p10_ready_cta": "When you're ready, I'll open the loan configurator so you can pick your exact amount and payment plan.",
+        # Phase 11 closing
+        "p11_available": "After your disbursement is set up, you can keep talking to me anytime about your business or loan details. Just look for my icon on the home screen and tap to start a conversation.",
+        # Servicing
+        "svc_oxxo": "To pay at OXXO: open the Tala app → Payments → Show OXXO barcode → pay at any OXXO store",
+        "svc_spei": "To pay via SPEI: open the app → Payments → Bank transfer → use the CLABE shown",
+        "svc_empathize": "Thank you for telling me. I understand unexpected things happen, and the most important thing is that you're addressing it.",
+        "svc_explain": "When a payment is late, the system generates late interest as stated in the terms. My goal is to help you avoid that.",
+        "svc_solution": "The best way to stop those charges is to cover the payment as soon as possible. Want me to walk you through the payment options? Getting back on track is key for your future opportunities with us.",
+        "svc_confirm": "Did that answer your question?",
+        "svc_system_fail": "I can't see your details right now due to a system issue. Please try again in a few minutes, or reach our support team at soporte@tala.com.mx.",
+        # Coaching
+        "coach_cash_flow": "Let's map where your money goes each week so you can spot patterns and opportunities.",
+        "coach_sales": "Let's brainstorm low-cost strategies to attract more customers to your {business_type}.",
+        "coach_costs": "Let's look at your biggest expenses and find savings opportunities.",
+        "coach_goals": "Let's set a concrete goal for this month and build a plan to hit it.",
+        "coach_growth": "Let's create a week-by-week action plan to grow your business.",
+        "coach_decision": "Got a big decision? Let's work through the pros, cons, and what-ifs together.",
+        "coach_summary_example": "Great conversation! Just identifying your main costs is already a big step.",
+        "coach_task_example": "This week, try writing down your daily sales in a notebook — no pressure, just to observe. What do you think?",
+        "coach_invite_back": "Want to explore another topic from the menu? Or you can come back anytime — I'm here 24/7.",
+    },
+    "es-MX": {
+        "language_instruction": "Responde siempre en español mexicano natural y cálido. Usa 'tú' (no 'usted'). Si el cliente escribe en inglés, responde en español.",
+        "language_critical": "CRITICAL: Responde en español mexicano natural. Usa el formato de array de messages (máximo 40 palabras por burbuja, una sola burbuja cuando sea posible).",
+        "product_name": "crédito personal",
+        "product_never_say": 'Nunca digas "préstamo de negocio" ni "crédito empresarial." El producto es un crédito personal.\n   Usa "crédito" o "préstamo" sin el calificativo "de negocio" o "empresarial".',
+        "escalation": "Te puedo conectar con nuestro equipo de soporte en soporte@tala.com.mx o por WhatsApp en la app.",
+        "market_context": "Mercado: México — los clientes son dueños de pequeños negocios (MiPyMEs). Usa MXN para montos. Referencia el contexto local: Semana Santa, Día de Muertos, temporada navideña; OXXO y SPEI para pagos; WhatsApp para ventas y comunicación; tianguis y mercados locales; y retos comunes como la inflación en insumos y costos de combustible.\n",
+        # Phase 0 exact copy
+        "p0_part1": "Parte 1 — Unas 5 preguntas rápidas para encontrar la mejor oferta de crédito para ti.",
+        "p0_part2": "Parte 2 — Vamos a trabajar juntos en un reto real de tu negocio para que\n  veas cómo te puedo ayudar día a día como tu asistente de negocios.",
+        "p0_cta": "Solo toma unos minutos — ¡toca el botón de abajo cuando estés listo/a!",
+        # Phase 8
+        "p8_intro": "Una última cosa opcional antes de tu oferta: compartir una evidencia rápida me ayuda a personalizarla aún más.",
+        "p8_skip_cta": "No pasa nada si lo saltas — ¿te gustaría compartir algo, o seguimos adelante?",
+        # Phase 10 offer
+        "p10_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
+        "p10_ready_cta": "Cuando estés listo/a, te abro el configurador para que elijas tu monto exacto y plan de pago.",
+        # Phase 11 closing
+        "p11_available": "Una vez que esté lista tu dispersión, puedes seguir platicando conmigo cuando quieras sobre tu negocio o los detalles de tu crédito. Solo busca mi ícono en la pantalla principal y toca para iniciar una conversación.",
+        # Servicing
+        "svc_oxxo": "Para pagar en OXXO: abre la app de Tala → Pagos → Muestra el código de barras → paga en cualquier OXXO",
+        "svc_spei": "Para pagar por SPEI: abre la app → Pagos → Transferencia bancaria → usa la CLABE que aparece",
+        "svc_empathize": "Gracias por contarme. Entiendo que pasan cosas inesperadas, y lo más importante es que lo estás atendiendo.",
+        "svc_explain": "Cuando un pago se atrasa, el sistema genera intereses moratorios como se indica en los términos. Mi objetivo es ayudarte a evitarlos.",
+        "svc_solution": "La mejor forma de detener esos cargos es cubrir el pago lo antes posible. ¿Quieres que te explique las opciones de pago? Ponerte al corriente es clave para tus futuras oportunidades con nosotros.",
+        "svc_confirm": "¿Eso resolvió tu duda?",
+        "svc_system_fail": "No puedo ver tus datos en este momento por un problema del sistema. Intenta de nuevo en unos minutos, o contacta a nuestro equipo de soporte en soporte@tala.com.mx.",
+        # Coaching
+        "coach_cash_flow": "Vamos a mapear a dónde se va tu dinero cada semana para que encuentres patrones y oportunidades.",
+        "coach_sales": "Vamos a pensar en estrategias de bajo costo para atraer más clientes a tu {business_type}.",
+        "coach_costs": "Vamos a revisar tus gastos más grandes y buscar dónde puedes ahorrar.",
+        "coach_goals": "Vamos a fijar una meta concreta para este mes y armar un plan para lograrla.",
+        "coach_growth": "Vamos a crear un plan de acción semana a semana para hacer crecer tu negocio.",
+        "coach_decision": "¿Tienes una decisión importante? Vamos a analizar los pros, contras y posibles escenarios juntos.",
+        "coach_summary_example": "¡Gran conversación! Solo identificar tus costos principales ya es un gran paso.",
+        "coach_task_example": "Esta semana, intenta anotar tus ventas diarias en una libreta — sin presión, solo para observar. ¿Qué te parece?",
+        "coach_invite_back": "¿Quieres explorar otro tema del menú? O puedes regresar cuando quieras — estoy aquí 24/7.",
+    },
+}
+
+
+def _t(locale: str, key: str, **kwargs: str) -> str:
+    """Get a translated string for the given locale, with optional format kwargs."""
+    config = LOCALE_CONFIG.get(locale, LOCALE_CONFIG["en"])
+    value = config.get(key, LOCALE_CONFIG["en"].get(key, f"[missing:{key}]"))
+    if kwargs:
+        value = value.format(**kwargs)
+    return value
+
 
 # ── Conversation design principles (included in every onboarding prompt) ──
 
-CONVERSATION_RULES = """
+def _conversation_rules(locale: str) -> str:
+    # These rules are instructions TO the LLM about conversation design.
+    # They stay in English because the LLM understands English instructions
+    # regardless of what language it outputs. The language_instruction rule
+    # controls the actual output language.
+    return f"""
 CONVERSATION DESIGN — follow these in every response:
 
 1. ACKNOWLEDGE BEFORE ADVANCING: After the customer answers, briefly respond to what
@@ -60,21 +155,47 @@ ERROR HANDLING:
 - Off-topic question: Politely redirect.
 
 ESCALATION PROTOCOL: If the customer explicitly asks for a human agent, or after 2-3
-exchanges they remain frustrated, offer: "I can connect you with our support team at
-soporte@tala.com.mx or via WhatsApp in the app."
+exchanges they remain frustrated, offer: "{_t(locale, 'escalation')}"
 """
 
-ABSOLUTE_RULES = """
+
+def _formatting_rules(mode: str) -> str:
+    """Formatting guidance for rich-text chat bubbles."""
+    base = (
+        "MESSAGE FORMATTING — use these tools to make messages scannable on mobile:\n"
+        "- **Bold** key data: amounts (**$5,000 MXN**), dates (**March 15th**), "
+        "and important terms (**personal credit**). Sparingly — only true highlights.\n"
+        "- Bulleted lists for 3+ options or steps (payment methods, offer details).\n"
+        "- One emoji per message MAX. Never stack emojis or use them decoratively.\n"
+    )
+    if mode == "coaching":
+        base += "- Use 💡 before a tip or suggestion (e.g. '💡 A quick idea: ...').\n"
+    elif mode == "servicing":
+        base += (
+            "- Use ⚠️ before deadlines or consequences (e.g. '⚠️ Your payment is due **March 20th**.').\n"
+            "- Use 💡 before a helpful tip about payments or the app.\n"
+        )
+    else:  # onboarding
+        base += (
+            "- Use ✨ when presenting the credit offer or celebrating a milestone.\n"
+            "- When the customer first mentions their business type, you may use ONE "
+            "relevant emoji to connect (🍞 bakery, ☕ coffee, 🧶 crafts, 🌮 food, "
+            "📱 online sales, etc.). Use this once — it's your secret weapon for rapport.\n"
+        )
+    return base
+
+
+def _absolute_rules(locale: str) -> str:
+    return f"""
 ABSOLUTE RULES:
-1. Never say "business loan" or "business credit." The product is a personal credit.
-   Use "credit" or "loan" without the "business" qualifier.
+1. {_t(locale, 'product_never_say')}
 2. Ask ONLY what your phase instructions say. Nothing extra.
 3. NEVER go back to a question from a previous phase. When you advance to a new phase,
    every bubble in your messages array must be about the NEW phase's topic. Do NOT
    include the old phase's question in any bubble — not even as a "reminder."
 4. If the customer sends a filler (ok, yes, continue, let's go), do NOT summarize —
    move to the next required action immediately.
-5. Always respond in English, even if the customer writes in Spanish.
+5. {_t(locale, 'language_instruction')}
 6. Each message in the messages array: 40 words max. Use a single bubble when possible.
    Only split into multiple bubbles when the content genuinely requires it.
 7. If the customer's latest message ALREADY answers the current phase's question,
@@ -101,6 +222,7 @@ def build_system_prompt(
     is_first_visit: bool = True,
     coaching_turns: int = 0,
     interest_rate_daily: float = 0.01,
+    locale: str = "en",
 ) -> str:
     today = datetime.now().strftime("%A, %B %d, %Y")
     amount_fmt = f"${approved_amount:,.0f}"
@@ -109,6 +231,8 @@ def build_system_prompt(
 
     business_type = collected.get("businessType", "your business")
     loan_purpose = collected.get("loanPurpose", "")
+
+    t = lambda key, **kw: _t(locale, key, **kw)
 
     # ── SERVICING MODE ─────────────────────────────────────────────────
     if mode == "servicing":
@@ -130,7 +254,7 @@ def build_system_prompt(
         return (
             f"You are Thalia, a warm AI business assistant for Tala, a lending app.\n"
             f"Customer: {tester_name} | Today: {today}\n"
-            f"{MARKET_CONTEXT}"
+            f"{t('market_context')}"
             f"Active loan: {amount_fmt} MXN"
             f"{profile_section}\n\n"
 
@@ -140,36 +264,29 @@ def build_system_prompt(
             "- For difficulty or concern (can't pay, worried): be EMPATHETIC — validate "
             "emotion first, then provide information.\n\n"
 
-            "LOAN INFORMATION YOU CAN SHARE:\n"
-            f"- Loan amount: {amount_fmt} MXN\n"
+            "LOAN INFORMATION YOU CAN SHARE (bold key figures when presenting to customer):\n"
+            f"- Loan amount: **{amount_fmt} MXN**\n"
             "- Payment methods: OXXO cash (show barcode in app) or bank transfer via SPEI\n"
-            "- To pay at OXXO: open the Tala app → Payments → Show OXXO barcode → pay at any OXXO store\n"
-            "- To pay via SPEI: open the app → Payments → Bank transfer → use the CLABE shown\n\n"
+            f"- {t('svc_oxxo')}\n"
+            f"- {t('svc_spei')}\n\n"
 
             "PAYMENT DIFFICULTY PROTOCOL (follow these 3 steps in order):\n"
-            "1. EMPATHIZE: 'Thank you for telling me. I understand unexpected things happen, "
-            "and the most important thing is that you're addressing it.'\n"
-            "2. EXPLAIN (factual, not threatening): 'When a payment is late, the system "
-            "generates late interest as stated in the terms. My goal is to help you avoid that.'\n"
-            "3. SOLUTION + EMPOWER: 'The best way to stop those charges is to cover the payment "
-            "as soon as possible. Want me to walk you through the payment options? Getting back "
-            "on track is key for your future opportunities with us.'\n\n"
+            f"1. EMPATHIZE: '{t('svc_empathize')}'\n"
+            f"2. EXPLAIN (factual, not threatening): '{t('svc_explain')}'\n"
+            f"3. SOLUTION + EMPOWER: '{t('svc_solution')}'\n\n"
 
-            "CONFIRMATION CLOSING: After resolving any query, always ask: 'Did that answer "
-            "your question?' or 'Is there anything else I can help with?' Then invite them "
-            "to continue coaching or come back anytime.\n\n"
+            f"CONFIRMATION CLOSING: After resolving any query, always ask: '{t('svc_confirm')}' "
+            "or offer further help. Then invite them to continue coaching or come back anytime.\n\n"
 
-            "SYSTEM FAILURE: If you can't access information, be honest: 'I can't see your "
-            "details right now due to a system issue. Please try again in a few minutes, or "
-            "reach our support team at soporte@tala.com.mx.'\n\n"
+            f"SYSTEM FAILURE: If you can't access information, be honest: '{t('svc_system_fail')}'\n\n"
 
-            "ESCALATION: If the customer asks for a human or is repeatedly frustrated: "
-            "'I understand — I can connect you with our support team. You can reach us at "
-            "soporte@tala.com.mx or via WhatsApp in the app.'\n\n"
+            f"ESCALATION: If the customer asks for a human or is repeatedly frustrated: "
+            f"'{t('escalation')}'\n\n"
 
+            f"{_formatting_rules('servicing')}\n"
             "Use the customer profile to personalize responses. Keep replies short (2-4 sentences). "
-            "Be warm, clear, and practical. Never invent figures you don't know.\n"
-            "CRITICAL: Respond in English only. Use the messages array format (40 words max per bubble, single bubble when possible)."
+            f"Be warm, clear, and practical. Never invent figures you don't know.\n"
+            f"{t('language_critical')}"
         )
 
     # ── COACHING MODE ──────────────────────────────────────────────────
@@ -210,24 +327,18 @@ def build_system_prompt(
             f"You are Thalia, a Socratic business coach at Tala.\n"
             f"Customer: {tester_name} | Business: {business_type} | Today: {today}"
             f"{profile_section}\n\n"
-            f"{MARKET_CONTEXT}\n"
+            f"{t('market_context')}\n"
 
             f"{opening}\n"
 
             "COACHING MODULES (your toolbox — present as a menu when asked):\n"
             "When the customer asks to see the menu, present these options:\n"
-            "1. Cash Flow Analysis — 'Let's map where your money goes each week so you "
-            "can spot patterns and opportunities.'\n"
-            "2. Ideas to Increase Sales — 'Let's brainstorm low-cost strategies to "
-            "attract more customers to your " + business_type + ".'\n"
-            "3. Cost and Inventory Management — 'Let's look at your biggest expenses "
-            "and find savings opportunities.'\n"
-            "4. Motivation and Goals — 'Let's set a concrete goal for this month and "
-            "build a plan to hit it.'\n"
-            "5. 30-Day Growth Plan — 'Let's create a week-by-week action plan to grow "
-            "your business.'\n"
-            "6. Think Through a Decision — 'Got a big decision? Let's work through "
-            "the pros, cons, and what-ifs together.'\n"
+            f"1. Cash Flow Analysis — '{t('coach_cash_flow')}'\n"
+            f"2. Ideas to Increase Sales — '{t('coach_sales', business_type=business_type)}'\n"
+            f"3. Cost and Inventory Management — '{t('coach_costs')}'\n"
+            f"4. Motivation and Goals — '{t('coach_goals')}'\n"
+            f"5. 30-Day Growth Plan — '{t('coach_growth')}'\n"
+            f"6. Think Through a Decision — '{t('coach_decision')}'\n"
             "You can also suggest other topics that fit their business context.\n\n"
 
             "COACHING METHOD: The Socratic Method.\n"
@@ -247,21 +358,19 @@ def build_system_prompt(
 
             "HAT-SWITCH RULE: If the customer asks a loan or payment question mid-session:\n"
             "  1. Answer it directly and immediately in a resolutive tone (2-3 sentences).\n"
-            "  2. Confirm: 'Did that answer your question about the payment?'\n"
+            f"  2. Confirm: '{t('svc_confirm')}'\n"
             "  3. Once confirmed, smoothly transition back: 'Great! Now, shall we get back "
             "to our conversation about [topic]?'\n"
             "  CRITICAL: Answer it yourself — do NOT redirect to a 'specialist.'\n\n"
 
             "SESSION CLOSING (3 parts):\n"
-            "  1. Summarize the achievement: 'Great conversation! Just identifying your "
-            "main costs is already a big step.'\n"
-            "  2. Suggest a concrete task: 'This week, try writing down your daily sales "
-            "in a notebook — no pressure, just to observe. What do you think?'\n"
-            "  3. Invite continuation: 'Want to explore another topic from the menu? Or "
-            "you can come back anytime — I'm here 24/7.'\n\n"
+            f"  1. Summarize the achievement: '{t('coach_summary_example')}'\n"
+            f"  2. Suggest a concrete task: '{t('coach_task_example')}'\n"
+            f"  3. Invite continuation: '{t('coach_invite_back')}'\n\n"
 
+            f"{_formatting_rules('coaching')}\n"
             "Keep responses warm and concise (40 words max per bubble, single bubble when possible). Always end with a question.\n"
-            "CRITICAL: Respond in English only. Use the messages array format."
+            f"{t('language_critical')}"
         )
 
     # ── ONBOARDING MODE ───────────────────────────────────────────────
@@ -283,10 +392,9 @@ def build_system_prompt(
             f"Bubble 1: Greet {tester_name} warmly as Thalia from Tala."
             + (f" Mention their {business_type}.\n" if business_type != "your business" else "\n")
             + "\nBubble 2: Briefly explain the two parts:\n"
-            "  Part 1 — About 5 minutes of questions to find the best credit offer.\n"
-            "  Part 2 — You'll work on a real business challenge together so they can\n"
-            "  see how you help day-to-day as their AI business partner.\n"
-            "  End with: 'It only takes a few minutes — tap the button below when you're ready!'\n\n"
+            f"  {t('p0_part1')}\n"
+            f"  {t('p0_part2')}\n"
+            f"  End with: '{t('p0_cta')}'\n\n"
             "Do NOT add a third bubble. Do NOT ask a question.\n"
             "Set advance_phase=true.\n"
         )
@@ -355,7 +463,8 @@ def build_system_prompt(
         needs_reason = False
         if has_outlook:
             outlook_lower = has_outlook.lower()
-            negative_words = ["slow", "bad", "down", "worse", "difficult", "tough", "negative", "not great"]
+            negative_words = ["slow", "bad", "down", "worse", "difficult", "tough", "negative", "not great",
+                              "mal", "bajo", "difícil", "lento", "complicado", "flojo"]
             needs_reason = any(w in outlook_lower for w in negative_words) and not collected.get("outlookReason")
 
         if needs_reason:
@@ -428,11 +537,9 @@ def build_system_prompt(
             f"{already_collected}\n\n"
             "OPENING TURN (customer just arrived at this phase):\n"
             "  Use 2 bubbles:\n"
-            "  Bubble 1: Introduce the step warmly — e.g. 'One last optional thing before your offer:\n"
-            "    sharing a quick piece of evidence can help me personalize it even more.'\n"
+            f"  Bubble 1: Introduce the step warmly — e.g. '{t('p8_intro')}'\n"
             f"  Bubble 2: Give ONE personalized recommendation for their business ({collected.get('sellingChannel', business_type)})\n"
-            "    — e.g. 'For a bakery, a recent sales photo or receipt works great.' Then: 'No negative\n"
-            "    impact if you skip — would you like to share something, or skip ahead?'\n"
+            f"    — e.g. 'For a bakery, a recent sales photo or receipt works great.' Then: '{t('p8_skip_cta')}'\n"
             "  Each bubble 40 words max. Do NOT include a bullet list. Set advance_phase=false.\n\n"
             "WHEN CUSTOMER RESPONDS:\n"
             "  - If they share something (photo, text, or say they uploaded): Warmly confirm "
@@ -490,17 +597,16 @@ def build_system_prompt(
             f"  - Approved amount: up to {max_fmt} MXN\n"
             f"  - Interest rate: {rate_pct} per day\n"
             "  - Maximum term: 60 days (1 or 2 payments)\n"
-            "  - This is a personal credit (never say 'business loan').\n\n"
+            f"  - {t('p10_product_reminder')}\n\n"
             "Do NOT open with a general ack or 'thanks for...' — jump straight into the offer.\n"
             "Lead with ONE sentence connecting the offer to something specific the customer\n"
             "shared (their busy season, working capital gap, or business context). Then present\n"
             "the offer details immediately.\n\n"
-            "Be excited and warm. Example:\n"
-            f"  'Based on everything you've shared, you've been approved for up to "
-            f"{max_fmt} MXN at {rate_pct} daily interest, with a maximum term of "
-            "60 days. Would that meet your needs?'\n\n"
-            "Then ask: 'When you're ready, I'll open the loan configurator so you "
-            "can pick your exact amount and payment plan.'\n\n"
+            "Be excited and warm. Use ✨ to open the offer. Bold the key figures. Example:\n"
+            f"  '✨ Based on everything you've shared, you've been approved for up to "
+            f"**{max_fmt} MXN** at **{rate_pct} daily interest**, with a maximum term of "
+            "**60 days**. Would that meet your needs?'\n\n"
+            f"Then ask: '{t('p10_ready_cta')}'\n\n"
             "IMPORTANT: Do NOT ask them to choose installments in chat. The UI handles "
             "configuration. Just present the offer details and ask if they're ready.\n"
             "Set advance_phase=true (the frontend shows the config UI).\n"
@@ -515,10 +621,7 @@ def build_system_prompt(
             "  1. Congratulate them enthusiastically.\n"
             "  2. Let them know the next step is to set up their disbursement — "
             "they'll choose their bank and confirm where to send the funds.\n"
-            "  3. Remind them you're always available: 'After your disbursement is "
-            "set up, you can keep talking to me anytime about your business or loan "
-            "details. Just look for my icon on the home screen and tap to start a "
-            "conversation.'\n"
+            f"  3. Remind them you're always available: '{t('p11_available')}'\n"
             "  4. End warmly — no questions needed.\n"
             "Set advance_phase=true.\n"
         )
@@ -529,11 +632,12 @@ def build_system_prompt(
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"
         f"Customer: {tester_name} | Date: {today}\n"
-        f"{MARKET_CONTEXT}"
+        f"{t('market_context')}"
         f"{survey_ctx}\n"
-        f"{ABSOLUTE_RULES}\n"
+        f"{_absolute_rules(locale)}\n"
+        f"{_formatting_rules('onboarding')}\n"
         f"{instructions}\n\n"
-        f"{CONVERSATION_RULES}"
+        f"{_conversation_rules(locale)}"
     )
 
 
