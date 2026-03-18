@@ -18,7 +18,7 @@ export default function OfferPage() {
   const { t } = useTranslation()
 
   const approved = tester?.approvedAmount ?? 8000
-  const maxAmount = tester?.maxAmount ?? 12000
+  const maxAmount = tester?.approvedAmount ?? 8000
   const dailyRate = tester?.interestRateDaily ?? 0.0028
   const feeRate = tester?.processingFeeRate ?? 0.04
   const locale = tester?.locale ?? 'es-MX'

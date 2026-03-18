@@ -89,3 +89,11 @@ class AgentDecision(BaseModel):
         default=0,
         description="Phase 11 only: credit offer amount in MXN. 0 in all other phases."
     )
+    offer_negotiated: bool = Field(
+        default=False,
+        description=(
+            "Phase 11 only: set to true ONLY when you are explicitly increasing the offer "
+            "above the initial amount in response to a customer's request for more. "
+            "Leave false on the initial offer presentation and in all other phases."
+        )
+    )

@@ -42,6 +42,7 @@ type ChatAction =
   | { type: 'START_ONBOARDING'; name: string; approvedAmount: number; maxAmount: number; businessType?: string; loanPurpose?: string }
   | { type: 'START_SERVICING'; name: string; approvedAmount: number }
   | { type: 'START_COACHING'; name: string; approvedAmount: number }
+  | { type: 'UPDATE_MAX'; maxAmount: number }
 
 const INITIAL_STATE: ChatState = {
   messages: [],
@@ -102,6 +103,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         testerFirstName: action.name,
         approvedAmount: action.approvedAmount,
       }
+    case 'UPDATE_MAX':
+      return { ...state, maxAmount: action.maxAmount }
     default:
       return state
   }
@@ -179,6 +182,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
       if (response.metadata?.collectedData) {
         dispatch({ type: 'UPDATE_PROFILE', data: response.metadata.collectedData })
+      }
+      // If agent negotiated the offer up, unlock the higher ceiling on the slider
+      if (response.offerAmount && response.offerAmount > s.approvedAmount) {
+        dispatch({ type: 'UPDATE_MAX', maxAmount: response.offerAmount })
       }
 
       // Add bubbles with staggered animation

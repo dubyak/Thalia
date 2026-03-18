@@ -46,6 +46,8 @@ class Session:
     coaching_turns: int = 0
     # Offer negotiation state
     offer_stage: str = "initial"  # initial | negotiating | accepted
+    # Current offer amount — starts at approved_amount, unlocks to max_amount after negotiation
+    current_offer: int = 0
     # Interest rate for offer display
     interest_rate_daily: float = 0.01  # 1% per day default
     # Locale for language switching
@@ -112,6 +114,10 @@ async def run_agent(
 
     session = sessions[session_id]
 
+    # Initialize current_offer on first use
+    if session.current_offer == 0:
+        session.current_offer = session.approved_amount
+
     # ── Inject survey context into collected ─────────────────────────
     if session.business_type:
         session.collected["businessType"] = session.business_type
@@ -142,7 +148,7 @@ async def run_agent(
     # ── Calculate offer amounts for Phase 11 ──────────────────────────
     offer_amount = 0
     if session.phase == "11":
-        offer_amount = session.max_amount
+        offer_amount = session.current_offer
 
     # ── Build system prompt ────────────────────────────────────────────
     system_prompt = build_system_prompt(
@@ -220,6 +226,8 @@ async def run_agent(
             # Agent presents offer, then UI handles config + terms acceptance.
             # When user accepts via UI, frontend sends a synthetic message which
             # triggers Phase 12 closing.
+            if result.offer_negotiated:
+                session.current_offer = session.max_amount
             if result.advance_phase:
                 session.offer_stage = "accepted"
                 session.phase = _next_phase(phase)
@@ -311,7 +319,7 @@ async def run_agent(
     # ── Return response ────────────────────────────────────────────────
     # Recalculate offer_amount in case auto-advance landed on phase 11
     if session.phase == "11":
-        offer_amount = session.max_amount
+        offer_amount = session.current_offer
     return {
         "messages": result.messages,
         "phase": session.phase,
