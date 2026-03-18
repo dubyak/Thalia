@@ -166,6 +166,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const localeRef = useRef(locale)
   localeRef.current = locale
 
+  // Read customer from context (use ref so callbacks always see latest value)
+  const { customer } = useCustomer()
+  const customerRef = useRef(customer)
+  customerRef.current = customer
+
   const processResponse = useCallback(
     async (response: AgentResponse) => {
       const s = stateRef.current
@@ -241,7 +246,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const sendMessage = useCallback(
     async (content: string) => {
       const s = stateRef.current
-      const { customer } = useCustomer()
+      const customer = customerRef.current
       const userMsg: ChatMessage = {
         id: makeId(),
         role: 'user',

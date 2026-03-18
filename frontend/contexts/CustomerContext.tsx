@@ -50,21 +50,20 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
   const [customer, dispatch] = useReducer(customerReducer, INITIAL_STATE, (init) => {
     if (typeof window === 'undefined') return init
     try {
-      const saved = localStorage.getItem('tala_customer_state')
+      // Use sessionStorage so stale names from previous sessions never bleed through
+      const saved = sessionStorage.getItem('tala_customer_state')
       return saved ? { ...init, ...JSON.parse(saved) } : init
     } catch {
       return init
     }
   })
 
-  // Persist customer state to localStorage
+  // Persist customer state to sessionStorage (clears when tab/session ends)
   useEffect(() => {
     if (customer.firstName === null && customer.lastName === null && customer.customerId === null) {
-      // Cleared state — remove from storage
-      localStorage.removeItem('tala_customer_state')
+      sessionStorage.removeItem('tala_customer_state')
     } else {
-      // Active state — persist to storage
-      localStorage.setItem('tala_customer_state', JSON.stringify(customer))
+      sessionStorage.setItem('tala_customer_state', JSON.stringify(customer))
     }
   }, [customer])
 

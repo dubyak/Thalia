@@ -39,6 +39,7 @@ export function TesterProvider({ children }: { children: ReactNode }) {
     setTester(null)
     localStorage.removeItem('tala_tester_code')
     localStorage.removeItem('tala_flow_state')
+    sessionStorage.removeItem('tala_customer_state')
   }
 
   return (
