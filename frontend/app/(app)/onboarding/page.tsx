@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useChat } from '@/contexts/ChatContext'
 import { useTester } from '@/contexts/TesterContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { StatusBar } from '@/components/app-shell/StatusBar'
@@ -13,23 +14,25 @@ import { ChevronLeft } from 'lucide-react'
 export default function OnboardingPage() {
   const { startOnboarding, resetChat, state } = useChat()
   const { tester } = useTester()
+  const { customer } = useCustomer()
   const { flow, dispatch } = useFlow()
   const router = useRouter()
   const startedRef = useRef(false)
 
   // Start onboarding once per page mount — pass survey context to the agent
+  const displayName = customer.firstName
   useEffect(() => {
-    if (!tester?.firstName || startedRef.current) return
+    if (!displayName || startedRef.current) return
     startedRef.current = true
     resetChat()
     setTimeout(() => startOnboarding(
-      tester.firstName,
-      tester.approvedAmount,
-      tester.maxAmount,
-      flow.surveyBusinessType ?? tester.businessType,
+      displayName,
+      tester?.approvedAmount,
+      tester?.maxAmount,
+      flow.surveyBusinessType ?? tester?.businessType,
       flow.surveyLoanPurpose,
     ), 0)
-  }, [tester?.firstName]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [displayName]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleComplete = () => {
     dispatch({
