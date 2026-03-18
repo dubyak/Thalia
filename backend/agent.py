@@ -8,23 +8,24 @@ from state import AgentDecision
 from prompts import build_system_prompt
 
 # Phase 0: Welcome
-# Phase 1-3: Business profile (selling channel, tenure, typical customer)
-# Phase 4-7: Business health (recent changes, outlook, cash-cycle, working capital)
-# Phase 8: Optional evidence
-# Phase 9: Coaching demo (multi-turn)
-# Phase 10: Offer presentation + negotiation
-# Phase 11: Closing
-PHASE_ORDER = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "complete"]
+# Phase 1-3: Business profile (selling channel, tenure, team size)
+# Phase 4-8: Business health (weekly revenue, outlook, cash-cycle, main expenses, working capital need)
+# Phase 9: Optional evidence
+# Phase 10: Coaching demo (multi-turn)
+# Phase 11: Offer presentation + negotiation
+# Phase 12: Closing
+PHASE_ORDER = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "complete"]
 
 # Field required for each profile/health phase to advance
 PHASE_FIELD = {
     "1": "sellingChannel",
     "2": "tenure",
-    "3": "typicalCustomer",
-    "4": "recentChanges",
+    "3": "teamSize",
+    "4": "weeklyRevenue",
     "5": "nearTermOutlook",
     "6": "cashCycleSpeed",
-    "7": "workingCapital",
+    "7": "mainExpenses",
+    "8": "workingCapitalNeed",
 }
 
 
@@ -138,9 +139,9 @@ async def run_agent(
         else:
             session.messages.append({"role": "user", "content": message})
 
-    # ── Calculate offer amounts for Phase 10 ──────────────────────────
+    # ── Calculate offer amounts for Phase 11 ──────────────────────────
     offer_amount = 0
-    if session.phase == "10":
+    if session.phase == "11":
         offer_amount = session.max_amount
 
     # ── Build system prompt ────────────────────────────────────────────
@@ -206,24 +207,24 @@ async def run_agent(
                 if any(w in outlook for w in negative_words) and not session.collected.get("outlookReason"):
                     session.phase = "5"  # Stay for follow-up
 
-        elif phase == "8":
+        elif phase == "9":
             if result.advance_phase:
                 session.phase = _next_phase(phase)
 
-        elif phase == "9":
+        elif phase == "10":
             session.coaching_turns += 1
             if result.advance_phase and session.coaching_turns >= 3:
                 session.phase = _next_phase(phase)
 
-        elif phase == "10":
+        elif phase == "11":
             # Agent presents offer, then UI handles config + terms acceptance.
             # When user accepts via UI, frontend sends a synthetic message which
-            # triggers Phase 11 closing.
+            # triggers Phase 12 closing.
             if result.advance_phase:
                 session.offer_stage = "accepted"
                 session.phase = _next_phase(phase)
 
-        elif phase == "11":
+        elif phase == "12":
             if result.advance_phase:
                 session.phase = "complete"
 
@@ -234,7 +235,7 @@ async def run_agent(
     # ── Auto-advance: if we advanced past a question phase, immediately ─
     # ── generate the next phase's question so the user doesn't hit a    ─
     # ── dead end and have to say "ok" to trigger the next question.     ─
-    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8", "9"}
+    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
     if (
         session.mode == "onboarding"
         and phase in AUTO_ADVANCE_FROM
@@ -255,7 +256,7 @@ async def run_agent(
         })
 
         # Build system prompt for the NEW phase
-        new_offer_amount = session.max_amount if session.phase == "10" else 0
+        new_offer_amount = session.max_amount if session.phase == "11" else 0
         new_system_prompt = build_system_prompt(
             phase=session.phase,
             mode=session.mode,
@@ -308,8 +309,8 @@ async def run_agent(
     session.messages.append({"role": "assistant", "content": combined})
 
     # ── Return response ────────────────────────────────────────────────
-    # Recalculate offer_amount in case auto-advance landed on phase 10
-    if session.phase == "10":
+    # Recalculate offer_amount in case auto-advance landed on phase 11
+    if session.phase == "11":
         offer_amount = session.max_amount
     return {
         "messages": result.messages,

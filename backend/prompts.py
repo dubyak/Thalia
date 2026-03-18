@@ -1,4 +1,3 @@
-?
 from datetime import datetime
 
 
@@ -25,14 +24,14 @@ LOCALE_CONFIG = {
         "p0_part1": "Part 1 — About 5 minutes of questions to find the best credit offer.",
         "p0_part2": "Part 2 — You'll work on a real business challenge together so they can\n  see how you help day-to-day as their AI business partner.",
         "p0_cta": "It only takes a few minutes — tap the button below when you're ready!",
-        # Phase 8
-        "p8_intro": "One last optional thing before your offer: sharing a quick piece of evidence can help me personalize it even more.",
-        "p8_skip_cta": "No negative impact if you skip — would you like to share something, or skip ahead?",
-        # Phase 10 offer
-        "p10_product_reminder": "This is a personal credit (never say 'business loan').",
-        "p10_ready_cta": "When you're ready, I'll open the loan configurator so you can pick your exact amount and payment plan.",
-        # Phase 11 closing
-        "p11_available": "After your disbursement is set up, you can keep talking to me anytime about your business or loan details. Just look for my icon on the home screen and tap to start a conversation.",
+        # Phase 9 evidence
+        "p9_intro": "One last optional thing before your offer: sharing a quick piece of evidence can help me personalize it even more.",
+        "p9_skip_cta": "No negative impact if you skip — would you like to share something, or skip ahead?",
+        # Phase 11 offer
+        "p11_product_reminder": "This is a personal credit (never say 'business loan').",
+        "p11_ready_cta": "When you're ready, I'll open the loan configurator so you can pick your exact amount and payment plan.",
+        # Phase 12 closing
+        "p12_available": "After your disbursement is set up, you can keep talking to me anytime about your business or loan details. Just look for my icon on the home screen and tap to start a conversation.",
         # Servicing
         "svc_oxxo": "To pay at OXXO: open the Tala app → Payments → Show OXXO barcode → pay at any OXXO store",
         "svc_spei": "To pay via SPEI: open the app → Payments → Bank transfer → use the CLABE shown",
@@ -63,14 +62,14 @@ LOCALE_CONFIG = {
         "p0_part1": "Parte 1 — Unas 5 preguntas rápidas para encontrar la mejor oferta de crédito para ti.",
         "p0_part2": "Parte 2 — Vamos a trabajar juntos en un reto real de tu negocio para que\n  veas cómo te puedo ayudar día a día como tu asistente de negocios.",
         "p0_cta": "Solo toma unos minutos — ¡toca el botón de abajo cuando estés listo/a!",
-        # Phase 8
-        "p8_intro": "Una última cosa opcional antes de tu oferta: compartir una evidencia rápida me ayuda a personalizarla aún más.",
-        "p8_skip_cta": "No pasa nada si lo saltas — ¿te gustaría compartir algo, o seguimos adelante?",
-        # Phase 10 offer
-        "p10_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
-        "p10_ready_cta": "Cuando estés listo/a, te abro el configurador para que elijas tu monto exacto y plan de pago.",
-        # Phase 11 closing
-        "p11_available": "Una vez que esté lista tu dispersión, puedes seguir platicando conmigo cuando quieras sobre tu negocio o los detalles de tu crédito. Solo busca mi ícono en la pantalla principal y toca para iniciar una conversación.",
+        # Phase 9 evidence
+        "p9_intro": "Una última cosa opcional antes de tu oferta: compartir una evidencia rápida me ayuda a personalizarla aún más.",
+        "p9_skip_cta": "No pasa nada si lo saltas — ¿te gustaría compartir algo, o seguimos adelante?",
+        # Phase 11 offer
+        "p11_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
+        "p11_ready_cta": "Cuando estés listo/a, te abro el configurador para que elijas tu monto exacto y plan de pago.",
+        # Phase 12 closing
+        "p12_available": "Una vez que esté lista tu dispersión, puedes seguir platicando conmigo cuando quieras sobre tu negocio o los detalles de tu crédito. Solo busca mi ícono en la pantalla principal y toca para iniciar una conversación.",
         # Servicing
         "svc_oxxo": "Para pagar en OXXO: abre la app de Tala → Pagos → Muestra el código de barras → paga en cualquier OXXO",
         "svc_spei": "Para pagar por SPEI: abre la app → Pagos → Transferencia bancaria → usa la CLABE que aparece",
@@ -296,6 +295,8 @@ def build_system_prompt(
             ("businessType", "Business"),
             ("sellingChannel", "Sells via"),
             ("tenure", "Running for"),
+            ("teamSize", "Team"),
+            ("weeklyRevenue", "Weekly revenue"),
             ("loanPurpose", "Loan used for"),
         ]:
             if collected.get(key):
@@ -431,31 +432,32 @@ def build_system_prompt(
 
     elif phase == "3":
         instructions = (
-            "PHASE 3 — TYPICAL CUSTOMER (Business Profile, Q3)\n"
+            "PHASE 3 — TEAM SIZE (Business Profile, Q3)\n"
             f"{already_collected}\n\n"
-            + (_already_have_field("typicalCustomer", collected, "their typical customer") or
-            "Ask (context first, then question): 'Understanding who you serve helps me give\n"
-            "  better advice later — how would you describe your typical customer?'\n"
+            + (_already_have_field("teamSize", collected, "how many people work in the business") or
+            "Ask: 'Is it just you running things, or do you have people helping you?'\n"
+            "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. ALWAYS extract into extracted['typicalCustomer'] — even if brief, informal,\n"
-            "     or conversational. A short or casual answer is still valid — extract and move on.\n"
-            "  2. Acknowledge using their words (e.g. 'Families and fellow vendors — sounds\n"
-            "     like a tight community.'). Set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['teamSize'] — even if brief or informal.\n"
+            "     'Just me' is a perfectly valid answer — extract and move on.\n"
+            "  2. Acknowledge warmly (e.g. 'Got it — just you keeping it all running!' or\n"
+            "     'Nice, a small team!'). Set advance_phase=true.\n")
         )
 
     elif phase == "4":
         instructions = (
-            "PHASE 4 — RECENT CHANGES (Business Health, Q1)\n"
+            "PHASE 4 — WEEKLY REVENUE (Business Health, Q1)\n"
             f"{already_collected}\n\n"
-            + (_already_have_field("recentChanges", collected, "recent business changes") or
-            "Ask: 'Has anything changed in your business since your last loan?'\n"
-            "Do NOT add a context clause — just ask the question directly.\n"
+            + (_already_have_field("weeklyRevenue", collected, "their approximate weekly revenue") or
+            "Ask (context first, then question): 'To help me size the right offer —\n"
+            "  roughly what do you bring in during a typical week?'\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. ALWAYS extract into extracted['recentChanges'] — even if brief or informal.\n"
-            "     'Nothing' or 'same' is a valid answer — extract and move on.\n"
-            "  2. Acknowledge warmly (e.g. 'Good to hear things are stable.'). Set advance_phase=true.\n")
+            "  1. ALWAYS extract into extracted['weeklyRevenue'] — accept ranges, rough estimates,\n"
+            "     or 'it varies.' Don't push for precision. Extract what they give and move on.\n"
+            "  2. Acknowledge briefly (e.g. 'Got it — that gives me a good sense of the scale.').\n"
+            "     Set advance_phase=true.\n")
         )
 
     elif phase == "5":
@@ -517,29 +519,43 @@ def build_system_prompt(
 
     elif phase == "7":
         instructions = (
-            "PHASE 7 — WORKING CAPITAL (Business Health, Q4 — last profile question)\n"
+            "PHASE 7 — MAIN EXPENSES (Business Health, Q4)\n"
             f"{already_collected}\n\n"
-            + (_already_have_field("workingCapital", collected, "their working capital needs") or
-            "Signal this is the last profile question (e.g. 'To round things out —' or 'Last one —').\n"
-            "Ask: 'How much of your total working capital need is Tala currently meeting?'\n"
+            + (_already_have_field("mainExpenses", collected, "their main weekly expenses") or
+            "Ask: 'What are your biggest costs each week — things like stock, rent, transport?'\n"
+            "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. ALWAYS extract into extracted['workingCapital'] — even if brief or informal.\n"
+            "  1. ALWAYS extract into extracted['mainExpenses'] — even if brief or a short list.\n"
             "     A short answer is still valid — extract and move on.\n"
-            "  2. Acknowledge and transition: 'Thanks for sharing all of that about your\n"
-            "     business — it really helps me find the right fit.'\n"
-            "  3. Set advance_phase=true.\n")
+            "  2. Acknowledge briefly, connecting it to their business\n"
+            "     (e.g. 'Stock and transport — makes sense for a food business.'). Set advance_phase=true.\n")
         )
 
     elif phase == "8":
         instructions = (
-            "PHASE 8 — OPTIONAL BUSINESS EVIDENCE\n"
+            "PHASE 8 — WORKING CAPITAL NEED (Business Health, Q5 — last profile question)\n"
+            f"{already_collected}\n\n"
+            + (_already_have_field("workingCapitalNeed", collected, "how much working capital they typically need") or
+            "Signal this is the last profile question (e.g. 'Almost there —' or 'Last one —').\n"
+            "Ask: 'How much working capital do you typically need at one time?'\n"
+            "Set advance_phase=false.\n\n"
+            "WHEN CUSTOMER ANSWERS:\n"
+            "  1. ALWAYS extract into extracted['workingCapitalNeed'] — accept ranges or rough estimates.\n"
+            "     A short answer is still valid — extract and move on.\n"
+            "  2. Acknowledge and transition: 'That really helps me put the right offer together.'\n"
+            "  3. Set advance_phase=true.\n")
+        )
+
+    elif phase == "9":
+        instructions = (
+            "PHASE 9 — OPTIONAL BUSINESS EVIDENCE\n"
             f"{already_collected}\n\n"
             "OPENING TURN (customer just arrived at this phase):\n"
             "  Use 2 bubbles:\n"
-            f"  Bubble 1: Introduce the step warmly — e.g. '{t('p8_intro')}'\n"
+            f"  Bubble 1: Introduce the step warmly — e.g. '{t('p9_intro')}'\n"
             f"  Bubble 2: Give ONE personalized recommendation for their business ({collected.get('sellingChannel', business_type)})\n"
-            f"    — e.g. 'For a bakery, a recent sales photo or receipt works great.' Then: '{t('p8_skip_cta')}'\n"
+            f"    — e.g. 'For a bakery, a recent sales photo or receipt works great.' Then: '{t('p9_skip_cta')}'\n"
             "  Each bubble 40 words max. Do NOT include a bullet list. Set advance_phase=false.\n\n"
             "WHEN CUSTOMER RESPONDS:\n"
             "  - If they share something (photo, text, or say they uploaded): Warmly confirm "
@@ -551,9 +567,9 @@ def build_system_prompt(
             "  - Set advance_phase=true after sharing or skipping (NOT after agreeing to share).\n"
         )
 
-    elif phase == "9":
+    elif phase == "10":
         instructions = (
-            "PHASE 9 — COACHING VALUE DEMO (3-4 turn exchange)\n"
+            "PHASE 10 — COACHING VALUE DEMO (3-4 turn exchange)\n"
             f"{already_collected}\n"
             f"Coaching turn: {coaching_turns} of 3-4\n\n"
 
@@ -570,9 +586,9 @@ def build_system_prompt(
             "TURN 1 (customer picked a topic — coaching_turns=1):\n"
             "  Acknowledge their choice. Ask ONE Socratic question that is hyper-specific to\n"
             "  their situation — not a generic question about the topic. Use the collected context:\n"
-            "  their business type, selling channel, typical customer, near-term outlook, and\n"
-            "  loan purpose. Name specifics in the question (e.g. 'For a market stall selling\n"
-            "  to local families heading into Semana Santa...'). Generic questions are not acceptable.\n"
+            "  their business type, selling channel, team size, near-term outlook, weekly revenue,\n"
+            "  and loan purpose. Name specifics in the question (e.g. 'For a solo market stall\n"
+            "  operator heading into Semana Santa...'). Generic questions are not acceptable.\n"
             "  Optionally offer: 'If you want to share a quick photo of your shop or stock, I can\n"
             "  give even more specific feedback — but we can go from what you've told me too.'\n"
             "  Set advance_phase=false.\n\n"
@@ -580,7 +596,7 @@ def build_system_prompt(
             "TURN 2+ (customer responds — coaching_turns >= 2):\n"
             "  Wrap up naturally in exactly 2 bubbles (40 words max each):\n"
             "  Bubble 1: ONE concrete action they can take this week, tied directly to something\n"
-            "    they shared (their business type, customer, selling channel, or outlook).\n"
+            "    they shared (their business type, team size, selling channel, or outlook).\n"
             "    Generic advice is not acceptable — name their specific context.\n"
             "  Bubble 2: Transition smoothly to the offer — e.g. 'We can keep exploring this\n"
             "    anytime from your home screen. For now — great news, your offer is ready!'\n"
@@ -588,16 +604,16 @@ def build_system_prompt(
             "  Do NOT ask another question. Set advance_phase=true.\n"
         )
 
-    elif phase == "10":
+    elif phase == "11":
         rate_pct = f"{interest_rate_daily * 100:.1f}%"
         instructions = (
-            "PHASE 10 — OFFER PRESENTATION\n"
+            "PHASE 11 — OFFER PRESENTATION\n"
             f"{already_collected}\n\n"
             "Present the credit offer clearly with ALL of these details:\n"
             f"  - Approved amount: up to {max_fmt} MXN\n"
             f"  - Interest rate: {rate_pct} per day\n"
             "  - Maximum term: 60 days (1 or 2 payments)\n"
-            f"  - {t('p10_product_reminder')}\n\n"
+            f"  - {t('p11_product_reminder')}\n\n"
             "Do NOT open with a general ack or 'thanks for...' — jump straight into the offer.\n"
             "Lead with ONE sentence connecting the offer to something specific the customer\n"
             "shared (their busy season, working capital gap, or business context). Then present\n"
@@ -606,22 +622,22 @@ def build_system_prompt(
             f"  '✨ Based on everything you've shared, you've been approved for up to "
             f"**{max_fmt} MXN** at **{rate_pct} daily interest**, with a maximum term of "
             "**60 days**. Would that meet your needs?'\n\n"
-            f"Then ask: '{t('p10_ready_cta')}'\n\n"
+            f"Then ask: '{t('p11_ready_cta')}'\n\n"
             "IMPORTANT: Do NOT ask them to choose installments in chat. The UI handles "
             "configuration. Just present the offer details and ask if they're ready.\n"
             "Set advance_phase=true (the frontend shows the config UI).\n"
         )
 
-    elif phase == "11":
+    elif phase == "12":
         instructions = (
-            "PHASE 11 — CLOSING (after terms accepted)\n"
+            "PHASE 12 — CLOSING (after terms accepted)\n"
             f"{already_collected}\n\n"
             f"The customer has configured and accepted their loan through the app.\n"
             f"Write a warm closing for {tester_name}:\n"
             "  1. Congratulate them enthusiastically.\n"
             "  2. Let them know the next step is to set up their disbursement — "
             "they'll choose their bank and confirm where to send the funds.\n"
-            f"  3. Remind them you're always available: '{t('p11_available')}'\n"
+            f"  3. Remind them you're always available: '{t('p12_available')}'\n"
             "  4. End warmly — no questions needed.\n"
             "Set advance_phase=true.\n"
         )

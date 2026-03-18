@@ -37,9 +37,9 @@ export interface ChatMessage {
   imageUrl?: string
 }
 
-// Onboarding phases — 0-11 + complete
+// Onboarding phases — 0-12 + complete
 export type OnboardingPhase =
-  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11'
+  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12'
   | 'complete'
 
 // Data collected during onboarding (matches backend ExtractedFields)
@@ -50,14 +50,15 @@ export interface BusinessProfile {
   // Business profile (phases 1-3)
   sellingChannel?: string
   tenure?: string
-  typicalCustomer?: string
-  // Business health (phases 4-7)
-  recentChanges?: string
+  teamSize?: string
+  // Business health (phases 4-8)
+  weeklyRevenue?: string
   nearTermOutlook?: string
   outlookReason?: string
   cashCycleSpeed?: string
-  workingCapital?: string
-  // Evidence
+  mainExpenses?: string
+  workingCapitalNeed?: string
+  // Evidence (phase 9)
   photoUploaded?: boolean
 }
 
