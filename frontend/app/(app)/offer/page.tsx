@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, ChevronRight, Info } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Info, CalendarDays, Check } from 'lucide-react'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { BackHeader } from '@/components/app-shell/BackHeader'
 import { useTester } from '@/contexts/TesterContext'
 import { useFlow } from '@/contexts/FlowContext'
-import { calculateLoan, formatMXN } from '@/lib/constants'
+import { calculateLoan, formatMXN, getSmartDueDates, getSecondInstallmentDate, formatDate, formatDateShort } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
@@ -21,14 +21,22 @@ export default function OfferPage() {
   const maxAmount = tester?.maxAmount ?? 12000
   const dailyRate = tester?.interestRateDaily ?? 0.0028
   const feeRate = tester?.processingFeeRate ?? 0.04
+  const locale = tester?.locale ?? 'es-MX'
 
-  const [installments, setInstallments] = useState<1 | 2>(1)
   const [amount, setAmount] = useState(approved)
 
+  const dueDateOptions = useMemo(() => getSmartDueDates(), [])
+  const defaultDate = dueDateOptions.find(d => d.recommended)?.date ?? dueDateOptions[0]?.date
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(defaultDate)
+
+  const [installments, setInstallments] = useState<1 | 2>(1)
+
   const loan = useMemo(
-    () => calculateLoan(amount, installments, dailyRate, feeRate),
-    [amount, installments, dailyRate, feeRate]
+    () => calculateLoan(amount, installments, dailyRate, feeRate, locale, selectedDate),
+    [amount, installments, dailyRate, feeRate, locale, selectedDate]
   )
+
+  const secondDate = installments === 2 && selectedDate ? getSecondInstallmentDate(selectedDate) : undefined
 
   const handleAccept = () => {
     dispatch({ type: 'OFFER_ACCEPTED', config: loan })
@@ -60,31 +68,7 @@ export default function OfferPage() {
 
         {/* Config card */}
         <div className="mx-4 -mt-4 bg-white rounded-2xl shadow-md p-5 mb-4">
-          {/* Installments toggle */}
-          <p className="text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-3">
-            {t('offer.numPayments')}
-          </p>
-          <div className="flex gap-3 mb-5">
-            {([1, 2] as const).map((n) => (
-              <button
-                key={n}
-                onClick={() => setInstallments(n)}
-                className={cn(
-                  'flex-1 py-3 rounded-xl border-2 font-semibold text-sm transition-all touch-active',
-                  installments === n
-                    ? 'bg-[#1a989e] border-[#1a989e] text-white shadow-sm'
-                    : 'bg-white border-[#e5e5e5] text-[#676d65]'
-                )}
-              >
-                {n === 1 ? t('offer.payment', { n: 1 }) : t('offer.payments', { n: 2 })}
-                <span className={cn('block text-xs font-light mt-0.5', installments === n ? 'text-[#d2f2f4]' : 'text-[#939490]')}>
-                  {t('offer.days', { n: n * 30 })}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Amount slider */}
+          {/* ── Step 1: Amount slider ── */}
           <div className="mb-5">
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs font-semibold text-[#676d65] uppercase tracking-wider">
@@ -110,35 +94,134 @@ export default function OfferPage() {
             </div>
           </div>
 
-          {/* Payment summary */}
+          {/* ── Step 2: First due date ── */}
+          <div className="mb-5">
+            <div className="flex items-center gap-1.5 mb-3">
+              <CalendarDays size={14} className="text-[#676d65]" />
+              <p className="text-xs font-semibold text-[#676d65] uppercase tracking-wider">
+                {t('offer.firstDueDate')}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {dueDateOptions.map(({ date, recommended }) => {
+                const isSelected = selectedDate?.getTime() === date.getTime()
+                const daysAway = Math.round((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                return (
+                  <button
+                    key={date.toISOString()}
+                    onClick={() => setSelectedDate(date)}
+                    className={cn(
+                      'flex items-center justify-between rounded-xl py-3 px-4 border-2 transition-all touch-active',
+                      isSelected
+                        ? 'border-[#1a989e] bg-[#d2f2f4]'
+                        : 'border-[#e5e5e5] bg-white'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        'w-5 h-5 rounded-full border-2 flex items-center justify-center',
+                        isSelected ? 'border-[#1a989e] bg-[#1a989e]' : 'border-[#d0d0d0]'
+                      )}>
+                        {isSelected && <Check size={12} className="text-white" />}
+                      </div>
+                      <div className="text-left">
+                        <p className={cn('text-sm font-semibold', isSelected ? 'text-[#1d6d70]' : 'text-[#1f1c2f]')}>
+                          {formatDate(date, locale)}
+                        </p>
+                        <p className="text-xs text-[#939490]">
+                          {t('offer.daysAway', { n: daysAway })}
+                        </p>
+                      </div>
+                    </div>
+                    {recommended && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a989e] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
+                        {t('offer.recommended')}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* ── Step 3: Installment count ── */}
+          <div className="mb-5">
+            <p className="text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-3">
+              {t('offer.numPayments')}
+            </p>
+            <div className="flex gap-3">
+              {([1, 2] as const).map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setInstallments(n)}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl border-2 font-semibold text-sm transition-all touch-active',
+                    installments === n
+                      ? 'bg-[#1a989e] border-[#1a989e] text-white shadow-sm'
+                      : 'bg-white border-[#e5e5e5] text-[#676d65]'
+                  )}
+                >
+                  {n === 1 ? t('offer.oneInstallment') : t('offer.twoInstallments')}
+                  <span className={cn('block text-xs font-light mt-0.5', installments === n ? 'text-[#d2f2f4]' : 'text-[#939490]')}>
+                    {n === 1
+                      ? selectedDate ? formatDateShort(selectedDate, locale) : ''
+                      : selectedDate ? `${formatDateShort(selectedDate, locale)} + ${secondDate ? formatDateShort(secondDate, locale) : ''}` : ''
+                    }
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Step 4: Payment summary ── */}
           <div className="bg-[#f8fafc] rounded-xl p-4 space-y-2.5">
             <p className="text-xs font-semibold text-[#676d65] uppercase tracking-wider mb-3">
               {t('offer.paymentSummary')}
             </p>
 
             <SummaryRow label={t('offer.loanAmount')} value={formatMXN(loan.amount)} />
-            <SummaryRow label={t('offer.processingFee')} value={formatMXN(loan.processingFee)} muted />
+            <SummaryRow label={`${t('offer.processingFee')} (${(feeRate * 100).toFixed(1)}%)`} value={formatMXN(loan.processingFee)} muted />
             <SummaryRow
-              label={`${t('offer.interest')} (${t('offer.days', { n: installments * 30 })})`}
-              value={formatMXN(loan.iva + (loan.totalRepayment - loan.amount - loan.processingFee - loan.iva))}
+              label={`${t('offer.interest')} (${loan.totalDays} ${t('offer.daysLabel')})`}
+              value={formatMXN(loan.totalRepayment - loan.amount - loan.processingFee - loan.iva)}
               muted
             />
             <SummaryRow label={t('offer.vat')} value={formatMXN(loan.iva)} muted />
 
             <div className="border-t border-[#e5e5e5] pt-2.5">
               <SummaryRow
-                label={installments === 1 ? t('offer.totalRepay') : t('offer.monthlyPayment')}
-                value={installments === 1 ? formatMXN(loan.totalRepayment) : formatMXN(loan.monthlyPayment)}
+                label={t('offer.totalRepay')}
+                value={formatMXN(loan.totalRepayment)}
                 bold
               />
+              {installments === 2 && (
+                <div className="mt-2">
+                  <SummaryRow
+                    label={t('offer.perInstallment')}
+                    value={formatMXN(loan.monthlyPayment)}
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="flex items-start gap-2 pt-1">
-              <Info size={14} className="text-[#939490] flex-shrink-0 mt-0.5" />
-              <p className="text-[10px] text-[#939490] font-light leading-relaxed">
-                {t('offer.firstPayment', { date: loan.firstPaymentDate })}
-              </p>
-            </div>
+            {installments === 2 && loan.secondPaymentDate && (
+              <div className="flex items-start gap-2 pt-1">
+                <CalendarDays size={14} className="text-[#939490] flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-[#939490] font-light leading-relaxed">
+                  {t('offer.scheduleNote', { date1: loan.firstPaymentDate, date2: loan.secondPaymentDate })}
+                </p>
+              </div>
+            )}
+
+            {installments === 1 && (
+              <div className="flex items-start gap-2 pt-1">
+                <Info size={14} className="text-[#939490] flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-[#939490] font-light leading-relaxed">
+                  {t('offer.firstPayment', { date: loan.firstPaymentDate })}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -148,7 +231,7 @@ export default function OfferPage() {
             <span className="text-white text-xs font-bold">T</span>
           </div>
           <p className="text-sm text-[#1d6d70] font-light leading-relaxed">
-            {t('offer.thaliaMsg')} 💪
+            {t('offer.thaliaMsg')}
           </p>
         </div>
 

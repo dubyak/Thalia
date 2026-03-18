@@ -23,6 +23,10 @@ export interface LoanConfig {
   monthlyPayment: number
   disbursementDate: string
   firstPaymentDate: string
+  secondPaymentDate?: string
+  daysToFirst: number
+  totalDays: number
+  firstDueDate: Date
 }
 
 // Chat message in a conversation
