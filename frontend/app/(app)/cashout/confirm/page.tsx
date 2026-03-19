@@ -7,6 +7,7 @@ import { StatusBar } from '@/components/app-shell/StatusBar'
 import { BackHeader } from '@/components/app-shell/BackHeader'
 import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 import { MX_BANKS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/useTranslation'
@@ -17,13 +18,17 @@ export default function CashoutConfirmPage() {
   const router = useRouter()
   const { t } = useTranslation()
 
-  const [clabe, setClabe] = useState('')
+  const { customer } = useCustomer()
+
+  const [clabe, setClabe] = useState('012345678901234567')
   const [saveAccount, setSaveAccount] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const selectedBank = MX_BANKS.find((b) => b.id === flow.selectedBank)
-  const name = tester?.name ?? 'Isabel Torres'
+  const name = customer.firstName && customer.lastName
+    ? `${customer.firstName} ${customer.lastName}`
+    : customer.firstName ?? tester?.name ?? 'Demo Customer'
 
   const handleConfirm = async () => {
     if (clabe.length < 16) {
