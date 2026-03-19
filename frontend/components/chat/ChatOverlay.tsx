@@ -4,12 +4,14 @@ import { useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useTester } from '@/contexts/TesterContext'
+import { useCustomer } from '@/contexts/CustomerContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { ChatWindow } from './ChatWindow'
 
 export function ChatOverlay() {
   const { state, closeOverlay, startCoaching } = useChat()
   const { tester } = useTester()
+  const { customer } = useCustomer()
   const { flow, dispatch: flowDispatch } = useFlow()
 
   const isFirstVisit = flow.coachingSessionCount === 0
@@ -18,12 +20,13 @@ export function ChatOverlay() {
   useEffect(() => {
     if (!state.overlayOpen) return
     if (state.mode === 'coaching' && state.messages.length > 0) return
-    if (!tester?.firstName) return
+    const coachingName = customer.firstName || tester?.firstName
+    if (!coachingName) return
 
     const profile = (flow.businessProfile ?? {}) as Record<string, string>
-    const approvedAmount = flow.loanConfig?.amount ?? tester.approvedAmount ?? 8000
-    const maxAmount = tester.maxAmount ?? 12000
-    startCoaching(tester.firstName, profile, approvedAmount, maxAmount, isFirstVisit)
+    const approvedAmount = flow.loanConfig?.amount ?? tester?.approvedAmount ?? 8000
+    const maxAmount = tester?.maxAmount ?? 12000
+    startCoaching(coachingName, profile, approvedAmount, maxAmount, isFirstVisit)
     if (isFirstVisit) {
       flowDispatch({ type: 'COACHING_STARTED' })
     }
@@ -44,10 +47,9 @@ export function ChatOverlay() {
         className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
         style={{
           bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: 'var(--app-max-width)',
+          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          width: 'min(100vw, var(--app-max-width))',
           height: '85dvh'
         }}
       >

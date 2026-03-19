@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CheckSquare, Square, Shield } from 'lucide-react'
 import { useTester } from '@/contexts/TesterContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { calculateLoan, formatMXN } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import type { LoanConfig } from '@/lib/types'
@@ -34,6 +35,7 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
   const [checked, setChecked] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
   const { tester } = useTester()
+  const { locale } = useLocale()
 
   if (!open) return null
 
@@ -47,7 +49,8 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
     amount,
     installments,
     tester?.interestRateDaily ?? 0.0028,
-    tester?.processingFeeRate ?? 0.04
+    tester?.processingFeeRate ?? 0.04,
+    locale
   )
 
   const handleAccept = async () => {
@@ -70,10 +73,9 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
         className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
         style={{
           bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: 'var(--app-max-width)',
+          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          width: 'min(100vw, var(--app-max-width))',
           height: '85dvh'
         }}
       >

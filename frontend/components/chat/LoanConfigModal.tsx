@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { X, CalendarDays, Check } from 'lucide-react'
 import { useTester } from '@/contexts/TesterContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { calculateLoan, formatMXN, getSmartDueDates, getSecondInstallmentDate, formatDate, formatDateShort } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +23,7 @@ const daysBetweenDates = (a: Date, b: Date) =>
 
 export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onContinue }: LoanConfigModalProps) {
   const { tester } = useTester()
-  const locale = tester?.locale ?? 'es-MX'
+  const { locale } = useLocale()
   const today = useMemo(() => new Date(), [])
   const [amount, setAmount] = useState(approvedAmount)
 
@@ -52,10 +53,9 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
         className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
         style={{
           bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: 'var(--app-max-width)',
+          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
+          width: 'min(100vw, var(--app-max-width))',
           height: '88dvh',
         }}
       >
