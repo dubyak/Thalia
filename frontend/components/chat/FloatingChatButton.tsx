@@ -5,15 +5,23 @@ import { useChat } from '@/contexts/ChatContext'
 export function FloatingChatButton() {
   const { openOverlay } = useChat()
 
+  const handleInteraction = (e: React.SyntheticEvent) => {
+    e.preventDefault()
+    openOverlay()
+  }
+
   return (
     <button
-      onClick={openOverlay}
+      onClick={handleInteraction}
+      onTouchEnd={handleInteraction}
       className="fixed z-50 touch-active active:scale-95 transition-transform"
       style={{
         bottom: 'calc(var(--bottom-nav-height) + 16px)',
         right: 'calc(max(0px, (100vw - var(--app-max-width)) / 2) + 16px)',
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
       }}
       aria-label="Chat with Thalia"
     >
