@@ -73,7 +73,7 @@ const config: Config = {
       animation: {
         'fade-in': 'fade-in 0.3s ease-out forwards',
         'slide-up': 'slide-up 0.3s ease-out forwards',
-        'slide-in-right': 'slide-in-right 0.3s ease-out',
+        'slide-in-right': 'slide-in-right 0.3s ease-out forwards',
         'typing': 'typing 1.2s ease-in-out infinite'
       }
     }
