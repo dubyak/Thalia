@@ -5,32 +5,32 @@ import { useTranslation } from '@/lib/i18n/useTranslation'
 
 // Map phases to visible progress steps
 const PHASE_TO_STEP: Record<string, number> = {
-  '0': 1,   // Welcome
-  '1': 2,   // Business profile
-  '2': 2,
-  '3': 2,
-  '4': 3,   // Business health
-  '5': 3,
-  '6': 3,
-  '7': 3,
-  '8': 4,   // Evidence
-  '9': 5,   // Coaching demo
-  '10': 6,  // Offer
-  '11': 7,  // Closing
-  'complete': 7,
+  '0': 1,   // Welcome — same step as "About Business" so counter doesn't jump
+  '1': 1,
+  '2': 1,
+  '3': 1,
+  '4': 2,   // Business Health (phases 4–8)
+  '5': 2,
+  '6': 2,
+  '7': 2,
+  '8': 2,
+  '9': 3,   // Evidence (phase 9 is evidence, not phase 8)
+  '10': 4,  // Coaching Preview
+  '11': 5,  // Your Offer
+  '12': 6,  // Closing
+  'complete': 6,
 }
 
 const STEP_LABEL_KEYS: Record<number, string> = {
-  1: 'progress.welcome',
-  2: 'progress.aboutBusiness',
-  3: 'progress.businessHealth',
-  4: 'progress.evidence',
-  5: 'progress.coachingPreview',
-  6: 'progress.yourOffer',
-  7: 'progress.done',
+  1: 'progress.aboutBusiness',
+  2: 'progress.businessHealth',
+  3: 'progress.evidence',
+  4: 'progress.coachingPreview',
+  5: 'progress.yourOffer',
+  6: 'progress.done',
 }
 
-const TOTAL_STEPS = 7
+const TOTAL_STEPS = 6
 
 interface OnboardingProgressProps {
   phase: OnboardingPhase
