@@ -135,8 +135,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/*,.pdf,.doc,.docx,application/pdf"
         className="hidden"
         onChange={handleFileChange}
       />
