@@ -202,7 +202,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   )
 
   const startOnboarding = useCallback(
-    async (firstName: string, approvedAmount = 8000, maxAmount = 12000, businessType?: string, loanPurpose?: string) => {
+    async (firstName: string, approvedAmount = 10000, maxAmount = 11000, businessType?: string, loanPurpose?: string) => {
       if (stateRef.current.messages.length > 0 || startingRef.current) return
       startingRef.current = true
 
@@ -220,7 +220,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   )
 
   const startServicing = useCallback(
-    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 12000) => {
+    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 11000) => {
       dispatch({ type: 'START_SERVICING', name: firstName, approvedAmount })
       startingRef.current = true
 
@@ -237,7 +237,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   )
 
   const startCoaching = useCallback(
-    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 12000, isFirstVisit = true) => {
+    async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 11000, isFirstVisit = true) => {
       dispatch({ type: 'START_COACHING', name: firstName, approvedAmount })
       startingRef.current = true
 
