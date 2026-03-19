@@ -81,7 +81,9 @@ class AgentDecision(BaseModel):
             "Phase 8: after workingCapitalNeed extracted. "
             "Phase 9: after evidence shared or skipped. "
             "Phase 10: after coaching demo complete (3-4 turns). "
-            "Phase 11: after offer accepted and installment confirmed. "
+            "Phase 11: set FALSE when presenting the offer or handling negotiation — "
+            "the UI handles loan configuration. Set TRUE only when the customer's message "
+            "confirms they have accepted the loan through the app (e.g. 'I've accepted the loan of...'). "
             "Phase 12: after closing delivered."
         )
     )

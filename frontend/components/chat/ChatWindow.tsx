@@ -37,13 +37,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  // Trigger onComplete when onboarding finishes
-  useEffect(() => {
-    if (state.isComplete && onComplete) {
-      const timer = setTimeout(onComplete, 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [state.isComplete, onComplete])
+  // Note: onComplete is now triggered by the "Disburse my loan" button, not automatically
 
   const showStarterGrid =
     state.mode === 'coaching' &&
@@ -68,6 +62,12 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     lastMessage?.isOffer &&
     lastMessage?.role === 'agent'
 
+  // Show "Disburse my loan" button after terms accepted and agent gives closing
+  const showDisbursementButton =
+    offerHandled &&
+    state.isComplete &&
+    !isTyping
+
   // LoanConfigModal → TermsModal
   const handleConfigContinue = (amount: number, installments: 1 | 2) => {
     setPendingConfig({ amount, installments })
@@ -83,15 +83,13 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     flowDispatch({ type: 'OFFER_ACCEPTED', config: loanConfig })
     flowDispatch({ type: 'TERMS_ACCEPTED' })
 
-    // Synthetic message triggers Phase 11 closing from the agent.
+    // Synthetic message triggers Phase 12 closing from the agent.
     // sendMessage awaits bubble animation, so when it resolves the closing is visible.
     await sendMessage(
       `I've accepted the loan of $${loanConfig.amount.toLocaleString()} MXN with ${loanConfig.installments} payment${loanConfig.installments > 1 ? 's' : ''}.`
     )
 
-    // Navigate to cashout directly — don't rely on Phase 11 advancing to "complete".
-    // Terms are already accepted; the agent closing message has already rendered above.
-    setTimeout(() => onComplete?.(), 2500)
+    // Do NOT auto-navigate — wait for user to click the disbursement button
   }
 
   return (
@@ -139,6 +137,22 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
               }}
             >
               Configure my loan
+            </button>
+          </div>
+        )}
+
+        {showDisbursementButton && (
+          <div className="flex justify-center pt-2 pb-1 animate-fade-in">
+            <button
+              onClick={() => onComplete?.()}
+              className="px-6 py-3 rounded-full text-sm font-semibold transition-all active:scale-95 touch-active"
+              style={{
+                background: '#F06B22',
+                color: '#FFFFFF',
+                boxShadow: '0 2px 8px rgba(240,107,34,0.3)',
+              }}
+            >
+              Disburse my loan
             </button>
           </div>
         )}

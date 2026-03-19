@@ -23,7 +23,8 @@ interface ChatState {
   mode: 'onboarding' | 'servicing' | 'coaching'
   testerFirstName: string | null
   approvedAmount: number
-  maxAmount: number
+  maxAmount: number      // slider display max; starts = approvedAmount, unlocks to ceilingAmount on negotiation
+  ceilingAmount: number  // API ceiling; always = tester's max (e.g. 11000)
   // Survey-provided context
   businessType: string | null
   loanPurpose: string | null
@@ -54,7 +55,8 @@ const INITIAL_STATE: ChatState = {
   mode: 'onboarding',
   testerFirstName: null,
   approvedAmount: 10000,
-  maxAmount: 11000,
+  maxAmount: 10000,
+  ceilingAmount: 11000,
   businessType: null,
   loanPurpose: null,
 }
@@ -85,7 +87,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         mode: 'onboarding',
         testerFirstName: action.name,
         approvedAmount: action.approvedAmount,
-        maxAmount: action.maxAmount,
+        maxAmount: action.approvedAmount,
+        ceilingAmount: action.maxAmount,
         businessType: action.businessType ?? null,
         loanPurpose: action.loanPurpose ?? null,
       }
@@ -275,7 +278,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         s.mode,
         s.testerFirstName ?? undefined,
         s.approvedAmount,
-        s.maxAmount,
+        s.ceilingAmount,
         (s.mode === 'servicing' || s.mode === 'coaching')
           ? (s.businessProfile as Record<string, string>)
           : undefined,
@@ -322,7 +325,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         s.mode,
         s.testerFirstName ?? undefined,
         s.approvedAmount,
-        s.maxAmount,
+        s.ceilingAmount,
         (s.mode === 'servicing' || s.mode === 'coaching')
           ? (s.businessProfile as Record<string, string>)
           : undefined,

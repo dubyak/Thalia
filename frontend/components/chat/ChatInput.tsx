@@ -24,6 +24,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
 
   // Speech recognition state
   const [isListening, setIsListening] = useState(false)
+  const [speechError, setSpeechError] = useState<string | null>(null)
   const recognitionRef = useRef<any>(null)
   const hasSpeech = typeof SpeechRecognition !== 'undefined'
 
@@ -85,20 +86,18 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
 
     const recognition = new SpeechRecognition()
     recognition.continuous = false
-    recognition.interimResults = false
+    recognition.interimResults = true
     recognition.lang = 'en-US'
 
     // Capture whatever is already in the input so we can append to it
     prefixRef.current = value.trim()
 
     recognition.onresult = (event: any) => {
-      const last = event.results[event.results.length - 1]
-      if (last?.isFinal || !recognition.interimResults) {
-        const transcript = last[0].transcript.trim()
-        if (transcript) {
-          setValue(prefixRef.current ? prefixRef.current + ' ' + transcript : transcript)
-        }
+      let transcript = ''
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
       }
+      setValue(prefixRef.current ? prefixRef.current + ' ' + transcript : transcript)
     }
 
     recognition.onend = () => {
@@ -108,6 +107,10 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
 
     recognition.onerror = (e: any) => {
       console.warn('Speech recognition error:', e.error)
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setSpeechError('Voice not available — try Safari on iOS')
+        setTimeout(() => setSpeechError(null), 3000)
+      }
       setIsListening(false)
       recognitionRef.current = null
     }
@@ -130,7 +133,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
   }, [])
 
   return (
-    <div className="flex items-center gap-2 px-3 py-3 bg-white border-t border-[#F1F5F9]">
+    <div className="relative flex items-center gap-2 px-3 py-3 bg-white border-t border-[#F1F5F9]">
       {/* Hidden file input for camera / photo picker */}
       <input
         ref={fileInputRef}
@@ -168,23 +171,39 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
 
       {/* Microphone button — teal-tinted circle */}
       {hasSpeech && (
-        <button
-          type="button"
-          onClick={toggleListening}
-          disabled={disabled}
-          className={cn(
-            'flex items-center justify-center flex-shrink-0 transition-all touch-active',
-            isListening && 'animate-pulse'
+        <>
+          {isListening && (
+            <div className="absolute bottom-full left-0 right-0 flex items-center justify-center pb-1 animate-fade-in pointer-events-none">
+              <span className="text-xs text-[#1a989e] font-semibold bg-white px-3 py-1 rounded-full shadow-sm border border-[#d2f2f4]">
+                Listening... tap mic to stop
+              </span>
+            </div>
           )}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 15,
-            background: isListening ? '#1a989e' : '#D2F2F4',
-          }}
-        >
-          <Mic size={18} className={isListening ? 'text-white' : 'text-[#1a989e]'} />
-        </button>
+          {speechError && (
+            <div className="absolute bottom-full left-0 right-0 flex items-center justify-center pb-1 animate-fade-in pointer-events-none">
+              <span className="text-xs text-[#f06f14] font-medium bg-white px-3 py-1 rounded-full shadow-sm border border-[#fbe9dd]">
+                {speechError}
+              </span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={toggleListening}
+            disabled={disabled}
+            className={cn(
+              'flex items-center justify-center flex-shrink-0 transition-all touch-active',
+              isListening && 'animate-pulse'
+            )}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 15,
+              background: isListening ? '#1a989e' : '#D2F2F4',
+            }}
+          >
+            <Mic size={18} className={isListening ? 'text-white' : 'text-[#1a989e]'} />
+          </button>
+        </>
       )}
 
       {/* Send button — orange circle */}
