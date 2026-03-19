@@ -114,7 +114,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
         {showReadyButton && (
           <div className="flex justify-center pt-2 pb-1 animate-fade-in">
             <button
-              onClick={() => sendMessage("I'm ready to get started")}
+              onClick={() => sendMessage("Continue my application")}
               className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95 touch-active"
               style={{
                 background: '#00A69C',
@@ -122,7 +122,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
                 boxShadow: '0 2px 8px rgba(0,166,156,0.25)',
               }}
             >
-              I'm ready to get started
+              Continue my application
             </button>
           </div>
         )}
