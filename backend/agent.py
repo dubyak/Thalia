@@ -243,7 +243,7 @@ async def run_agent(
     # ── Auto-advance: if we advanced past a question phase, immediately ─
     # ── generate the next phase's question so the user doesn't hit a    ─
     # ── dead end and have to say "ok" to trigger the next question.     ─
-    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+    AUTO_ADVANCE_FROM = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}
     if (
         session.mode == "onboarding"
         and phase in AUTO_ADVANCE_FROM

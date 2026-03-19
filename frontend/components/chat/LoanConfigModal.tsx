@@ -55,7 +55,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
           bottom: 0,
           left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
           right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          width: 'min(100vw, var(--app-max-width))',
+          maxWidth: 'var(--app-max-width)',
           height: '88dvh',
         }}
       >

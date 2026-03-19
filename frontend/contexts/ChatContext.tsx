@@ -238,8 +238,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const startCoaching = useCallback(
     async (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount = 11000, isFirstVisit = true) => {
-      dispatch({ type: 'START_COACHING', name: firstName, approvedAmount })
+      if (stateRef.current.mode === 'coaching' && stateRef.current.messages.length > 0) return
       startingRef.current = true
+      dispatch({ type: 'START_COACHING', name: firstName, approvedAmount })
 
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
