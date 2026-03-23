@@ -31,15 +31,32 @@ const TERMS = [
   }
 ]
 
+const TERMS_ES = [
+  {
+    id: 'credit-agreement',
+    text: 'Acepto el Contrato de Crédito Simple, incluyendo el monto del crédito, plazo, tasa de interés diaria, comisiones aplicables y el calendario de pagos establecido.'
+  },
+  {
+    id: 'privacy-policy',
+    text: 'Acepto el Aviso de Privacidad y autorizo a Tala a enviarme notificaciones relacionadas con mi cuenta, pagos y productos disponibles a través de los canales registrados.'
+  },
+  {
+    id: 'data-authorization',
+    text: 'Autorizo expresamente a TALA a descontar, endosar, ceder o transferir los derechos de cobro derivados de este contrato, de conformidad con la ley aplicable.'
+  }
+]
+
 export function TermsModal({ open, amount, installments, onClose, onAccept }: TermsModalProps) {
   const [checked, setChecked] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
   const { tester } = useTester()
   const { locale } = useLocale()
+  const isEs = locale === 'es-MX'
+  const terms = isEs ? TERMS_ES : TERMS
 
   if (!open) return null
 
-  const allChecked = TERMS.every((t) => checked[t.id])
+  const allChecked = terms.every((t) => checked[t.id])
 
   const toggle = (id: string) => {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -68,17 +85,16 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
         onClick={onClose}
       />
 
-      {/* Bottom sheet */}
-      <div
-        className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
-        style={{
-          bottom: 0,
-          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          width: 'min(100vw, var(--app-max-width))',
-          height: '85dvh'
-        }}
-      >
+      {/* Full-viewport fixed wrapper that mirrors the app shell's centering */}
+      <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+        <div
+          className="bg-white flex flex-col overflow-hidden animate-slide-up rounded-t-3xl sm:rounded-3xl pointer-events-auto"
+          style={{
+            width: 'min(100vw, var(--app-max-width))',
+            maxWidth: 'var(--app-max-width)',
+            height: '85dvh',
+          }}
+        >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-[#e5e5e5]" />
@@ -87,7 +103,7 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
         <div className="flex-1 overflow-y-auto px-0">
           {/* Header */}
           <div className="px-5 pt-2 pb-4 border-b border-[#f0f0f0]">
-            <h2 className="text-lg font-bold text-[#1f1c2f]">Terms and conditions</h2>
+            <h2 className="text-lg font-bold text-[#1f1c2f]">{isEs ? 'Términos y condiciones' : 'Terms and conditions'}</h2>
           </div>
 
           {/* Loan summary pill */}
@@ -97,18 +113,18 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
             </div>
             <div>
               <p className="text-[#20bec6] text-xs font-semibold uppercase tracking-wider">
-                Your loan
+                {isEs ? 'Tu crédito' : 'Your loan'}
               </p>
               <p className="text-white font-bold text-xl">{formatMXN(amount)}</p>
               <p className="text-[#939490] text-xs font-light">
-                {installments} {installments === 1 ? 'payment' : 'payments'} · First payment: {loan.firstPaymentDate}
+                {installments} {installments === 1 ? (isEs ? 'pago' : 'payment') : (isEs ? 'pagos' : 'payments')} · {isEs ? 'Primer pago' : 'First payment'}: {loan.firstPaymentDate}
               </p>
             </div>
           </div>
 
           {/* Terms list */}
           <div className="mx-4 space-y-3 mb-4">
-            {TERMS.map((term) => {
+            {terms.map((term) => {
               const isChecked = !!checked[term.id]
               return (
                 <button
@@ -134,7 +150,9 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
           {/* Credit bureau notice */}
           <div className="mx-4 mb-6 bg-[#f8fafc] rounded-xl px-4 py-3 border border-[#e5e5e5]">
             <p className="text-xs text-[#939490] font-light leading-relaxed">
-              By accepting, I authorize Tala México S.A. de C.V. SOFOM E.N.R. to consult and report my credit history to the Credit Information Society (Buró de Crédito), in accordance with the Law to Regulate Credit Information Societies.
+              {isEs
+                ? 'Al aceptar, autorizo a Tala México S.A. de C.V. SOFOM E.N.R. a consultar y reportar mi historial crediticio ante la Sociedad de Información Crediticia (Buró de Crédito), de conformidad con la Ley para Regular las Sociedades de Información Crediticia.'
+                : 'By accepting, I authorize Tala México S.A. de C.V. SOFOM E.N.R. to consult and report my credit history to the Credit Information Society (Buró de Crédito), in accordance with the Law to Regulate Credit Information Societies.'}
             </p>
           </div>
 
@@ -149,14 +167,15 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
                   : 'bg-[#e5e5e5] text-[#c2c6c0]'
               )}
             >
-              {loading ? 'Processing...' : 'Accept and continue'}
+              {loading ? (isEs ? 'Procesando...' : 'Processing...') : (isEs ? 'Aceptar y continuar' : 'Accept and continue')}
             </button>
             {!allChecked && (
               <p className="text-center text-xs text-[#939490] mt-2 font-light">
-                Accept all terms to continue
+                {isEs ? 'Acepta todos los términos para continuar' : 'Accept all terms to continue'}
               </p>
             )}
           </div>
+        </div>
         </div>
       </div>
     </>

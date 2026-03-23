@@ -18,13 +18,27 @@ try:
 except Exception as e:
     logging.warning(f"Arize tracing disabled: {e}")
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from agent import run_agent
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Thalia Agent API")
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded. Please slow down."},
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,7 +81,8 @@ def health():
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
+@limiter.limit("10/minute")
+async def chat(req: ChatRequest, request: Request):
     result = await run_agent(
         session_id=req.session_id,
         message=req.message,

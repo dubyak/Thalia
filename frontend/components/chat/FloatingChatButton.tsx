@@ -7,7 +7,9 @@ export function FloatingChatButton() {
 
   const handleInteraction = (e: React.SyntheticEvent) => {
     e.preventDefault()
-    openOverlay()
+    e.stopPropagation()
+    // Delay opening slightly so the backdrop doesn't catch the same click
+    requestAnimationFrame(() => openOverlay())
   }
 
   return (

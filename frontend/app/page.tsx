@@ -62,11 +62,11 @@ export default function LandingPage() {
               id="access-code"
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              onChange={(e) => setCode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && code.trim() && handleSubmit()}
               placeholder={t('landing.placeholder')}
               className="w-full h-14 rounded-xl border-2 border-[#d8d4c3] bg-white px-4 text-[#1f1c2f] font-medium text-base placeholder:text-[#c2c6c0] focus:outline-none focus:border-[#1a989e] transition-colors"
-              autoCapitalize="characters"
+              autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
               disabled={loading}

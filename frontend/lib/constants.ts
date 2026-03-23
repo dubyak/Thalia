@@ -1,11 +1,10 @@
 import type { TesterProfile } from './types'
 
-// Demo access codes — one per locale. All users get the same $10,000 limit.
+// Access code — single password for all users
 export const DEFAULT_TESTERS: TesterProfile[] = [
-  // Spanish demo
   {
     id: 'demo',
-    code: 'DEMO',
+    code: 'T@LAJOTE',
     name: 'Demo',
     firstName: 'Demo',
     approvedAmount: 10000,
@@ -14,18 +13,6 @@ export const DEFAULT_TESTERS: TesterProfile[] = [
     processingFeeRate: 0.0299,
     locale: 'es-MX'
   },
-  // English demo
-  {
-    id: 'demo-en',
-    code: 'DEMOEN',
-    name: 'Demo',
-    firstName: 'Demo',
-    approvedAmount: 10000,
-    maxAmount: 11000,
-    interestRateDaily: 0.0083,
-    processingFeeRate: 0.0299,
-    locale: 'en'
-  }
 ]
 
 // Mexican banks for cashout selection

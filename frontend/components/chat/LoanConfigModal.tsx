@@ -24,6 +24,7 @@ const daysBetweenDates = (a: Date, b: Date) =>
 export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onContinue }: LoanConfigModalProps) {
   const { tester } = useTester()
   const { locale } = useLocale()
+  const isEs = locale === 'es-MX'
   const today = useMemo(() => new Date(), [])
   const [amount, setAmount] = useState(approvedAmount)
 
@@ -49,19 +50,19 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
     <>
       <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={onClose} />
 
-      <div
-        className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
-        style={{
-          bottom: 0,
-          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          maxWidth: 'var(--app-max-width)',
-          height: '88dvh',
-        }}
-      >
+      {/* Full-viewport fixed wrapper that mirrors the app shell's centering */}
+      <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+        <div
+          className="bg-white flex flex-col overflow-hidden animate-slide-up rounded-t-3xl sm:rounded-3xl pointer-events-auto"
+          style={{
+            width: 'min(100vw, var(--app-max-width))',
+            maxWidth: 'var(--app-max-width)',
+            height: '88dvh',
+          }}
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#f0f0f0] flex-shrink-0">
-          <h2 className="text-lg font-bold text-[#1f1c2f]">Customize your plan</h2>
+          <h2 className="text-lg font-bold text-[#1f1c2f]">{isEs ? 'Personaliza tu plan' : 'Customize your plan'}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#f5f6f0] flex items-center justify-center touch-active">
             <X size={18} className="text-[#676d65]" />
           </button>
@@ -70,7 +71,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {/* ── Step 1: Amount ── */}
           <div className="mb-6">
-            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-1">How much do you need?</p>
+            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-1">{isEs ? '¿Cuánto necesitas?' : 'How much do you need?'}</p>
             <p className="text-4xl font-bold text-[#1f1c2f] text-center mb-2">{formatMXN(amount)}</p>
 
             <div className="px-1">
@@ -97,7 +98,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
           <div className="mb-6">
             <div className="flex items-center gap-1.5 mb-3">
               <CalendarDays size={14} className="text-[#939490]" />
-              <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider">First payment date</p>
+              <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider">{isEs ? 'Fecha del primer pago' : 'First payment date'}</p>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -126,13 +127,13 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                           {formatDate(date, locale)}
                         </p>
                         <p className="text-xs text-[#939490]">
-                          {daysBetweenDates(today, date)} days from today
+                          {daysBetweenDates(today, date)} {isEs ? 'días desde hoy' : 'days from today'}
                         </p>
                       </div>
                     </div>
                     {recommended && (
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#00A69C] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
-                        Recommended
+                        {isEs ? 'Recomendado' : 'Recommended'}
                       </span>
                     )}
                   </button>
@@ -143,7 +144,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
 
           {/* ── Step 3: Installment count ── */}
           <div className="mb-6">
-            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-3">Payment plan</p>
+            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-3">{isEs ? 'Plan de pago' : 'Payment plan'}</p>
             <div className="flex gap-3">
               {([1, 2] as const).map((n) => (
                 <button
@@ -157,7 +158,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                   )}
                 >
                   <p className={cn('text-base font-bold', installments === n ? 'text-[#1d6d70]' : 'text-[#1f1c2f]')}>
-                    {n === 1 ? '1 installment' : '2 installments'}
+                    {n === 1 ? (isEs ? '1 pago' : '1 installment') : (isEs ? '2 pagos' : '2 installments')}
                   </p>
                   <p className={cn('text-sm font-semibold mt-1', installments === n ? 'text-[#1d6d70]' : 'text-[#939490]')}>
                     {n === 1
@@ -167,7 +168,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                   </p>
                   <p className="text-xs text-[#939490] mt-0.5">
                     {n === 1
-                      ? `Due ${selectedDate ? formatDateShort(selectedDate, locale) : ''}`
+                      ? `${isEs ? 'Vence' : 'Due'} ${selectedDate ? formatDateShort(selectedDate, locale) : ''}`
                       : `${selectedDate ? formatDateShort(selectedDate, locale) : ''} + ${secondDate ? formatDateShort(getSecondInstallmentDate(selectedDate!), locale) : ''}`
                     }
                   </p>
@@ -178,18 +179,18 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
 
           {/* ── Step 4: Dynamic cost breakdown ── */}
           <div className="bg-[#f8fafc] rounded-2xl p-4 mb-6 border border-[#e5e5e5]">
-            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-3">Cost summary</p>
+            <p className="text-xs text-[#939490] font-semibold uppercase tracking-wider mb-3">{isEs ? 'Resumen de costos' : 'Cost summary'}</p>
             <div className="space-y-2.5">
               <div className="flex justify-between">
-                <span className="text-sm text-[#676d65]">Principal</span>
+                <span className="text-sm text-[#676d65]">{isEs ? 'Capital' : 'Principal'}</span>
                 <span className="text-sm font-semibold text-[#1f1c2f]">{formatMXN(amount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#676d65]">Interest ({(rate * 100).toFixed(2)}%/day x {loan.totalDays} days)</span>
+                <span className="text-sm text-[#676d65]">{isEs ? `Interés (${(rate * 100).toFixed(2)}%/día x ${loan.totalDays} días)` : `Interest (${(rate * 100).toFixed(2)}%/day x ${loan.totalDays} days)`}</span>
                 <span className="text-sm font-semibold text-[#1f1c2f]">{formatMXN(amount * rate * loan.totalDays)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#676d65]">Processing fee ({(feeRate * 100).toFixed(1)}%)</span>
+                <span className="text-sm text-[#676d65]">{isEs ? `Comisión (${(feeRate * 100).toFixed(1)}%)` : `Processing fee (${(feeRate * 100).toFixed(1)}%)`}</span>
                 <span className="text-sm font-semibold text-[#1f1c2f]">{formatMXN(loan.processingFee)}</span>
               </div>
               <div className="flex justify-between">
@@ -198,23 +199,23 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
               </div>
               <div className="h-px bg-[#e5e5e5] my-1" />
               <div className="flex justify-between">
-                <span className="text-sm font-bold text-[#1f1c2f]">Total to repay</span>
+                <span className="text-sm font-bold text-[#1f1c2f]">{isEs ? 'Total a pagar' : 'Total to repay'}</span>
                 <span className="text-sm font-bold text-[#F06B22]">{formatMXN(loan.totalRepayment)}</span>
               </div>
               {installments === 2 && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-sm text-[#676d65]">Per installment</span>
+                    <span className="text-sm text-[#676d65]">{isEs ? 'Por pago' : 'Per installment'}</span>
                     <span className="text-sm font-semibold text-[#1f1c2f]">{formatMXN(loan.monthlyPayment)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-[#676d65]">2nd payment date</span>
+                    <span className="text-sm text-[#676d65]">{isEs ? 'Fecha del 2do pago' : '2nd payment date'}</span>
                     <span className="text-sm font-semibold text-[#1f1c2f]">{loan.secondPaymentDate}</span>
                   </div>
                 </>
               )}
               <div className="flex justify-between">
-                <span className="text-sm text-[#676d65]">1st payment date</span>
+                <span className="text-sm text-[#676d65]">{isEs ? 'Fecha del 1er pago' : '1st payment date'}</span>
                 <span className="text-sm font-semibold text-[#1f1c2f]">{loan.firstPaymentDate}</span>
               </div>
             </div>
@@ -228,8 +229,9 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
             className="w-full h-14 rounded-[28px] text-white font-bold text-base touch-active active:opacity-80"
             style={{ background: '#F06B22' }}
           >
-            Continue
+            {isEs ? 'Continuar' : 'Continue'}
           </button>
+        </div>
         </div>
       </div>
     </>

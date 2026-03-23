@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
@@ -23,6 +24,8 @@ interface ChatWindowProps {
 export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = false }: ChatWindowProps) {
   const { state, sendMessage, sendImage } = useChat()
   const { dispatch: flowDispatch } = useFlow()
+  const { locale } = useLocale()
+  const isEs = locale === 'es-MX'
   const { messages, isTyping, phase } = state
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -85,9 +88,10 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
 
     // Synthetic message triggers Phase 12 closing from the agent.
     // sendMessage awaits bubble animation, so when it resolves the closing is visible.
-    await sendMessage(
-      `I've accepted the loan of $${loanConfig.amount.toLocaleString()} MXN with ${loanConfig.installments} payment${loanConfig.installments > 1 ? 's' : ''}.`
-    )
+    const acceptMsg = isEs
+      ? `Acepté el crédito de $${loanConfig.amount.toLocaleString()} MXN con ${loanConfig.installments} pago${loanConfig.installments > 1 ? 's' : ''}.`
+      : `I've accepted the loan of $${loanConfig.amount.toLocaleString()} MXN with ${loanConfig.installments} payment${loanConfig.installments > 1 ? 's' : ''}.`
+    await sendMessage(acceptMsg)
 
     // Do NOT auto-navigate — wait for user to click the disbursement button
   }
@@ -112,7 +116,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
         {showReadyButton && (
           <div className="flex justify-center pt-2 pb-1 animate-fade-in">
             <button
-              onClick={() => sendMessage("Continue my application")}
+              onClick={() => sendMessage(isEs ? "Continuar mi solicitud" : "Continue my application")}
               className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95 touch-active"
               style={{
                 background: '#00A69C',
@@ -120,7 +124,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
                 boxShadow: '0 2px 8px rgba(0,166,156,0.25)',
               }}
             >
-              Continue my application
+              {isEs ? 'Continuar mi solicitud' : 'Continue my application'}
             </button>
           </div>
         )}
@@ -136,7 +140,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
                 boxShadow: '0 2px 8px rgba(240,107,34,0.3)',
               }}
             >
-              Configure my loan
+              {isEs ? 'Configurar mi crédito' : 'Configure my loan'}
             </button>
           </div>
         )}
@@ -152,7 +156,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
                 boxShadow: '0 2px 8px rgba(240,107,34,0.3)',
               }}
             >
-              Disburse my loan
+              {isEs ? 'Dispersar mi crédito' : 'Disburse my loan'}
             </button>
           </div>
         )}
@@ -165,7 +169,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
       </div>
 
       {/* Input */}
-      <ChatInput onSend={sendMessage} onImageSend={sendImage} disabled={isTyping || state.isComplete} />
+      <ChatInput onSend={sendMessage} onImageSend={sendImage} disabled={isTyping || state.isComplete} placeholder={isEs ? 'Escribe tu mensaje...' : 'Type your message...'} />
 
       {/* Modals */}
       <LoanConfigModal

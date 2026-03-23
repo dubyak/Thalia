@@ -44,6 +44,7 @@ class Session:
     loan_purpose: str | None = None
     # Coaching demo turn counter
     coaching_turns: int = 0
+    message_count: int = 0
     # Offer negotiation state
     offer_stage: str = "initial"  # initial | negotiating | accepted
     # Current offer amount — starts at approved_amount, unlocks to max_amount after negotiation
@@ -113,6 +114,18 @@ async def run_agent(
         )
 
     session = sessions[session_id]
+
+    # ── Per-session message cap ─────────────────────────────────────────
+    MAX_MESSAGES_PER_SESSION = 50
+    session.message_count += 1
+    if session.message_count > MAX_MESSAGES_PER_SESSION:
+        return {
+            "messages": ["You've reached the message limit for this session. Please start a new session to continue."],
+            "phase": session.phase,
+            "collected": session.collected,
+            "offer_amount": 0,
+            "is_complete": True,
+        }
 
     # Initialize current_offer on first use
     if session.current_offer == 0:
@@ -312,6 +325,9 @@ async def run_agent(
         session.messages.pop()  # remove synthetic user note
         session.messages.pop()  # remove ack
 
+    # ── Filter out garbage bubbles (e.g. LLM leaking field names like "messages") ──
+    result.messages = [m for m in result.messages if m.strip() and m.strip().lower() != "messages"]
+
     # ── Append assistant messages to history ───────────────────────────
     combined = "\n\n".join(result.messages)
     session.messages.append({"role": "assistant", "content": combined})
@@ -325,4 +341,5 @@ async def run_agent(
         "phase": session.phase,
         "collected": session.collected,
         "offer_amount": offer_amount,
+        "is_complete": session.phase == "complete",
     }

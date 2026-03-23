@@ -43,16 +43,15 @@ export function ChatOverlay() {
       />
 
       {/* Sheet */}
-      <div
-        className="fixed z-50 bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up"
-        style={{
-          bottom: 0,
-          left: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          right: 'max(0px, calc((100vw - var(--app-max-width)) / 2))',
-          width: 'min(100vw, var(--app-max-width))',
-          height: '85dvh'
-        }}
-      >
+      <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+        <div
+          className="bg-white flex flex-col rounded-t-3xl overflow-hidden animate-slide-up pointer-events-auto"
+          style={{
+            width: 'min(100vw, var(--app-max-width))',
+            maxWidth: 'var(--app-max-width)',
+            height: '85dvh'
+          }}
+        >
         {/* Sheet header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5e5e5] flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -81,6 +80,7 @@ export function ChatOverlay() {
         {/* Chat — fills remaining height */}
         <div className="flex-1 overflow-hidden flex flex-col bg-[#f8fafc]">
           <ChatWindow isFirstVisit={isFirstVisit} />
+        </div>
         </div>
       </div>
     </>

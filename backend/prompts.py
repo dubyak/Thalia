@@ -40,10 +40,17 @@ LOCALE_CONFIG = {
             "No pressure though — skipping won't affect the offer we've already put together for you. "
             "Want to share something, or shall we move on?"
         ),
+        "p9_list_header": "Here are some things that work well:",
+        "p9_item_bank": "A bank statement or account summary",
+        "p9_item_receipt": "A receipt from a supplier or wholesale purchase",
+        "p9_item_sales": "A sales summary from a platform (Uber Eats, MercadoLibre, etc.)",
+        "p9_item_photo": "A photo of your stall, shop, or inventory",
+        "p9_list_footer": "Anything that shows your business activity works. We only use it to help you — never for anything else.",
         # Phase 11 offer
         "p11_product_reminder": "This is a personal credit (never say 'business loan').",
         "p11_ready_cta": "Ready to set it up? I'll open the configurator now so you can pick your exact amount and payment plan.",
         # Phase 12 closing
+        "p12_disburse_cta": "When you're ready, tap the button below to receive your loan.",
         "p12_available": "After your disbursement is set up, you can keep talking to me anytime about your business or loan details. Just look for my icon on the home screen and tap to start a conversation.",
         # Servicing
         "svc_oxxo": "To pay at OXXO: open the Tala app → Payments → Show OXXO barcode → pay at any OXXO store",
@@ -91,10 +98,17 @@ LOCALE_CONFIG = {
             "Sin presión — saltarlo no afecta la oferta que ya tenemos para ti. "
             "¿Quieres compartir algo, o seguimos adelante?"
         ),
+        "p9_list_header": "Estos son algunos ejemplos que funcionan bien:",
+        "p9_item_bank": "Un estado de cuenta o resumen bancario",
+        "p9_item_receipt": "Un recibo de un proveedor o compra de mayoreo",
+        "p9_item_sales": "Un resumen de ventas de una plataforma (Uber Eats, MercadoLibre, etc.)",
+        "p9_item_photo": "Una foto de tu puesto, local o inventario",
+        "p9_list_footer": "Cualquier cosa que muestre la actividad de tu negocio funciona. Solo lo usamos para ayudarte — nunca para otra cosa.",
         # Phase 11 offer
         "p11_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
         "p11_ready_cta": "Cuando estés listo/a, te abro el configurador para que elijas tu monto exacto y plan de pago.",
         # Phase 12 closing
+        "p12_disburse_cta": "Cuando estés listo/a, toca el botón de abajo para recibir tu crédito.",
         "p12_available": "Una vez que esté lista tu dispersión, puedes seguir platicando conmigo cuando quieras sobre tu negocio o los detalles de tu crédito. Solo busca mi ícono en la pantalla principal y toca para iniciar una conversación.",
         # Servicing
         "svc_oxxo": "Para pagar en OXXO: abre la app de Tala → Pagos → Muestra el código de barras → paga en cualquier OXXO",
@@ -607,13 +621,12 @@ def build_system_prompt(
             "  Use EXACTLY 2 bubbles:\n\n"
             f"  Bubble 1 (intro): '{t('p9_intro')}'\n\n"
             "  Bubble 2 (options + skip): Present these 4 options as a markdown bullet list:\n"
-            "    'Here are some things that work well:'\n"
-            "    - A bank statement or account summary\n"
-            "    - A receipt from a supplier or wholesale purchase\n"
-            "    - A sales summary from a platform (Uber Eats, MercadoLibre, etc.)\n"
-            "    - A photo of your stall, shop, or inventory\n"
-            "    After the list, on a NEW line: 'Anything that shows your business activity works.'\n"
-            "    Then on another NEW line: 'We only use it to help you — never for anything else.'\n"
+            f"    '{t('p9_list_header')}'\n"
+            f"    - {t('p9_item_bank')}\n"
+            f"    - {t('p9_item_receipt')}\n"
+            f"    - {t('p9_item_sales')}\n"
+            f"    - {t('p9_item_photo')}\n"
+            f"    After the list, on a NEW line: '{t('p9_list_footer')}'\n"
             f"    End with: '{t('p9_skip_cta')}'\n\n"
             "  IMPORTANT: The bullet list must use markdown dashes (- item), one per line.\n"
             "  Do NOT run bullets together or concatenate them with surrounding text.\n"
@@ -697,6 +710,7 @@ def build_system_prompt(
         )
 
     elif phase == "12":
+        disburse_cta = t('p12_disburse_cta')
         instructions = (
             "PHASE 12 — CLOSING (after terms accepted)\n"
             f"{already_collected}\n\n"
@@ -707,8 +721,8 @@ def build_system_prompt(
             f"     Use the collected context (offer_amount={amount_fmt} MXN) if available.\n"
             "  3. Tell them the next step is to set up their disbursement — \n"
             "     they'll confirm where to receive their funds.\n"
-            "  4. End with: 'When you're ready, tap the button below to receive your loan.'\n"
-            "     (A 'Disburse my loan' button will appear automatically — do NOT invent other UI.)\n"
+            f"  4. End with: '{disburse_cta}'\n"
+            "     (A disbursement button will appear automatically — do NOT invent other UI.)\n"
             "Set advance_phase=true.\n"
         )
 

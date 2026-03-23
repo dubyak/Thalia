@@ -180,7 +180,7 @@
     "title": "Bienvenido/a",
     "subtitle": "Ingresa tu código de acceso para comenzar.",
     "accessCode": "Código de acceso",
-    "placeholder": "ej. DEMO",
+    "placeholder": "Ingresa el código",
     "invalidCode": "Código inválido. Inténtalo de nuevo.",
     "verifying": "Verificando...",
     "submit": "Continuar",

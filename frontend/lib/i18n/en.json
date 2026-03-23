@@ -180,7 +180,7 @@
     "title": "Welcome",
     "subtitle": "Enter your access code to get started.",
     "accessCode": "Access code",
-    "placeholder": "e.g. DEMO",
+    "placeholder": "Enter code",
     "invalidCode": "Invalid code. Please try again.",
     "verifying": "Checking...",
     "submit": "Continue",

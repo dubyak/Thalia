@@ -6,6 +6,7 @@ import { useChat } from '@/contexts/ChatContext'
 import { useTester } from '@/contexts/TesterContext'
 import { useCustomer } from '@/contexts/CustomerContext'
 import { useFlow } from '@/contexts/FlowContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { ResetMenu } from '@/components/app-shell/ResetMenu'
@@ -15,6 +16,8 @@ export default function OnboardingPage() {
   const { startOnboarding, resetChat, state } = useChat()
   const { tester } = useTester()
   const { customer } = useCustomer()
+  const { locale } = useLocale()
+  const isEs = locale === 'es-MX'
   const { flow, dispatch } = useFlow()
   const router = useRouter()
   const startedRef = useRef(false)
@@ -69,7 +72,7 @@ export default function OnboardingPage() {
               <p className="text-[#1f1c2f] font-semibold text-sm leading-tight">Thalia</p>
               <p className="text-[#1a989e] text-xs font-medium flex items-center gap-1 leading-tight">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1a989e]" />
-                Business assistant
+                {isEs ? 'Asistente de negocios' : 'Business assistant'}
               </p>
             </div>
           </div>
