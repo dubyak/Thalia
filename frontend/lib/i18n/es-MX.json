@@ -44,20 +44,20 @@
     }
   },
   "intro": {
-    "slide1Title": "¡Hola! Soy Thalía, tu asistente de negocios",
-    "slide1Desc": "Estoy aquí para ayudarte a obtener tu crédito y hacer crecer tu negocio.",
-    "slide2Title": "Haz crecer tu negocio conmigo",
-    "slide2Desc": "Recibe consejos para mejorar tus ventas y hacer avanzar tu negocio.",
-    "slide3Title": "Seré tu compañera en cada paso",
-    "slide3Desc": "Te puedo ayudar a manejar tu crédito y ajustar tus pagos si lo necesitas.",
-    "slide4Title": "¿Platicamos para que obtengas tu crédito?",
-    "slide4Desc": "Platicar conmigo es 100% seguro. Tu seguridad y confianza son mi prioridad.",
+    "slide1Title": "¡Hola! Soy Thalía, tu asistente de IA y aliada para crecer",
+    "slide1Desc": "Estoy aquí para ayudarte a recibir tu crédito de forma rápida y sencilla.",
+    "slide2Title": "Llevemos tu negocio al siguiente nivel",
+    "slide2Desc": "Te daré consejos para impulsar tus ventas y hacer que tu negocio prospere. Mientras más conozca tus metas, mejor podré ayudarte a hacerlas realidad.",
+    "slide3Title": "Seré tu aliada en cada momento",
+    "slide3Desc": "Desde administrar tu crédito hasta ajustar tus pagos cuando lo necesites, estoy aquí para que todo sea más fácil y sencillo.",
+    "slide4Title": "¡Hagamos tus metas realidad!",
+    "slide4Desc": "Platicar conmigo es 100% seguro. Cuéntame tus metas y necesidades, y juntos haremos que tu experiencia financiera sea más rápida, inteligente y llena de beneficios.",
     "privacyTitle": "Sobre tu privacidad",
-    "privacyDesc": "Tala prioriza la privacidad de tus datos. La información que compartes es confidencial.",
+    "privacyDesc": "Tala prioriza la privacidad de tus datos. La información que compartes es confidencial. Este asistente no ofrece asesoramiento financiero.",
     "privacyLink": "Ver Política de Privacidad",
-    "letsGo": "¡Vamos!",
+    "letsGo": "¡Empecemos!",
     "next": "Siguiente",
-    "notNow": "Ahora no"
+    "notNow": "Tal vez después"
   },
   "onboarding": {
     "agentName": "Thalía",
