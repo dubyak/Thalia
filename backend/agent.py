@@ -246,8 +246,7 @@ async def run_agent(
                 session.phase = _next_phase(phase)
 
         elif phase == "12":
-            if result.advance_phase:
-                session.phase = "complete"
+            session.phase = "complete"
 
         else:
             if result.advance_phase:
