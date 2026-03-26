@@ -99,3 +99,12 @@ class AgentDecision(BaseModel):
             "Leave false on the initial offer presentation and in all other phases."
         )
     )
+    is_offer: bool = Field(
+        default=False,
+        description=(
+            "Phase 11 only: set to true when presenting a final offer ready for configuration. "
+            "Set true when the customer says YES to the initial offer (Step 2) OR when presenting "
+            "the negotiated max offer (Step 3). Leave false during the initial offer presentation "
+            "and in all other phases."
+        )
+    )

@@ -340,5 +340,6 @@ async def run_agent(
         "phase": session.phase,
         "collected": session.collected,
         "offer_amount": offer_amount,
+        "is_offer": result.is_offer if session.phase == "11" else False,
         "is_complete": session.phase == "complete",
     }

@@ -1,6 +1,18 @@
 from datetime import datetime
 
 
+def _format_today(locale: str) -> str:
+    """Return today's date formatted in the given locale."""
+    try:
+        from babel.dates import format_date
+        if locale == "es-MX":
+            return format_date(datetime.now(), format="EEEE, d 'de' MMMM 'de' y", locale="es_MX")
+        else:
+            return format_date(datetime.now(), format="EEEE, MMMM d, y", locale="en_US")
+    except Exception:
+        return datetime.now().strftime("%A, %B %d, %Y")
+
+
 def _collected_context(collected: dict) -> str:
     if not collected:
         return ""
@@ -28,6 +40,7 @@ LOCALE_CONFIG = {
         "escalation": "I can connect you with our support team at soporte@tala.com.mx or via WhatsApp in the app.",
         "market_context": "Market: Mexico — customers are small business owners (MSMEs). Use MXN for currency. Reference local context where relevant: Day of the Dead, Christmas season; OXXO and SPEI for payments; WhatsApp for sales and customer communication; tianguis and local markets; and common Mexican MSME challenges like ingredient inflation and fuel costs.\n",
         # Phase 0 exact copy
+        "p0_ai_disclosure": "I'm Thalia — Tala's AI assistant. I'm here to help you get your credit quickly and support your business day-to-day.",
         "p0_part1": "Part 1 — About 5 minutes of questions to find the best credit offer.",
         "p0_part2": "Part 2 — You'll work on a real business challenge together so they can\n  see how you help day-to-day as their AI business partner.",
         "p0_cta": "It only takes a few minutes — tap the button below when you're ready!",
@@ -86,9 +99,10 @@ LOCALE_CONFIG = {
         "escalation": "Te puedo conectar con nuestro equipo de soporte en soporte@tala.com.mx o por WhatsApp en la app.",
         "market_context": "Mercado: México — los clientes son dueños de pequeños negocios (MiPyMEs). Usa MXN para montos. Referencia el contexto local: Día de Muertos, temporada navideña; OXXO y SPEI para pagos; WhatsApp para ventas y comunicación; tianguis y mercados locales; y retos comunes como la inflación en insumos y costos de combustible.\n",
         # Phase 0 exact copy
-        "p0_part1": "Parte 1 — Unas 5 preguntas rápidas para encontrar la mejor oferta de crédito para ti.",
-        "p0_part2": "Parte 2 — Vamos a trabajar juntos en un reto real de tu negocio para que\n  veas cómo te puedo ayudar día a día como tu asistente de negocios.",
-        "p0_cta": "Solo toma unos minutos — ¡toca el botón de abajo cuando estés listo/a!",
+        "p0_ai_disclosure": "Soy Thalia, tu asistente de IA de Tala — aquí para ayudarte con tu crédito y tu negocio.",
+        "p0_part1": "Hay dos partes rápidas:",
+        "p0_part2": "Parte 1 — Unas 5 preguntas para encontrar la mejor oferta de crédito para ti.\n  Parte 2 — Trabajamos juntos en un reto real de tu negocio para que veas cómo te ayudo día a día.",
+        "p0_cta": "Solo toma unos minutos — ¡toca el botón de abajo cuando quieras empezar!",
         # Phase 9 evidence
         "p9_intro": (
             "Tu oferta está lista — pero hay una forma de aumentarla. "
@@ -196,6 +210,11 @@ CONVERSATION DESIGN — follow these in every response:
    acknowledgment. After that, do NOT bring it up again unless the customer does.
    Mentioning it in every response makes you sound like a broken record.
 
+10. ACCEPT "I DON'T KNOW": If a customer says 'I don't know', 'not sure', or gives
+   a vague answer, extract what you can (use 'uncertain' or 'varies' if truly nothing
+   extractable), acknowledge briefly, and advance. Never interrogate for precision.
+   A vague answer is still an answer — honor it and move forward.
+
 PHASE FLEXIBILITY RULE: If a customer volunteers information that belongs to a future
 phase, extract and save it. When you reach that phase, confirm smoothly and move on.
 
@@ -231,8 +250,13 @@ def _formatting_rules(mode: str) -> str:
         base += (
             "- Use ✨ when presenting the credit offer or celebrating a milestone.\n"
             "- When the customer first mentions their business type, you may use ONE "
-            "relevant emoji to connect (🍞 bakery, ☕ coffee, 🧶 crafts, 🌮 food, "
-            "📱 online sales, etc.). Use this once — it's your secret weapon for rapport.\n"
+            "relevant emoji to connect:\n"
+            "  🍞 bakery/bread, 🧁 desserts/sweets/cakes, ☕ coffee/drinks, 🌮 tacos/taco stands,\n"
+            "  🥩 butcher/meat, 🧶 crafts/handmade, 💻 online store/e-commerce, 🛍️ retail/clothing,\n"
+            "  🚗 auto services, 💇 salon/beauty, 🏗️ construction, 🌿 plants/flowers,\n"
+            "  🍽️ general food stall (not tacos), 📦 wholesale/supplies.\n"
+            "  Pick the MOST specific match — never use 📱 for an online store.\n"
+            "  Use this once — it's your secret weapon for rapport.\n"
             "- NEVER use ✅, 👍, 🙌, 👏, or other generic reaction emojis. These feel robotic.\n"
             "  If you want to affirm, use words — not a checkmark.\n"
         )
@@ -261,6 +285,10 @@ ABSOLUTE RULES:
    "click below"). The system handles the transition automatically.
 9. Use the customer's name sparingly — at most 3-4 times across the entire onboarding
    (welcome, one mid-flow moment, and the offer). Overusing their name feels robotic.
+10. STAY ON TOPIC. Never generate math calculations, code, websites, step-by-step
+   tutorials, or any content unrelated to Tala credit and business coaching.
+   If asked to do something off-topic, redirect warmly: 'I'm focused on helping
+   with your credit and business — let me know if you have questions about those!'
 """
 
 
@@ -278,7 +306,7 @@ def build_system_prompt(
     interest_rate_daily: float = 0.01,
     locale: str = "en",
 ) -> str:
-    today = datetime.now().strftime("%A, %B %d, %Y")
+    today = _format_today(locale)
     amount_fmt = f"${approved_amount:,.0f}"
     offer_fmt = f"${offer_amount:,.0f}" if offer_amount else "$0"
     max_fmt = f"${max_amount:,.0f}" if max_amount else "$0"
@@ -305,6 +333,20 @@ def build_system_prompt(
             if profile_lines else ""
         )
 
+        due_date = collected.get("dueDate", "")
+        amount_due = collected.get("amountDue", "")
+        difficulty_context = (
+            f"  You already know their payment details — do NOT ask for information you have.\n"
+            f"  Reference what you know directly: 'I can see your payment"
+            + (f" of **{amount_due} MXN**" if amount_due else "")
+            + (f" is due on **{due_date}**" if due_date else "")
+            + "...'\n"
+            "  Then ask: how much could you pay today?\n"
+            if (due_date or amount_due) else
+            "  Ask empathetically about their situation — but only ask for their due date\n"
+            "  or payment amount if you don't already have it from context.\n"
+        )
+
         return (
             f"You are Thalia, a warm AI business assistant for Tala, a lending app.\n"
             f"Customer: {tester_name} | Today: {today}\n"
@@ -320,11 +362,15 @@ def build_system_prompt(
 
             "LOAN INFORMATION YOU CAN SHARE (bold key figures when presenting to customer):\n"
             f"- Loan amount: **{amount_fmt} MXN**\n"
+            + (f"- Due date: **{due_date}**\n" if due_date else "")
+            + (f"- Amount due: **{amount_due} MXN**\n" if amount_due else "")
+            +
             "- Payment methods: OXXO cash (show barcode in app) or bank transfer via SPEI\n"
             f"- {t('svc_oxxo')}\n"
             f"- {t('svc_spei')}\n\n"
 
             "PAYMENT DIFFICULTY PROTOCOL (follow these 3 steps in order):\n"
+            f"{difficulty_context}"
             f"1. EMPATHIZE: '{t('svc_empathize')}'\n"
             f"2. EXPLAIN (factual, not threatening): '{t('svc_explain')}'\n"
             f"3. SOLUTION + EMPOWER: '{t('svc_solution')}'\n\n"
@@ -453,10 +499,9 @@ def build_system_prompt(
         instructions = (
             "PHASE 0 — WELCOME\n\n"
             "Send 2 messages (bubbles):\n\n"
-            f"Bubble 1: Introduce yourself as Thalia from Tala. Be warm and specific:\n"
-            f"  'I'm Thalia from Tala — I'm here to support {business_intro} with "
-            f"credit and 24/7 business coaching.'\n"
-            f"  Keep it to 1-2 sentences. Do NOT say 'nice to meet you' — be direct and confident.\n\n"
+            f"Bubble 1: '{t('p0_ai_disclosure')}' — then add one warm, specific line about\n"
+            f"  supporting {business_intro}. Keep it to 1-2 sentences total.\n"
+            f"  Do NOT say 'nice to meet you' — be direct and warm.\n\n"
             "Bubble 2: Briefly explain the two parts:\n"
             f"  {t('p0_part1')}\n"
             f"  {t('p0_part2')}\n"
@@ -561,11 +606,12 @@ def build_system_prompt(
                 "Do NOT add a context clause — the framing already signals why you're asking.\n"
                 "Set advance_phase=false.\n\n"
                 "WHEN CUSTOMER ANSWERS:\n"
-                "  1. Extract into extracted['nearTermOutlook'].\n"
+                "  1. ALWAYS extract into extracted['nearTermOutlook'] — accept any description,\n"
+                "     vague or specific. If they say 'I don't know', extract 'uncertain' and move on.\n"
                 "  2. If outlook sounds NEGATIVE (slow, bad, tough), acknowledge empathetically "
                 "and ask: 'Could you tell me a bit more about why?'\n"
                 "     Extract reason into extracted['outlookReason']. Set advance_phase=false.\n"
-                "  3. If outlook sounds POSITIVE or NEUTRAL, acknowledge and set advance_phase=true.\n")
+                "  3. If outlook sounds POSITIVE, NEUTRAL, or UNCERTAIN, acknowledge and set advance_phase=true.\n")
             )
 
     elif phase == "6":
@@ -578,8 +624,8 @@ def build_system_prompt(
             "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. ALWAYS extract into extracted['cashCycleSpeed'] — even if brief or informal.\n"
-            "     A short answer is still valid — extract and move on.\n"
+            "  1. ALWAYS extract into extracted['cashCycleSpeed'] — accept rough estimates or\n"
+            "     'I don't know.' Don't push for precision. If unsure, extract 'varies' and advance.\n"
             "  2. Acknowledge warmly and tie their answer to why it matters (e.g. 'Two weeks to\n"
             "     turn stock into cash — that's useful for sizing your offer right.'). Set advance_phase=true.\n")
         )
@@ -593,8 +639,8 @@ def build_system_prompt(
             "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
-            "  1. ALWAYS extract into extracted['mainExpenses'] — even if brief or a short list.\n"
-            "     A short answer is still valid — extract and move on.\n"
+            "  1. ALWAYS extract into extracted['mainExpenses'] — accept any answer, including\n"
+            "     'I'm not sure.' Don't ask for exact numbers. Extract what they give and move on.\n"
             "  2. Acknowledge briefly, connecting it to their business\n"
             "     (e.g. 'Stock and transport — makes sense for a food business.'). Set advance_phase=true.\n")
         )
@@ -688,24 +734,23 @@ def build_system_prompt(
         instructions = (
             "PHASE 11 — OFFER PRESENTATION\n"
             f"{already_collected}\n\n"
-            "STEP 1 — PRESENT THE OFFER (advance_phase=false):\n"
-            "  Use ONE bubble. Lead with a warm congratulations, then state the key terms:\n"
-            f"  '✨ Great news — you're approved for up to **{amount_fmt} MXN** at **{rate_pct} daily interest**,\n"
-            f"  for a maximum of **60 days** (1 or 2 payments). Does that work for you?'\n"
-            "  Keep it natural and warm — not like a legal disclosure.\n"
+            "STEP 1 — PRESENT THE OFFER (advance_phase=false, is_offer=false):\n"
+            "  ONE bubble. Lead with warm congratulations, state the key terms:\n"
+            f"  '✨ Great news — you're approved for **{amount_fmt} MXN** at **{rate_pct} daily interest**,\n"
+            f"  for up to **60 days** (1 or 2 payments).'\n"
+            "  End with: 'Does this offer meet your expectations?'\n"
             "  Do NOT mention processing fees, IVA, or total repayment — the configurator shows that.\n"
-            "  Set advance_phase=false.\n\n"
-            "STEP 2 — WHEN CUSTOMER SAYS YES / IS READY:\n"
-            f"  Say (one short bubble): '{t('p11_ready_cta')}'\n"
-            "  Set advance_phase=false. The system will open the configurator automatically.\n\n"
-            "STEP 3 — OFFER NEGOTIATION (only if customer explicitly asks for more):\n"
-            f"  You MAY increase — but ONLY up to {max_fmt} MXN (absolute ceiling).\n"
-            f"  Respond warmly: 'I can stretch it to **{max_fmt} MXN** for you — that's my best offer.\n"
-            "  Does that work?'\n"
-            "  Set offer_negotiated=true when increasing. Set advance_phase=false.\n"
-            "  Do NOT volunteer the higher amount unprompted.\n\n"
-            "STEP 4 — WHEN THE SYSTEM CONFIRMS LOAN ACCEPTED:\n"
-            "  If the customer's message says they've accepted (e.g. 'I've accepted the loan of...'):\n"
+            "  Set advance_phase=false. Set is_offer=false.\n\n"
+            "STEP 2 — CUSTOMER SAYS YES (accepts the initial offer):\n"
+            f"  ONE short bubble: '{t('p11_ready_cta')}'\n"
+            "  Set advance_phase=false. Set is_offer=true. The configure button will appear automatically.\n\n"
+            "STEP 3 — CUSTOMER SAYS NO / ASKS FOR MORE:\n"
+            f"  Increase to {max_fmt} MXN (absolute ceiling). ONE bubble:\n"
+            f"  'I can stretch it to **{max_fmt} MXN** for you — that's the best I can do.\n"
+            f"  {t('p11_ready_cta')}'\n"
+            "  Set offer_negotiated=true. Set advance_phase=false. Set is_offer=true.\n"
+            "  The configure button will appear automatically — do NOT wait for another confirmation.\n\n"
+            "STEP 4 — CUSTOMER HAS ACCEPTED VIA THE APP (message says 'I've accepted the loan of...'):\n"
             "  Write ONE warm congratulations bubble. Set advance_phase=true.\n"
         )
 
