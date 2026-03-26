@@ -202,6 +202,10 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                 <span className="text-sm font-bold text-[#1f1c2f]">{isEs ? 'Total a pagar' : 'Total to repay'}</span>
                 <span className="text-sm font-bold text-[#F06B22]">{formatMXN(loan.totalRepayment)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-[#676d65]">{isEs ? 'Fecha del 1er pago' : '1st payment date'}</span>
+                <span className="text-sm font-semibold text-[#1f1c2f]">{loan.firstPaymentDate}</span>
+              </div>
               {installments === 2 && (
                 <>
                   <div className="flex justify-between">
@@ -214,10 +218,6 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                   </div>
                 </>
               )}
-              <div className="flex justify-between">
-                <span className="text-sm text-[#676d65]">{isEs ? 'Fecha del 1er pago' : '1st payment date'}</span>
-                <span className="text-sm font-semibold text-[#1f1c2f]">{loan.firstPaymentDate}</span>
-              </div>
             </div>
           </div>
         </div>
