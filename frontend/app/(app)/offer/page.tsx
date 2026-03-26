@@ -135,9 +135,14 @@ export default function OfferPage() {
                       </div>
                     </div>
                     {recommended && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a989e] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
-                        {t('offer.recommended')}
-                      </span>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a989e] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
+                          {t('offer.recommended')}
+                        </span>
+                        <p className="text-[9px] text-[#939490] mt-0.5">
+                          {locale === 'es-MX' ? 'Más tiempo para prepararte' : 'More time to prepare'}
+                        </p>
+                      </div>
                     )}
                   </button>
                 )

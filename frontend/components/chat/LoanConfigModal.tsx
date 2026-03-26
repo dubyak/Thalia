@@ -132,9 +132,14 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
                       </div>
                     </div>
                     {recommended && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#00A69C] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
-                        {isEs ? 'Recomendado' : 'Recommended'}
-                      </span>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#00A69C] bg-[#d2f2f4] px-2 py-0.5 rounded-full">
+                          {isEs ? 'Recomendado' : 'Recommended'}
+                        </span>
+                        <p className="text-[9px] text-[#939490] mt-0.5">
+                          {isEs ? 'Más tiempo para prepararte' : 'More time to prepare'}
+                        </p>
+                      </div>
                     )}
                   </button>
                 )
