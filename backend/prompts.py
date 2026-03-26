@@ -120,9 +120,9 @@ LOCALE_CONFIG = {
         "p9_list_footer": "Cualquier cosa que muestre la actividad de tu negocio funciona. Solo lo usamos para ayudarte — nunca para otra cosa.",
         # Phase 11 offer
         "p11_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
-        "p11_ready_cta": "Cuando estés listo/a, te abro el configurador para que elijas tu monto exacto y plan de pago.",
+        "p11_ready_cta": "Cuando estés listo, te abro el configurador para que elijas tu monto exacto y plan de pago.",
         # Phase 12 closing
-        "p12_disburse_cta": "Cuando estés listo/a, toca el botón de abajo para recibir tu crédito.",
+        "p12_disburse_cta": "Cuando estés listo, toca el botón de abajo para recibir tu crédito.",
         "p12_available": "Una vez que esté lista tu dispersión, puedes seguir platicando conmigo cuando quieras sobre tu negocio o los detalles de tu crédito. Solo busca mi ícono en la pantalla principal y toca para iniciar una conversación.",
         # Servicing
         "svc_oxxo": "Para pagar en OXXO: abre la app de Tala → Pagos → Muestra el código de barras → paga en cualquier OXXO",

@@ -6,6 +6,7 @@ import { useChat } from '@/contexts/ChatContext'
 import { useTester } from '@/contexts/TesterContext'
 import { useCustomer } from '@/contexts/CustomerContext'
 import { useFlow } from '@/contexts/FlowContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { ChatWindow } from './ChatWindow'
 
 export function ChatOverlay() {
@@ -13,6 +14,7 @@ export function ChatOverlay() {
   const { tester } = useTester()
   const { customer } = useCustomer()
   const { flow, dispatch: flowDispatch } = useFlow()
+  const { locale } = useLocale()
 
   const isFirstVisit = flow.coachingSessionCount === 0
   const coachingStarted = useRef(false)
@@ -68,7 +70,7 @@ export function ChatOverlay() {
               <p className="font-semibold text-[#1f1c2f] text-sm">Thalia</p>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#bec658]" />
-                <p className="text-[10px] text-[#939490]">Business Coach</p>
+                <p className="text-[10px] text-[#939490]">{locale === 'es-MX' ? 'Asistente de negocios' : 'Business assistant'}</p>
               </div>
             </div>
           </div>
