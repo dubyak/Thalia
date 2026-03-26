@@ -65,23 +65,24 @@ def _assert_no_repeats(
 # Each answer is realistic enough for the LLM to extract the required field and
 # advance. Extra entries at the end cover offer negotiation / installment choice.
 ONBOARDING_RESPONSES = [
-    "I'm ready to get started",
-    "I sell from a physical storefront on the main road",
-    "About three years now",
-    "Mostly local families and some regulars from the neighborhood",
-    "Things have been pretty stable, no big changes",
-    "Looking good — I expect a small bump next month",
-    "Usually within a week after restocking",
-    "Tala covers about half of what I need for working capital",
-    "I'll skip the evidence for now, let's continue",
-    "I'd love help figuring out how to increase my sales",
-    "Most of my sales happen on weekends when foot traffic is higher",
-    "That sounds like a great plan, I'll try it this week",
-    "Thanks, I think I'm ready to see the loan offer now",
-    "Yes, I'd like to accept the offer",
-    "Sounds great, thank you!",
-    "Thanks so much, I'm excited!",
-    "Bye!",
+    "I'm ready to get started",                                         # Phase 1 intro → agent asks selling channel
+    "I sell from a physical storefront on the main road",               # Phase 1: sellingChannel
+    "About three years now",                                            # Phase 2: tenure
+    "It's just me, solo operation",                                     # Phase 3: teamSize
+    "Usually around 4,000 to 5,000 pesos a week",                      # Phase 4: weeklyRevenue
+    "Looking good — I expect a small bump next month",                  # Phase 5: nearTermOutlook (positive → advance)
+    "Usually within a week after restocking",                           # Phase 6: cashCycleSpeed
+    "My main costs are ingredients and packaging, plus transport",      # Phase 7: mainExpenses
+    "Around 6,000 to 8,000 pesos to keep my stock levels comfortable", # Phase 8: workingCapitalNeed
+    "I'll skip the evidence for now, let's continue",                   # Phase 9: skip evidence
+    "I'd love help figuring out how to increase my sales",              # Phase 10: coaching turn 1
+    "Most of my sales happen on weekends when foot traffic is higher",  # Phase 10: coaching turn 2
+    "That sounds like a great plan, I'll try it this week",             # Phase 10: coaching turn 3
+    "Thanks, I think I'm ready to see the loan offer now",              # Phase 10→11
+    "Yes, I'd like to accept the offer",                                # Phase 11: accept offer
+    "Sounds great, thank you!",                                         # Phase 11/12
+    "Thanks so much, I'm excited!",                                     # Phase 12
+    "Bye!",                                                             # extra
 ]
 
 MAX_ONBOARDING_TURNS = 25  # safety cap so the test doesn't run forever
