@@ -718,7 +718,7 @@ def build_system_prompt(
             f"Write a warm closing for {tester_name} in ONE bubble:\n"
             "  1. Congratulate them warmly — their loan is approved.\n"
             "  2. Give a brief summary: amount, number of payments, and first payment date.\n"
-            f"     Use the collected context (offer_amount={amount_fmt} MXN) if available.\n"
+            f"     The accepted amount is {offer_fmt if offer_amount > 0 else amount_fmt} MXN — use this exact figure.\n"
             "  3. Tell them the next step is to set up their disbursement — \n"
             "     they'll confirm where to receive their funds.\n"
             f"  4. End with: '{disburse_cta}'\n"

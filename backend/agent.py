@@ -160,7 +160,7 @@ async def run_agent(
 
     # ── Calculate offer amounts for Phase 11 ──────────────────────────
     offer_amount = 0
-    if session.phase == "11":
+    if session.phase in ("11", "12"):
         offer_amount = session.current_offer
 
     # ── Build system prompt ────────────────────────────────────────────
