@@ -684,7 +684,7 @@ def build_system_prompt(
 
     elif phase == "11":
         # Format the daily rate as a percentage for display
-        rate_pct = f"{interest_rate_daily * 100:.1f}%"
+        rate_pct = f"{interest_rate_daily * 100:.2f}%"
         instructions = (
             "PHASE 11 — OFFER PRESENTATION\n"
             f"{already_collected}\n\n"

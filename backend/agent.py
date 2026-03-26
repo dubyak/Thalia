@@ -50,7 +50,7 @@ class Session:
     # Current offer amount — starts at approved_amount, unlocks to max_amount after negotiation
     current_offer: int = 0
     # Interest rate for offer display
-    interest_rate_daily: float = 0.01  # 1% per day default
+    interest_rate_daily: float = 0.0083  # 0.83% per day — matches frontend configurator
     # Locale for language switching
     locale: str = "en"
 
