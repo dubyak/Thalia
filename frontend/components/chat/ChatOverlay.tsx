@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useTester } from '@/contexts/TesterContext'
@@ -15,14 +15,17 @@ export function ChatOverlay() {
   const { flow, dispatch: flowDispatch } = useFlow()
 
   const isFirstVisit = flow.coachingSessionCount === 0
+  const coachingStarted = useRef(false)
 
   // Start coaching chat when overlay opens (unless already running)
   useEffect(() => {
     if (!state.overlayOpen) return
     if (state.mode === 'coaching' && state.messages.length > 0) return
+    if (coachingStarted.current) return
     const coachingName = customer.firstName || tester?.firstName
     if (!coachingName) return
 
+    coachingStarted.current = true
     const profile = (flow.businessProfile ?? {}) as Record<string, string>
     const approvedAmount = flow.loanConfig?.amount ?? tester?.approvedAmount ?? 8000
     const maxAmount = tester?.maxAmount ?? 12000
