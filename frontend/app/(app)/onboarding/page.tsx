@@ -27,6 +27,10 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!displayName || startedRef.current) return
     startedRef.current = true
+
+    // If messages exist (restored from localStorage), skip reset+start
+    if (state.messages.length > 0) return
+
     resetChat()
     setTimeout(() => startOnboarding(
       displayName,
