@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { ChevronRight } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -114,17 +115,23 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
         {isTyping && <TypingIndicator />}
 
         {showReadyButton && (
-          <div className="flex justify-center pt-2 pb-1 animate-fade-in">
+          <div className="flex flex-col items-center gap-2 pt-3 pb-2 animate-fade-in">
+            <p className="text-xs text-[#939490] font-light">
+              {isEs ? 'Toca para continuar' : 'Tap to continue'}
+            </p>
             <button
-              onClick={() => sendMessage(isEs ? "Continuar mi solicitud" : "Continue my application")}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95 touch-active"
+              onClick={() => sendMessage(isEs ? 'Continuar mi solicitud' : 'Continue my application')}
+              className="flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold transition-all active:scale-95 touch-active animate-pulse-once"
               style={{
                 background: '#00A69C',
                 color: '#FFFFFF',
-                boxShadow: '0 2px 8px rgba(0,166,156,0.25)',
+                boxShadow: '0 4px 16px rgba(0,166,156,0.45)',
+                minWidth: 220,
+                justifyContent: 'center',
               }}
             >
               {isEs ? 'Continuar mi solicitud' : 'Continue my application'}
+              <ChevronRight size={18} />
             </button>
           </div>
         )}
