@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
@@ -26,6 +27,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
   const { state, sendMessage, sendImage } = useChat()
   const { dispatch: flowDispatch } = useFlow()
   const { locale } = useLocale()
+  const router = useRouter()
   const isEs = locale === 'es-MX'
   const { messages, isTyping, phase } = state
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -70,6 +72,13 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
   const showDisbursementButton =
     offerHandled &&
     state.isComplete &&
+    !isTyping
+
+  // Show "Skip to offer" button during Phase 9 coaching demo
+  const showSkipToOffer =
+    state.mode === 'onboarding' &&
+    phase === '9' &&
+    !state.isComplete &&
     !isTyping
 
   // LoanConfigModal → TermsModal
@@ -164,6 +173,21 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
               }}
             >
               {isEs ? 'Dispersar mi crédito' : 'Disburse my loan'}
+            </button>
+          </div>
+        )}
+
+        {showSkipToOffer && (
+          <div className="flex justify-center pt-1 pb-2 animate-fade-in">
+            <button
+              onClick={() => {
+                flowDispatch({ type: 'SKIP_TO_OFFER' })
+                router.push('/offer')
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border-2 border-[#1a989e] text-[#1a989e] bg-white touch-active active:bg-[#d2f2f4]"
+            >
+              {isEs ? 'Ir directo a mi oferta' : 'Skip to my offer'}
+              <ChevronRight size={13} />
             </button>
           </div>
         )}
