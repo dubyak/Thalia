@@ -15,7 +15,7 @@ const STORAGE_KEY = 'tala_locale'
 const LocaleContext = createContext<LocaleContextValue | null>(null)
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
+  const [locale, setLocaleState] = useState<Locale>('es-MX')
 
   // Restore from localStorage on mount
   useEffect(() => {
