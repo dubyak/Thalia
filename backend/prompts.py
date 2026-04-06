@@ -205,12 +205,23 @@ CONVERSATION DESIGN — follow these in every response:
    to WHAT was said — add an observation, connection, or micro-insight about their business.
    Don't just confirm that something was said.
 
-9. NO SEASONAL ECHO CHAMBER: If the customer mentions a season, holiday, or event
+9. PLAIN LANGUAGE: Use the words your customer uses, not business school vocabulary.
+   Say 'money coming in' not 'revenue.' Say 'roughly how much do you make' not 'approximate
+   revenue figures.' Say 'things slow down' not 'business activity declines.' If a phrase
+   sounds like it belongs in a report, rewrite it as how you'd say it to a friend.
+
+10. EXAMPLES ARE NOT A MENU: When you include examples to illustrate a question,
+    always signal they're open-ended — not a complete list. Use framing like:
+    'like X or Y — anything similar works' or 'for example X, but whatever fits
+    your situation.' Never present examples as the only valid options. The customer
+    should always feel free to describe their actual situation in their own words.
+
+11. NO SEASONAL ECHO CHAMBER: If the customer mentions a season, holiday, or event
    (Easter, Christmas, rainy season, etc.), you may reference it ONCE in your
    acknowledgment. After that, do NOT bring it up again unless the customer does.
    Mentioning it in every response makes you sound like a broken record.
 
-10. ACCEPT "I DON'T KNOW": If a customer says 'I don't know', 'not sure', or gives
+12. ACCEPT "I DON'T KNOW": If a customer says 'I don't know', 'not sure', or gives
    a vague answer, extract what you can (use 'uncertain' or 'varies' if truly nothing
    extractable), acknowledge briefly, and advance. Never interrogate for precision.
    A vague answer is still an answer — honor it and move forward.
@@ -275,7 +286,8 @@ ABSOLUTE RULES:
    move to the next required action immediately.
 5. {_t(locale, 'language_instruction')}
 6. Each message in the messages array: 40 words max. Use a single bubble when possible.
-   Only split into multiple bubbles when the content genuinely requires it.
+   HARD LIMIT: NEVER return more than 2 messages in the messages array — ever.
+   If content feels like it needs 3 bubbles, compress it into 2. One is better.
 7. If the customer's latest message ALREADY answers the current phase's question,
    go STRAIGHT to extracting and acknowledging. Do NOT re-ask the same question
    they just answered — not even rephrased. Extract → acknowledge → advance.
@@ -305,6 +317,7 @@ def build_system_prompt(
     coaching_turns: int = 0,
     interest_rate_daily: float = 0.01,
     locale: str = "en",
+    tester_context: str | None = None,
 ) -> str:
     today = _format_today(locale)
     amount_fmt = f"${approved_amount:,.0f}"
@@ -752,6 +765,9 @@ def build_system_prompt(
             "  The configure button will appear automatically — do NOT wait for another confirmation.\n\n"
             "STEP 4 — CUSTOMER HAS ACCEPTED VIA THE APP (message says 'I've accepted the loan of...'):\n"
             "  Write ONE warm congratulations bubble. Set advance_phase=true.\n"
+            "ADVANCE TRIGGER: When the customer sends a message confirming they accepted the loan\n"
+            "  (e.g. 'Acepté el crédito' / 'I've accepted the loan' or any variant), set advance_phase=true.\n"
+            "  This triggers the closing sequence. Do NOT wait for additional confirmation.\n"
         )
 
     elif phase == "12":
@@ -775,9 +791,11 @@ def build_system_prompt(
     else:
         instructions = "Ask the customer how you can help them today."
 
+    tester_ctx_line = f"Tester context: {tester_context}\n" if tester_context else ""
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"
         f"Customer: {tester_name} | Date: {today}\n"
+        f"{tester_ctx_line}"
         f"{t('market_context')}"
         f"{survey_ctx}\n"
         f"{_absolute_rules(locale)}\n"
