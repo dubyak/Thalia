@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { CheckSquare, Square, Shield } from 'lucide-react'
 import { useTester } from '@/contexts/TesterContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { calculateLoan, formatMXN } from '@/lib/constants'
+import { calculateLoan, formatMXN, getSmartDueDates } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import type { LoanConfig } from '@/lib/types'
 
@@ -62,12 +62,16 @@ export function TermsModal({ open, amount, installments, onClose, onAccept }: Te
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
+  const dueDateOptions = getSmartDueDates()
+  const defaultDueDate = dueDateOptions.find(d => d.recommended)?.date ?? dueDateOptions[0]?.date
+
   const loan = calculateLoan(
     amount,
     installments,
     tester?.interestRateDaily ?? 0.0028,
     tester?.processingFeeRate ?? 0.04,
-    locale
+    locale,
+    defaultDueDate
   )
 
   const handleAccept = async () => {

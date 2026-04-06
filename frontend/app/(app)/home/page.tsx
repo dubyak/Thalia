@@ -5,7 +5,7 @@ import { useFlow } from '@/contexts/FlowContext'
 import { useTester } from '@/contexts/TesterContext'
 import { StatusBar } from '@/components/app-shell/StatusBar'
 import { ResetMenu } from '@/components/app-shell/ResetMenu'
-import { formatMXN } from '@/lib/constants'
+import { formatMXN, getSmartDueDates, formatDate } from '@/lib/constants'
 import { HelpCircle, User, ChevronRight, Flame, ArrowRight } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
@@ -14,6 +14,7 @@ export default function HomePage() {
   const { tester } = useTester()
   const [mounted, setMounted] = useState(false)
   const { t } = useTranslation()
+  const locale = tester?.locale ?? 'es-MX'
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -21,7 +22,9 @@ export default function HomePage() {
   const amount = loan?.amount ?? tester?.approvedAmount ?? 8000
   const totalRepayment = loan?.totalRepayment ?? amount * 1.12
   const monthlyPayment = loan?.monthlyPayment ?? totalRepayment
-  const firstPaymentDate = loan?.firstPaymentDate ?? 'March 1'
+  const fallbackDate = getSmartDueDates().find(d => d.recommended)?.date
+  const firstPaymentDate = loan?.firstPaymentDate
+    ?? (fallbackDate ? formatDate(fallbackDate, locale) : '')
 
   return (
     <div className="flex flex-col min-h-dvh bg-white">
