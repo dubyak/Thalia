@@ -7,6 +7,8 @@ from opentelemetry import trace
 from state import AgentDecision
 from prompts import build_system_prompt
 
+tracer = trace.get_tracer(__name__)
+
 # Phase 0: Welcome
 # Phase 1-3: Business profile (selling channel, tenure, team size)
 # Phase 4-8: Business health (weekly revenue, outlook, cash-cycle, main expenses, working capital need)
@@ -53,6 +55,8 @@ class Session:
     interest_rate_daily: float = 0.0083  # 0.83% per day — matches frontend configurator
     # Locale for language switching
     locale: str = "en"
+    # Extra context about the tester (e.g. "Loyal customer since June 2023 — on their 28th loan.")
+    tester_context: str | None = None
 
 
 sessions: dict[str, Session] = {}
@@ -90,13 +94,54 @@ async def run_agent(
     customer_id: str | None = None,
     customer_name: str | None = None,
     locale: str = "en",
+    tester_context: str | None = None,
+) -> dict:
+    with tracer.start_as_current_span("run_agent") as span:
+        return await _run_agent_inner(
+            span=span,
+            session_id=session_id,
+            message=message,
+            tester_name=tester_name,
+            approved_amount=approved_amount,
+            max_amount=max_amount,
+            mode=mode,
+            collected=collected,
+            business_type=business_type,
+            loan_purpose=loan_purpose,
+            is_first_visit=is_first_visit,
+            image_data=image_data,
+            customer_id=customer_id,
+            customer_name=customer_name,
+            locale=locale,
+            tester_context=tester_context,
+        )
+
+
+async def _run_agent_inner(
+    span: trace.Span,
+    session_id: str,
+    message: str | None = None,
+    *,
+    tester_name: str | None = None,
+    approved_amount: int = 10000,
+    max_amount: int = 11000,
+    mode: str = "onboarding",
+    collected: dict | None = None,
+    business_type: str | None = None,
+    loan_purpose: str | None = None,
+    is_first_visit: bool = True,
+    image_data: str | None = None,
+    customer_id: str | None = None,
+    customer_name: str | None = None,
+    locale: str = "en",
+    tester_context: str | None = None,
 ) -> dict:
     # ── Set Arize trace attributes ─────────────────────────────────────
-    current_span = trace.get_current_span()
-    if current_span and current_span.is_recording():
-        current_span.set_attribute('customer_id', customer_id or 'unknown')
-        current_span.set_attribute('customer_name', customer_name or 'unknown')
-        current_span.set_attribute('session_id', session_id)
+    span.set_attribute("session.id", session_id)          # OpenInference standard
+    span.set_attribute("session_id", session_id)           # legacy / backward compat
+    span.set_attribute("customer.id", customer_id or "unknown")
+    span.set_attribute("customer.name", customer_name or "unknown")
+    span.set_attribute("agent.mode", mode)
 
     # ── Get or create session ──────────────────────────────────────────
     if session_id not in sessions:
@@ -111,6 +156,7 @@ async def run_agent(
             business_type=business_type,
             loan_purpose=loan_purpose,
             locale=locale,
+            tester_context=tester_context,
         )
 
     session = sessions[session_id]
@@ -177,6 +223,7 @@ async def run_agent(
         coaching_turns=session.coaching_turns,
         interest_rate_daily=session.interest_rate_daily,
         locale=session.locale,
+        tester_context=session.tester_context,
     )
 
     # ── Call OpenAI with structured output ─────────────────────────────
@@ -276,7 +323,7 @@ async def run_agent(
         })
 
         # Build system prompt for the NEW phase
-        new_offer_amount = session.max_amount if session.phase == "11" else 0
+        new_offer_amount = session.current_offer if session.phase in ("11", "12") else 0
         new_system_prompt = build_system_prompt(
             phase=session.phase,
             mode=session.mode,
@@ -290,6 +337,7 @@ async def run_agent(
             coaching_turns=session.coaching_turns,
             interest_rate_daily=session.interest_rate_daily,
             locale=session.locale,
+            tester_context=session.tester_context,
         )
 
         # Second API call — generate the next phase's question
@@ -324,6 +372,12 @@ async def run_agent(
         session.messages.pop()  # remove synthetic user note
         session.messages.pop()  # remove ack
 
+    # ── If auto-advance landed on phase 12, finalize to complete ───────
+    # (Phase 12 runs as the auto-advance second call; its advance_phase isn't
+    # re-processed, so we apply the phase-12 rule here explicitly.)
+    if session.phase == "12":
+        session.phase = "complete"
+
     # ── Filter out garbage bubbles (e.g. LLM leaking field names like "messages") ──
     result.messages = [m for m in result.messages if m.strip() and m.strip().lower() != "messages"]
 
@@ -335,6 +389,7 @@ async def run_agent(
     # Recalculate offer_amount in case auto-advance landed on phase 11
     if session.phase == "11":
         offer_amount = session.current_offer
+    span.set_attribute("agent.phase_end", session.phase)
     return {
         "messages": result.messages,
         "phase": session.phase,
