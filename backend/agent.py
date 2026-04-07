@@ -322,8 +322,13 @@ async def _run_agent_inner(
         and result.advance_phase
         and session.phase != phase  # phase actually changed
     ):
-        # Save the acknowledgment messages from the first call
+        # Save the acknowledgment messages from the first call.
+        # Guard: if the last ack bubble is purely a question (agent re-asked
+        # despite advancing), drop it — the auto-advance will generate the
+        # correct next question and we don't want back-to-back questions.
         ack_messages = list(result.messages)
+        if len(ack_messages) > 1 and ack_messages[-1].strip().endswith("?"):
+            ack_messages = ack_messages[:-1]
 
         # Append the ack to conversation history so the next prompt sees it.
         # Include a marker so the next call knows not to re-acknowledge.
@@ -378,6 +383,14 @@ async def _run_agent_inner(
         for msg in combined_msgs[1:]:
             if msg != deduped[-1]:
                 deduped.append(msg)
+
+        # Merge short ack + question into a single bubble when they fit naturally.
+        # This avoids the mechanical 2-bubble pattern on every auto-advance.
+        if len(deduped) == 2:
+            total_words = len(deduped[0].split()) + len(deduped[1].split())
+            if total_words <= 40:
+                deduped = [deduped[0] + " " + deduped[1]]
+
         result.messages = deduped
 
         # Remove the synthetic user note and ack we appended —

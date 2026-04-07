@@ -43,7 +43,7 @@ LOCALE_CONFIG = {
         "p0_ai_disclosure": "I'm Thalia — Tala's AI assistant. I'm here to help you get your credit quickly and support your business day-to-day.",
         "p0_part1": "Part 1 — About 5 minutes of questions to find the best credit offer.",
         "p0_part2": "Part 2 — You'll work on a real business challenge together so they can\n  see how you help day-to-day as their AI business partner.",
-        "p0_cta": "It only takes a few minutes — tap the button below when you're ready! You can type or use your microphone — whatever's easier.",
+        "p0_cta": "It only takes a few minutes. Feel free to use the microphone button if you'd rather talk than type.",
         # Phase 9 evidence
         "p9_intro": (
             "Your offer is ready — but there's one way to potentially increase it. "
@@ -101,7 +101,7 @@ LOCALE_CONFIG = {
         "p0_ai_disclosure": "Soy Thalia, tu asistente de IA de Tala — aquí para ayudarte con tu crédito y tu negocio.",
         "p0_part1": "Hay dos partes rápidas:",
         "p0_part2": "Parte 1 — Unas 5 preguntas para encontrar la mejor oferta de crédito para ti.\n  Parte 2 — Trabajamos juntos en un reto real de tu negocio para que veas cómo te ayudo día a día.",
-        "p0_cta": "Solo toma unos minutos — ¡toca el botón de abajo cuando quieras empezar! Puedes escribir o usar el micrófono — lo que te sea más fácil.",
+        "p0_cta": "Solo toma unos minutos. Usa el botón del micrófono si prefieres hablar en vez de escribir.",
         # Phase 9 evidence
         "p9_intro": (
             "Tu oferta está lista — pero hay una forma de aumentarla. "
@@ -186,9 +186,10 @@ CONVERSATION DESIGN — follow these in every response:
    a warm statement or closing line. The system handles the next step automatically.
    Do NOT invent UI actions like "tap Continue" or "click below."
 
-6. SINGLE BUBBLE BY DEFAULT: Use ONE message bubble unless the content genuinely needs
-   separation (e.g. a greeting + explanation, or a summary + question on a different topic).
-   Never split just to hit a bubble count. If one bubble covers it, use one bubble.
+6. SINGLE BUBBLE BY DEFAULT: Use ONE message bubble. Only split into 2 when the content
+   covers genuinely different topics (e.g. a greeting + flow explanation). An acknowledgment
+   followed by a question on the same topic fits in ONE bubble. Never split just to hit a
+   bubble count or to separate an ack from a question.
 
 7. NATURAL REACTIONS (not robotic parroting): When acknowledging, react like a person
    would — with a quick observation, connection, or genuine reaction. Do NOT robotically
@@ -284,9 +285,10 @@ ABSOLUTE RULES:
 4. If the customer sends a filler (ok, yes, continue, let's go), do NOT summarize —
    move to the next required action immediately.
 5. {_t(locale, 'language_instruction')}
-6. Each message in the messages array: 40 words max. Use a single bubble when possible.
+6. Each message in the messages array: 40 words max. DEFAULT TO ONE BUBBLE.
+   Only use 2 bubbles when content genuinely needs separation (e.g. intro + CTA, or
+   acknowledgment covers a different topic than the question). Most turns should be 1 bubble.
    HARD LIMIT: NEVER return more than 2 messages in the messages array — ever.
-   If content feels like it needs 3 bubbles, compress it into 2. One is better.
 7. NEVER RE-ASK AN EXTRACTED FIELD. If the customer's message answered the current
    phase's question — even indirectly or informally — extract it and acknowledge.
    Do NOT append the question again to your acknowledgment bubble. Do NOT ask for
@@ -545,8 +547,11 @@ def build_system_prompt(
             "Bubble 2: Briefly explain the two parts:\n"
             f"  {t('p0_part1')}\n"
             f"  {t('p0_part2')}\n"
-            f"  End with: '{t('p0_cta')}'\n\n"
-            "Do NOT add a third bubble. Do NOT ask a question.\n"
+            f"  {t('p0_cta')}\n"
+            f"  Then end with the FIRST question: 'How and where do you primarily operate or sell'\n"
+            f"  (for example from home, a small shop, tianguis/market stall, or via WhatsApp deliveries)?\n"
+            f"  Reference {business_intro} to make it specific.\n\n"
+            "Do NOT add a third bubble.\n"
             "Set advance_phase=true.\n"
         )
 
@@ -555,10 +560,8 @@ def build_system_prompt(
             "PHASE 1 — SELLING CHANNEL (Business Profile, Q1)\n"
             f"{already_collected}\n\n"
             + (_already_have_field("sellingChannel", collected, "selling channel") or
-            "OPENING TURN (no prior answer):\n"
-            f"  Reference their {business_type} to show you're paying attention.\n"
-            "  Then ask: 'How and where do you primarily operate or sell?'\n"
-            "  Set advance_phase=false.\n\n"
+            "The welcome message (Phase 0) already asked this question. The customer's latest\n"
+            "message is their answer. Extract it and acknowledge — do NOT ask again.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
             "  1. ALWAYS extract into extracted['sellingChannel'] — even if brief or informal.\n"
             "     Accept combination answers (e.g. 'market stall and online') as complete —\n"
@@ -647,7 +650,9 @@ def build_system_prompt(
                 "Set advance_phase=false.\n\n"
                 "WHEN CUSTOMER ANSWERS:\n"
                 "  1. ALWAYS extract into extracted['nearTermOutlook'] — accept any description,\n"
-                "     vague or specific. If they say 'I don't know', extract 'uncertain' and move on.\n"
+                "     vague or specific. Terse answers count: 'similar', 'normal', 'about the same',\n"
+                "     'good', 'fine' → extract the word as-is and advance. Do NOT re-ask for detail.\n"
+                "     If they say 'I don't know', extract 'uncertain' and move on.\n"
                 "  2. If outlook sounds NEGATIVE (slow, bad, tough), acknowledge empathetically "
                 "and ask: 'Could you tell me a bit more about why?'\n"
                 "     Extract reason into extracted['outlookReason']. Set advance_phase=false.\n"

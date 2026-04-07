@@ -39,7 +39,6 @@ type FlowAction =
   | { type: 'CASHOUT_CONFIRMED' }
   | { type: 'DISBURSEMENT_COMPLETE' }
   | { type: 'COACHING_STARTED' }
-  | { type: 'SKIP_TO_OFFER' }
   | { type: 'RESET' }
 
 function flowReducer(state: FlowState, action: FlowAction): FlowState {
@@ -64,8 +63,6 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
       return { ...state, disbursementComplete: true }
     case 'COACHING_STARTED':
       return { ...state, coachingSessionCount: state.coachingSessionCount + 1 }
-    case 'SKIP_TO_OFFER':
-      return { ...state, onboardingComplete: true }
     case 'RESET':
       return INITIAL_STATE
     default:

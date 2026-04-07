@@ -74,13 +74,6 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     state.isComplete &&
     !isTyping
 
-  // Show "Skip to offer" button during Phase 9 coaching demo
-  const showSkipToOffer =
-    state.mode === 'onboarding' &&
-    phase === '9' &&
-    !state.isComplete &&
-    !isTyping
-
   // LoanConfigModal → TermsModal
   const handleConfigContinue = (amount: number, installments: 1 | 2) => {
     setPendingConfig({ amount, installments })
@@ -173,21 +166,6 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
               }}
             >
               {isEs ? 'Dispersar mi crédito' : 'Disburse my loan'}
-            </button>
-          </div>
-        )}
-
-        {showSkipToOffer && (
-          <div className="flex justify-center pt-1 pb-2 animate-fade-in">
-            <button
-              onClick={() => {
-                flowDispatch({ type: 'SKIP_TO_OFFER' })
-                router.push('/offer')
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border-2 border-[#1a989e] text-[#1a989e] bg-white touch-active active:bg-[#d2f2f4]"
-            >
-              {isEs ? 'Ir directo a mi oferta' : 'Skip to my offer'}
-              <ChevronRight size={13} />
             </button>
           </div>
         )}
