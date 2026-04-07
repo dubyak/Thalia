@@ -53,12 +53,11 @@ LOCALE_CONFIG = {
             "No pressure though — skipping won't affect the offer we've already put together for you. "
             "Want to share something, or shall we move on?"
         ),
-        "p9_list_header": "Here are some things that work well:",
-        "p9_item_bank": "A bank statement or account summary",
-        "p9_item_receipt": "A receipt from a supplier or wholesale purchase",
-        "p9_item_sales": "A sales summary from a platform (Uber Eats, MercadoLibre, etc.)",
-        "p9_item_photo": "A photo of your stall, shop, or inventory",
-        "p9_list_footer": "Anything that shows your business activity works. We only use it to help you — never for anything else.",
+        "p9_doc_examples": (
+            "Anything works — a bank statement, a supplier receipt, a sales screenshot, "
+            "a photo of your stall, even a handwritten ledger or notebook where you track your sales."
+        ),
+        "p9_list_footer": "We only use it to help you — never for anything else.",
         # Phase 11 offer
         "p11_product_reminder": "This is a personal credit (never say 'business loan').",
         "p11_ready_cta": "Ready to set it up? I'll open the configurator now so you can pick your exact amount and payment plan.",
@@ -112,12 +111,11 @@ LOCALE_CONFIG = {
             "Sin presión — saltarlo no afecta la oferta que ya tenemos para ti. "
             "¿Quieres compartir algo, o seguimos adelante?"
         ),
-        "p9_list_header": "Estos son algunos ejemplos que funcionan bien:",
-        "p9_item_bank": "Un estado de cuenta o resumen bancario",
-        "p9_item_receipt": "Un recibo de un proveedor o compra de mayoreo",
-        "p9_item_sales": "Un resumen de ventas de una plataforma (Uber Eats, MercadoLibre, etc.)",
-        "p9_item_photo": "Una foto de tu puesto, local o inventario",
-        "p9_list_footer": "Cualquier cosa que muestre la actividad de tu negocio funciona. Solo lo usamos para ayudarte — nunca para otra cosa.",
+        "p9_doc_examples": (
+            "Cualquier cosa funciona — un estado de cuenta, un recibo de proveedor, una captura de ventas, "
+            "una foto de tu puesto, o incluso una libreta donde apuntes tus ventas."
+        ),
+        "p9_list_footer": "Solo lo usamos para ayudarte — nunca para otra cosa.",
         # Phase 11 offer
         "p11_product_reminder": "Es un crédito personal (nunca digas 'préstamo de negocio').",
         "p11_ready_cta": "Cuando estés listo, te abro el configurador para que elijas tu monto exacto y plan de pago.",
@@ -326,6 +324,20 @@ def build_system_prompt(
 
     business_type = collected.get("businessType", "your business")
     loan_purpose = collected.get("loanPurpose", "")
+
+    COST_EXAMPLES = {
+        "food": "ingredients, packaging, transport",
+        "bakery": "flour, packaging, gas or electricity",
+        "garage": "parts, tools, supplies",
+        "clothing": "fabric, stock, rent",
+        "salon": "products, rent, supplies",
+        "default": "inventory or supplies, rent, transport",
+    }
+    bt_lower = (business_type or "").lower()
+    cost_example = next(
+        (v for k, v in COST_EXAMPLES.items() if k in bt_lower),
+        COST_EXAMPLES["default"]
+    )
 
     t = lambda key, **kw: _t(locale, key, **kw)
 
@@ -648,7 +660,7 @@ def build_system_prompt(
             "PHASE 7 — MAIN EXPENSES (Business Health, Q4)\n"
             f"{already_collected}\n\n"
             + (_already_have_field("mainExpenses", collected, "their main weekly expenses") or
-            "Ask: 'What are your biggest costs each week — like ingredients, rent, transport?'\n"
+            f"Ask: 'What are your biggest costs each week — like {cost_example}?'\n"
             "Do NOT add a context clause — just ask the question directly.\n"
             "Set advance_phase=false.\n\n"
             "WHEN CUSTOMER ANSWERS:\n"
@@ -676,19 +688,16 @@ def build_system_prompt(
         instructions = (
             "PHASE 9 — OPTIONAL BUSINESS EVIDENCE\n"
             f"{already_collected}\n\n"
+            "DOCUMENT FLEXIBILITY: Many customers run informal businesses and may only have a\n"
+            "handwritten ledger, a notebook, or a photo. These are all valid — accept them warmly.\n"
+            "Never make the customer feel their documentation is insufficient.\n\n"
             "OPENING TURN (customer just arrived at this phase):\n"
             "  Use EXACTLY 2 bubbles:\n\n"
             f"  Bubble 1 (intro): '{t('p9_intro')}'\n\n"
-            "  Bubble 2 (options + skip): Present these 4 options as a markdown bullet list:\n"
-            f"    '{t('p9_list_header')}'\n"
-            f"    - {t('p9_item_bank')}\n"
-            f"    - {t('p9_item_receipt')}\n"
-            f"    - {t('p9_item_sales')}\n"
-            f"    - {t('p9_item_photo')}\n"
-            f"    After the list, on a NEW line: '{t('p9_list_footer')}'\n"
-            f"    End with: '{t('p9_skip_cta')}'\n\n"
-            "  IMPORTANT: The bullet list must use markdown dashes (- item), one per line.\n"
-            "  Do NOT run bullets together or concatenate them with surrounding text.\n"
+            "  Bubble 2 (options + skip): In ONE conversational sentence, name the kinds of things\n"
+            f"  that work: '{t('p9_doc_examples')}'\n"
+            f"  Follow with: '{t('p9_list_footer')}'\n"
+            f"  End with: '{t('p9_skip_cta')}'\n\n"
             "  Set advance_phase=false.\n\n"
             "WHEN CUSTOMER RESPONDS:\n"
             "  - If they share something (photo, text, or say they uploaded): Warmly confirm\n"
@@ -776,6 +785,12 @@ def build_system_prompt(
             "PHASE 12 — CLOSING (after terms accepted)\n"
             f"{already_collected}\n\n"
             f"The customer has configured and accepted their loan through the app.\n"
+            "AMOUNT VALIDATION: The customer's acceptance message contains the amount and installments\n"
+            "they confirmed (e.g. 'I've accepted $9,500 MXN with 1 payment'). Use EXACTLY what the\n"
+            "customer stated — not the offered amount. If the stated amount differs from the offer\n"
+            f"({offer_fmt} MXN) by more than $500, add one sentence flagging the difference:\n"
+            "'I see you mentioned [stated amount] — just to confirm, your approved amount is [offer amount].'\n"
+            "Never silently substitute the offer amount for what the customer said.\n\n"
             f"Write a warm closing for {tester_name} in ONE bubble:\n"
             "  1. Congratulate them warmly — their loan is approved.\n"
             f"  2. Give a brief summary: the accepted amount and number of payments.\n"
