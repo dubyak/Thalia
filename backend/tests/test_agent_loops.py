@@ -79,8 +79,8 @@ ONBOARDING_RESPONSES = [
     "Most of my sales happen on weekends when foot traffic is higher",  # Phase 10: coaching turn 2
     "That sounds like a great plan, I'll try it this week",             # Phase 10: coaching turn 3
     "Thanks, I think I'm ready to see the loan offer now",              # Phase 10→11
-    "Yes, I'd like to accept the offer",                                # Phase 11: accept offer
-    "Sounds great, thank you!",                                         # Phase 11/12
+    "Yes, it looks good!",                                              # Phase 11: accept initial offer → STEP 2 (is_offer=true)
+    "I've accepted the loan of $8,000 MXN with 1 payment.",            # Phase 11 STEP 4 → advance trigger
     "Thanks so much, I'm excited!",                                     # Phase 12
     "Bye!",                                                             # extra
 ]
