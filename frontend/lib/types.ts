@@ -10,6 +10,7 @@ export interface TesterProfile {
   processingFeeRate: number
   businessType?: string
   locale: string
+  gender?: 'male' | 'female' | 'neutral'
   signUpDate?: string
   loanNumber?: number
 }

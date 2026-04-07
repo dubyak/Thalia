@@ -66,6 +66,7 @@ class ChatRequest(BaseModel):
     customer_name: str | None = None # "First Last" for logging
     locale: str = "en"               # "en" or "es-MX"
     tester_context: str | None = None  # e.g. "Loyal customer since June 2023 — on their 28th loan."
+    gender: str | None = None         # "male", "female", or "neutral"
 
 
 class ChatResponse(BaseModel):
@@ -101,6 +102,7 @@ async def chat(req: ChatRequest, request: Request):
         customer_name=req.customer_name,
         locale=req.locale,
         tester_context=req.tester_context,
+        gender=req.gender,
     )
 
     phase = result["phase"]

@@ -857,6 +857,15 @@ def build_system_prompt(
         instructions = "Ask the customer how you can help them today."
 
     tester_ctx_line = f"Customer history: {tester_context}\n" if tester_context else ""
+    gender_rule = ""
+    if locale == "es-MX" and gender:
+        gender_rule = (
+            f"\nGENDER RULE: The customer's gender is {gender}. Use appropriately gendered Spanish:\n"
+            "- Male: \"listo\", \"bienvenido\", \"interesado\", \"seguro\"\n"
+            "- Female: \"lista\", \"bienvenida\", \"interesada\", \"segura\"\n"
+            "- Neutral: Use gender-neutral alternatives (\"¡Perfecto!\", \"¡Excelente!\", \"Bienvenid@\")\n"
+            "Never use slash constructions like \"listo/a\" or \"bienvenido/a\".\n"
+        )
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"
         f"Customer: {tester_name} | Date: {today}\n"
@@ -867,6 +876,7 @@ def build_system_prompt(
         f"{_formatting_rules('onboarding')}\n"
         f"{instructions}\n\n"
         f"{_conversation_rules(locale)}"
+        f"{gender_rule}"
     )
 
 

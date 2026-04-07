@@ -57,6 +57,7 @@ class Session:
     locale: str = "en"
     # Extra context about the tester (e.g. "Loyal customer since June 2023 — on their 28th loan.")
     tester_context: str | None = None
+    gender: str | None = None  # "male", "female", or "neutral" — for gendered Spanish
 
 
 sessions: dict[str, Session] = {}
@@ -95,6 +96,7 @@ async def run_agent(
     customer_name: str | None = None,
     locale: str = "en",
     tester_context: str | None = None,
+    gender: str | None = None,
 ) -> dict:
     with tracer.start_as_current_span("run_agent") as span:
         return await _run_agent_inner(
@@ -114,6 +116,7 @@ async def run_agent(
             customer_name=customer_name,
             locale=locale,
             tester_context=tester_context,
+            gender=gender,
         )
 
 
@@ -135,6 +138,7 @@ async def _run_agent_inner(
     customer_name: str | None = None,
     locale: str = "en",
     tester_context: str | None = None,
+    gender: str | None = None,
 ) -> dict:
     # ── Set Arize trace attributes ─────────────────────────────────────
     span.set_attribute("session.id", session_id)          # OpenInference standard
@@ -157,6 +161,7 @@ async def _run_agent_inner(
             loan_purpose=loan_purpose,
             locale=locale,
             tester_context=tester_context,
+            gender=gender,
         )
 
     session = sessions[session_id]
@@ -237,6 +242,7 @@ async def _run_agent_inner(
         interest_rate_daily=session.interest_rate_daily,
         locale=session.locale,
         tester_context=session.tester_context,
+        gender=session.gender,
     )
 
     # ── Call OpenAI with structured output ─────────────────────────────
@@ -356,6 +362,7 @@ async def _run_agent_inner(
             interest_rate_daily=session.interest_rate_daily,
             locale=session.locale,
             tester_context=session.tester_context,
+            gender=session.gender,
         )
 
         # Second API call — generate the next phase's question

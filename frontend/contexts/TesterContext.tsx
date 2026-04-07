@@ -35,6 +35,7 @@ export function TesterProvider({ children }: { children: ReactNode }) {
       maxAmount: offer.maxOffer,
       ...(offer.signUpDate !== undefined ? { signUpDate: offer.signUpDate } : {}),
       ...(offer.loanNumber !== undefined ? { loanNumber: offer.loanNumber } : {}),
+      ...(offer.gender !== undefined ? { gender: offer.gender } : {}),
     }
     const profile: TesterProfile = persona
       ? { ...persona, ...extras }
