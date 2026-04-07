@@ -39,11 +39,10 @@ LOCALE_CONFIG = {
         ),
         "escalation": "I can connect you with our support team at soporte@tala.com.mx or via WhatsApp in the app.",
         "market_context": "Market: Mexico — customers are small business owners (MSMEs). Use MXN for currency. Reference local context where relevant: Day of the Dead, Christmas season; OXXO and SPEI for payments; WhatsApp for sales and customer communication; tianguis and local markets; and common Mexican MSME challenges like ingredient inflation and fuel costs.\n",
-        # Phase 0 exact copy
-        "p0_ai_disclosure": "I'm Thalia — Tala's AI assistant. I'm here to help you get your credit quickly and support your business day-to-day.",
-        "p0_part1": "Part 1 — About 5 minutes of questions to find the best credit offer.",
-        "p0_part2": "Part 2 — You'll work on a real business challenge together so they can\n  see how you help day-to-day as their AI business partner.",
-        "p0_cta": "It only takes a few minutes. Feel free to use the microphone button if you'd rather talk than type.",
+        # Phase 0 exact copy — 3 bubbles
+        "p0_bubble1": "Hi there! I'm Thalia, your AI assistant for loans and business. It's a pleasure to help you with your {business_type}.",
+        "p0_bubble2": "First, I'll ask you a few quick questions to find the best loan offer for you. And then, we'll work together on a real challenge from your business so you can see how I can help you day-to-day. It will only take a few minutes. You can type or use your microphone — whichever is easiest for you.",
+        "p0_bubble3": "Now, tell me, how and where do you usually sell (for example: local, street market, home delivery, via WhatsApp, etc.)?",
         # Phase 9 evidence
         "p9_intro": (
             "Your offer is ready — but there's one way to potentially increase it. "
@@ -97,11 +96,10 @@ LOCALE_CONFIG = {
         ),
         "escalation": "Te puedo conectar con nuestro equipo de soporte en soporte@tala.com.mx o por WhatsApp en la app.",
         "market_context": "Mercado: México — los clientes son dueños de pequeños negocios (MiPyMEs). Usa MXN para montos. Referencia el contexto local: Día de Muertos, temporada navideña; OXXO y SPEI para pagos; WhatsApp para ventas y comunicación; tianguis y mercados locales; y retos comunes como la inflación en insumos y costos de combustible.\n",
-        # Phase 0 exact copy
-        "p0_ai_disclosure": "Soy Thalia, tu asistente de IA de Tala — aquí para ayudarte con tu crédito y tu negocio.",
-        "p0_part1": "Hay dos partes rápidas:",
-        "p0_part2": "Parte 1 — Unas 5 preguntas para encontrar la mejor oferta de crédito para ti.\n  Parte 2 — Trabajamos juntos en un reto real de tu negocio para que veas cómo te ayudo día a día.",
-        "p0_cta": "Solo toma unos minutos. Usa el botón del micrófono si prefieres hablar en vez de escribir.",
+        # Phase 0 exact copy — 3 bubbles
+        "p0_bubble1": "¡Hola! Yo soy Thalía, tu asistente de IA para préstamos y negocios. Estoy aquí para ayudarte con tu {business_type}.",
+        "p0_bubble2": "Primero, te haré unas preguntas rápidas para encontrar la mejor oferta de préstamo para ti. Después, trabajaremos un reto real de tu negocio para que veas cómo puedo ayudarte en el día a día. Solo tomará unos minutos, puedes escribir o usar el micrófono — lo que te sea más fácil.",
+        "p0_bubble3": "Ahora sí, cuéntame, ¿cómo y dónde vendes usualmente (por ejemplo: en un local, tianguis/mercado, a domicilio, por WhatsApp, etc.)?",
         # Phase 9 evidence
         "p9_intro": (
             "Tu oferta está lista — pero hay una forma de aumentarla. "
@@ -288,7 +286,8 @@ ABSOLUTE RULES:
 6. Each message in the messages array: 40 words max. DEFAULT TO ONE BUBBLE.
    Only use 2 bubbles when content genuinely needs separation (e.g. intro + CTA, or
    acknowledgment covers a different topic than the question). Most turns should be 1 bubble.
-   HARD LIMIT: NEVER return more than 2 messages in the messages array — ever.
+   HARD LIMIT: NEVER return more than 2 messages in the messages array — EXCEPT Phase 0,
+   which must return exactly 3 messages.
 7. NEVER RE-ASK AN EXTRACTED FIELD. If the customer's message answered the current
    phase's question — even indirectly or informally — extract it and acknowledge.
    Do NOT append the question again to your acknowledgment bubble. Do NOT ask for
@@ -330,6 +329,7 @@ def build_system_prompt(
     interest_rate_daily: float = 0.01,
     locale: str = "en",
     tester_context: str | None = None,
+    gender: str | None = None,
 ) -> str:
     today = _format_today(locale)
     amount_fmt = f"${approved_amount:,.0f}"
@@ -540,18 +540,14 @@ def build_system_prompt(
         )
         instructions = (
             "PHASE 0 — WELCOME\n\n"
-            "Send 2 messages (bubbles):\n\n"
-            f"Bubble 1: '{t('p0_ai_disclosure')}' — then add one warm, specific line about\n"
-            f"  supporting {business_intro}. Keep it to 1-2 sentences total.\n"
-            f"  Do NOT say 'nice to meet you' — be direct and warm.\n\n"
-            "Bubble 2: Briefly explain the two parts:\n"
-            f"  {t('p0_part1')}\n"
-            f"  {t('p0_part2')}\n"
-            f"  {t('p0_cta')}\n"
-            f"  Then end with the FIRST question: 'How and where do you primarily operate or sell'\n"
-            f"  (for example from home, a small shop, tianguis/market stall, or via WhatsApp deliveries)?\n"
-            f"  Reference {business_intro} to make it specific.\n\n"
-            "Do NOT add a third bubble.\n"
+            "Send EXACTLY 3 messages (bubbles). Use the exact copy below, only substituting\n"
+            f"{{business_type}} with a warm, natural reference to {business_intro}.\n\n"
+            f"Bubble 1: '{t('p0_bubble1')}'\n"
+            f"  Replace '{{{{business_type}}}}' with a natural reference to {business_intro}.\n\n"
+            f"Bubble 2: '{t('p0_bubble2')}'\n"
+            f"  Use this text EXACTLY as written. Do not change or rephrase.\n\n"
+            f"Bubble 3: '{t('p0_bubble3')}'\n"
+            f"  Use this text EXACTLY as written. Do not change or rephrase.\n\n"
             "Set advance_phase=true.\n"
         )
 
