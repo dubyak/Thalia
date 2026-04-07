@@ -185,7 +185,7 @@ async def _run_agent_inner(
 
     # Guard: ignore empty messages mid-session to prevent welcome restart
     if not message and not image_data:
-        if session.messages or session.collected:
+        if session.messages:
             # Session already has context — silently ignore the empty ping
             return {
                 "messages": [],
