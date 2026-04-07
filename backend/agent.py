@@ -183,6 +183,19 @@ async def _run_agent_inner(
     if session.loan_purpose:
         session.collected["loanPurpose"] = session.loan_purpose
 
+    # Guard: ignore empty messages mid-session to prevent welcome restart
+    if not message and not image_data:
+        if session.messages or session.collected:
+            # Session already has context — silently ignore the empty ping
+            return {
+                "messages": [],
+                "phase": session.phase,
+                "collected": session.collected,
+                "offer_amount": session.current_offer if session.phase in ("11", "12") else 0,
+                "is_offer": False,
+                "is_complete": session.phase == "complete",
+            }
+
     # ── Append user message ────────────────────────────────────────────
     if message or image_data:
         if image_data and not message:
