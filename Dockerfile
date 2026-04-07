@@ -5,6 +5,7 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 COPY frontend/ .
+COPY shared/ /app/shared/
 RUN npm run build
 
 # ---- Stage 2: Production image ----
@@ -26,10 +27,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # ---- Frontend (standalone build) ----
-WORKDIR /app/frontend
+WORKDIR /app
 COPY --from=frontend-build /app/frontend/.next/standalone/ ./
-COPY --from=frontend-build /app/frontend/.next/static ./.next/static
-COPY --from=frontend-build /app/frontend/public ./public
+COPY --from=frontend-build /app/frontend/.next/static ./frontend/.next/static
+COPY --from=frontend-build /app/frontend/public ./frontend/public
 
 # ---- Supervisor config ----
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

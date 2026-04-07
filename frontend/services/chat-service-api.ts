@@ -91,6 +91,7 @@ export const apiChatService = {
     businessType?: string,
     loanPurpose?: string,
     locale = 'en',
+    testerContext?: string,
   ): Promise<AgentResponse> {
     this.resetSession()
 
@@ -107,6 +108,7 @@ export const apiChatService = {
           business_type: businessType,
           loan_purpose: loanPurpose,
           locale,
+          ...(testerContext ? { tester_context: testerContext } : {}),
         }),
       })
       if (!res.ok) throw new Error(`Backend ${res.status}`)
@@ -134,6 +136,7 @@ export const apiChatService = {
     locale = 'en',
     customerId?: string,
     customerName?: string,
+    testerContext?: string,
   ): Promise<AgentResponse> {
     try {
       const res = await fetch('/api/chat', {
@@ -153,6 +156,7 @@ export const apiChatService = {
           ...(imageData ? { image_data: imageData } : {}),
           ...(businessType ? { business_type: businessType } : {}),
           ...(loanPurpose ? { loan_purpose: loanPurpose } : {}),
+          ...(testerContext ? { tester_context: testerContext } : {}),
         }),
       })
       if (!res.ok) throw new Error(`Backend ${res.status}`)

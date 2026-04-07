@@ -85,7 +85,7 @@ export function ChatOverlay() {
 
         {/* Chat — fills remaining height */}
         <div className="flex-1 overflow-hidden flex flex-col bg-[#f8fafc]">
-          <ChatWindow isFirstVisit={isFirstVisit} />
+          {state.mode === 'coaching' && <ChatWindow isFirstVisit={isFirstVisit} />}
         </div>
         </div>
       </div>

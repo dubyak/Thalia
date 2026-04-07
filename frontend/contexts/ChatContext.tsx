@@ -29,6 +29,7 @@ interface ChatState {
   // Survey-provided context
   businessType: string | null
   loanPurpose: string | null
+  testerContext: string | null
 }
 
 type ChatAction =
@@ -41,7 +42,7 @@ type ChatAction =
   | { type: 'CLOSE_OVERLAY' }
   | { type: 'SET_MODE'; mode: 'onboarding' | 'servicing' | 'coaching' }
   | { type: 'RESET' }
-  | { type: 'START_ONBOARDING'; name: string; approvedAmount: number; maxAmount: number; businessType?: string; loanPurpose?: string }
+  | { type: 'START_ONBOARDING'; name: string; approvedAmount: number; maxAmount: number; businessType?: string; loanPurpose?: string; testerContext?: string }
   | { type: 'START_SERVICING'; name: string; approvedAmount: number }
   | { type: 'START_COACHING'; name: string; approvedAmount: number }
   | { type: 'UPDATE_MAX'; maxAmount: number }
@@ -60,6 +61,7 @@ const INITIAL_STATE: ChatState = {
   ceilingAmount: 11000,
   businessType: null,
   loanPurpose: null,
+  testerContext: null,
 }
 
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
@@ -92,6 +94,7 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         ceilingAmount: action.maxAmount,
         businessType: action.businessType ?? null,
         loanPurpose: action.loanPurpose ?? null,
+        testerContext: action.testerContext ?? null,
       }
     case 'START_SERVICING':
       return {
@@ -152,7 +155,7 @@ interface ChatContextValue {
   state: ChatState
   sendMessage: (content: string) => Promise<void>
   sendImage: (dataUrl: string) => Promise<void>
-  startOnboarding: (firstName: string, approvedAmount?: number, maxAmount?: number, businessType?: string, loanPurpose?: string) => Promise<void>
+  startOnboarding: (firstName: string, approvedAmount?: number, maxAmount?: number, businessType?: string, loanPurpose?: string, testerContext?: string) => Promise<void>
   startServicing: (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount?: number) => Promise<void>
   startCoaching: (firstName: string, profile: Record<string, string>, approvedAmount: number, maxAmount?: number, isFirstVisit?: boolean) => Promise<void>
   openOverlay: () => void
@@ -242,14 +245,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   )
 
   const startOnboarding = useCallback(
-    async (firstName: string, approvedAmount = 10000, maxAmount = 11000, businessType?: string, loanPurpose?: string) => {
+    async (firstName: string, approvedAmount = 10000, maxAmount = 11000, businessType?: string, loanPurpose?: string, testerContext?: string) => {
       if (stateRef.current.messages.length > 0 || startingRef.current) return
       startingRef.current = true
 
-      dispatch({ type: 'START_ONBOARDING', name: firstName, approvedAmount, maxAmount, businessType, loanPurpose })
+      dispatch({ type: 'START_ONBOARDING', name: firstName, approvedAmount, maxAmount, businessType, loanPurpose, testerContext })
       dispatch({ type: 'SET_TYPING', typing: true })
       const t0 = Date.now()
-      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose, localeRef.current)
+      const response = await apiChatService.getOpeningMessage(firstName, approvedAmount, maxAmount, businessType, loanPurpose, localeRef.current, testerContext)
       const elapsed = Date.now() - t0
       if (elapsed < 1200) await new Promise((r) => setTimeout(r, 1200 - elapsed))
       dispatch({ type: 'SET_TYPING', typing: false })
@@ -331,6 +334,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         customer.firstName && customer.lastName
           ? `${customer.firstName} ${customer.lastName}`
           : undefined,
+        s.testerContext ?? undefined,
       )
 
       // Ensure minimum 800ms typing so it doesn't flash

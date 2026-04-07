@@ -7,6 +7,7 @@ import { StatusBar } from '@/components/app-shell/StatusBar'
 import { BackHeader } from '@/components/app-shell/BackHeader'
 import { useTester } from '@/contexts/TesterContext'
 import { useFlow } from '@/contexts/FlowContext'
+import { useChat } from '@/contexts/ChatContext'
 import { calculateLoan, formatMXN, getSmartDueDates, getSecondInstallmentDate, formatDate, formatDateShort } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/useTranslation'
@@ -14,11 +15,13 @@ import { useTranslation } from '@/lib/i18n/useTranslation'
 export default function OfferPage() {
   const { tester } = useTester()
   const { dispatch } = useFlow()
+  const { state: chatState } = useChat()
   const router = useRouter()
   const { t } = useTranslation()
 
   const approved = tester?.approvedAmount ?? 8000
-  const maxAmount = tester?.approvedAmount ?? 8000
+  // Use chat state's maxAmount — starts at approvedAmount, unlocks to ceiling after negotiation
+  const maxAmount = chatState.maxAmount > 0 ? chatState.maxAmount : (tester?.approvedAmount ?? 8000)
   const dailyRate = tester?.interestRateDaily ?? 0.0028
   const feeRate = tester?.processingFeeRate ?? 0.04
   const locale = tester?.locale ?? 'es-MX'

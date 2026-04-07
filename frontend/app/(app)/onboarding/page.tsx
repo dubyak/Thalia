@@ -32,12 +32,16 @@ export default function OnboardingPage() {
     if (state.messages.length > 0) return
 
     resetChat()
+    const testerCtx = tester?.loanNumber
+      ? `Loyal Tala customer since ${tester.signUpDate} — on their ${tester.loanNumber}th loan.`
+      : undefined
     setTimeout(() => startOnboarding(
       displayName,
       tester?.approvedAmount,
       tester?.maxAmount,
       flow.surveyBusinessType ?? tester?.businessType,
       flow.surveyLoanPurpose,
+      testerCtx,
     ), 0)
   }, [displayName]) // eslint-disable-line react-hooks/exhaustive-deps
 

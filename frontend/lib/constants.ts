@@ -4,11 +4,9 @@ import type { TesterProfile } from './types'
 export const DEFAULT_TESTERS: TesterProfile[] = [
   {
     id: 'demo',
-    code: 'T@LAJOTE',
+    code: 'T@LAJ0TE',
     name: 'Demo',
     firstName: 'Demo',
-    approvedAmount: 10000,
-    maxAmount: 11000,
     interestRateDaily: 0.0083,
     processingFeeRate: 0.0299,
     locale: 'es-MX'

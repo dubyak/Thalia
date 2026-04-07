@@ -15,8 +15,9 @@ try:
         project_name=os.getenv("ARIZE_PROJECT_NAME", "thalia-msme-agent"),
     )
     OpenAIInstrumentor().instrument(tracer_provider=tracer_provider)
+    logging.info("Arize tracing initialized")
 except Exception as e:
-    logging.warning(f"Arize tracing disabled: {e}")
+    logging.warning(f"Arize tracing disabled: {e}", exc_info=True)
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,6 +65,7 @@ class ChatRequest(BaseModel):
     customer_id: str | None = None   # Supabase customer UUID
     customer_name: str | None = None # "First Last" for logging
     locale: str = "en"               # "en" or "es-MX"
+    tester_context: str | None = None  # e.g. "Loyal customer since June 2023 — on their 28th loan."
 
 
 class ChatResponse(BaseModel):
@@ -98,6 +100,7 @@ async def chat(req: ChatRequest, request: Request):
         customer_id=req.customer_id,
         customer_name=req.customer_name,
         locale=req.locale,
+        tester_context=req.tester_context,
     )
 
     phase = result["phase"]

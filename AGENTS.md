@@ -26,7 +26,7 @@ docs/              Product specs and deployment guides
 | Backend  | Python, FastAPI, OpenAI SDK, Pydantic 2      |
 | LLM      | OpenAI GPT (gpt-5.2) via structured output   |
 | Tracing  | Arize AX (optional, OpenTelemetry)            |
-| Deploy   | Railway (two-service) or Docker               |
+| Deploy   | Docker → AWS ECR → AWS App Runner (`./deploy-aws.sh`) |
 
 ## Key files
 
@@ -60,7 +60,7 @@ docs/              Product specs and deployment guides
 | File | Purpose |
 |------|---------|
 | `docs/msme-mx-onboarding-flow.md` | Product spec — the full agent flow, conversation design principles, prompt guidelines |
-| `docs/railway-deployment.md` | Deployment guide for Railway (two-service or monolith) |
+| `deploy-aws.sh` | Deploy script — builds Docker image, pushes to ECR, App Runner auto-deploys |
 
 ## Agent modes
 
@@ -118,11 +118,10 @@ The backend supports three modes, set per session:
 - **Structured output everywhere.** The backend never parses free-text from the LLM — all decisions come through `AgentDecision` Pydantic model.
 - **Phase logic lives in the backend.** The frontend trusts the `phase` field returned by `/chat` and does not independently decide phase transitions.
 - **Multi-bubble responses.** The agent returns `messages: list[str]`, rendered as separate chat bubbles with staggered animation. Use a single bubble unless content genuinely needs separation.
-- **Tester profiles are hardcoded.** `frontend/lib/constants.ts` has the tester list. Supabase integration is stubbed but not wired up. `DEMOEN` tester uses `locale: 'en'`; all others use `locale: 'es-MX'`.
-- **No auth.** Testers enter a code (e.g. `DEMO`, `DEMOEN`, `TESTER01`) — there's no real authentication.
-- **Customer name persistence.** CustomerContext stores customer identity (firstName, lastName, customerId) in a separate localStorage key (`tala_customer_state`) from FlowContext, so names survive flow resets. This enables: (1) personalized agent responses ("Hi María!"), (2) customer identification in Arize traces for usability testing, (3) soft resets that keep the customer but clear flow progress. The context is SSR-safe and handles corrupted localStorage gracefully.
-- **Dual-reset pattern.** The ResetMenu offers two options: (1) **"Restart Demo"** dispatches `RESET` to FlowContext only, returning to survey page with name/customerId intact (soft reset for flow testing). (2) **"New Customer"** dispatches `CLEAR_NAME` to CustomerContext and `RESET` to FlowContext, clearing all state and returning to landing page (hard reset for new customer sessions). Use soft reset for demo refinement; hard reset for usability testing sessions.
-- **Graceful Supabase fallback.** The `/api/customer/create` Route Handler checks if Supabase env vars exist before attempting insert. If not configured or if insert fails, it returns `{ customerId: null }` and the app continues normally. This allows the prototype to function without database setup during development while still persisting customer data in localStorage.
+- **Tester profiles are hardcoded** in `frontend/lib/constants.ts`. `DEMOEN` uses `locale: 'en'`; all others `locale: 'es-MX'`. No real auth — testers enter a code (`DEMO`, `DEMOEN`, `TESTER01`).
+- **Customer name persistence.** `CustomerContext` stores identity in a separate localStorage key (`tala_customer_state`) from `FlowContext`, so names survive flow resets.
+- **Dual-reset pattern.** "Restart Demo" = soft reset (FlowContext only, name intact). "New Customer" = hard reset (clears CustomerContext + FlowContext, returns to landing page).
+- **Graceful Supabase fallback.** `/api/customer/create` checks env vars before insert; returns `{ customerId: null }` on failure so the app continues without a database.
 
 ## Internationalization (i18n)
 
@@ -149,34 +148,13 @@ The app uses a two-layer locale system controlled by the tester profile's `local
 ## Running locally
 
 ```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-OPENAI_API_KEY=sk-... uvicorn main:app --reload --port 8000
-
-# Frontend
-cd frontend
-npm install
-npm run dev          # runs on port 3001
+cd backend && OPENAI_API_KEY=sk-... uvicorn main:app --reload --port 8000
+cd frontend && npm run dev  # port 3001; expects backend at http://localhost:8000
 ```
-
-The frontend expects the backend at `http://localhost:8000` by default. Set `BACKEND_URL` env var to override.
 
 ## Common tasks
 
-**Adding a new onboarding phase:** Update `PHASE_ORDER` in `agent.py`, add phase instructions in `prompts.py`, add `ExtractedFields` entry in `state.py` if it collects data, add advancement logic in `agent.py`'s `run_agent`, update `PHASE_FIELD` map if applicable, and update the `OnboardingPhase` type in `frontend/lib/types.ts`.
-
-**Adding a new tester:** Add an entry to `DEFAULT_TESTERS` in `frontend/lib/constants.ts`.
-
-**Changing agent behavior / conversation quality:** Edit `CONVERSATION_RULES`, `ABSOLUTE_RULES`, or the phase-specific prompt blocks in `prompts.py`. The `AgentDecision` model in `state.py` controls what structured fields the LLM can return.
-
-**Tuning prompt rules:** Be careful with conflicting rules (e.g. "be brief" vs "be warm"). Test the full onboarding flow end-to-end after any prompt change — small wording changes have outsized effects on conversation quality.
-
-**Adding customer data to agent personalization:** Customer firstName + lastName are available in the `/chat` request body as `customer_id` and `customer_name`. To personalize agent responses, access these in `agent.py`'s `run_agent()` function and thread them into `build_system_prompt()`. The data flows from landing page → CustomerContext → ChatContext.sendMessage() → chat-service-api.ts → backend.
-
-**Modifying reset behavior:** Edit `ResetMenu.tsx` in `frontend/components/app-shell/`. The `handleRestartDemo()` function controls soft reset behavior (currently calls `dispatch({ type: 'RESET' })` only); `handleNewCustomer()` controls hard reset (calls both `CLEAR_NAME` and `RESET`). To add a third reset option, duplicate one of these handlers and customize the dispatch calls and navigation path.
-
-**Wiring Supabase integration:** The `/api/customer/create` Route Handler has the pattern — check env vars, validate input, attempt insert, return gracefully on failure. To add more customer-related endpoints (e.g., fetch customer profile, update preferences), follow the same pattern in `frontend/app/api/customer/` with corresponding backend updates to accept customer data in `/chat` requests.
+See `docs/tasks.md` for step-by-step recipes (adding phases, testers, reset options, Supabase wiring).
 
 ## Lessons learned (update as you go)
 

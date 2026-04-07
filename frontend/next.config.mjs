@@ -1,3 +1,5 @@
+import path from 'path'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -5,7 +7,7 @@ const nextConfig = {
     remotePatterns: []
   },
   turbopack: {
-    root: import.meta.dirname,
+    root: path.resolve(import.meta.dirname, '..'),
   },
 }
 

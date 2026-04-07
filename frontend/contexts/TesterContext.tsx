@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { TesterProfile } from '@/lib/types'
 import { DEFAULT_TESTERS } from '@/lib/constants'
+import { getOfferForCode } from '@/lib/access-codes'
 
 interface TesterContextValue {
   tester: TesterProfile | null
@@ -24,15 +25,33 @@ export function TesterProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setTesterByCode = (code: string): boolean => {
-    const found = DEFAULT_TESTERS.find(
-      (t) => t.code.toUpperCase() === code.toUpperCase()
-    )
-    if (found) {
-      setTester(found)
-      localStorage.setItem('tala_tester_code', code.toUpperCase())
-      return true
+    const upper = code.toUpperCase()
+    const offer = getOfferForCode(upper)
+    if (!offer) return false
+
+    const persona = DEFAULT_TESTERS.find((t) => t.code.toUpperCase() === upper)
+    const extras = {
+      approvedAmount: offer.initialOffer,
+      maxAmount: offer.maxOffer,
+      ...(offer.signUpDate !== undefined ? { signUpDate: offer.signUpDate } : {}),
+      ...(offer.loanNumber !== undefined ? { loanNumber: offer.loanNumber } : {}),
     }
-    return false
+    const profile: TesterProfile = persona
+      ? { ...persona, ...extras }
+      : {
+          id: upper.toLowerCase(),
+          code: upper,
+          name: offer.name ?? offer.firstName,
+          firstName: offer.firstName,
+          interestRateDaily: 0.0083,
+          processingFeeRate: 0.0299,
+          locale: 'es-MX',
+          ...extras,
+        }
+
+    setTester(profile)
+    localStorage.setItem('tala_tester_code', upper)
+    return true
   }
 
   const clearTester = () => {

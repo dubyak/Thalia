@@ -4,12 +4,14 @@ export interface TesterProfile {
   code: string
   name: string
   firstName: string
-  approvedAmount: number
-  maxAmount: number
+  approvedAmount?: number
+  maxAmount?: number
   interestRateDaily: number
   processingFeeRate: number
   businessType?: string
   locale: string
+  signUpDate?: string
+  loanNumber?: number
 }
 
 // Loan configuration selected by user
