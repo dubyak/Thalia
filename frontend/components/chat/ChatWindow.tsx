@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -25,6 +27,7 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
   const { state, sendMessage, sendImage } = useChat()
   const { dispatch: flowDispatch } = useFlow()
   const { locale } = useLocale()
+  const router = useRouter()
   const isEs = locale === 'es-MX'
   const { messages, isTyping, phase } = state
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -71,6 +74,13 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     state.isComplete &&
     !isTyping
 
+  // Show "Skip to offer" button during Phase 9 coaching demo
+  const showSkipToOffer =
+    state.mode === 'onboarding' &&
+    phase === '9' &&
+    !state.isComplete &&
+    !isTyping
+
   // LoanConfigModal → TermsModal
   const handleConfigContinue = (amount: number, installments: 1 | 2) => {
     setPendingConfig({ amount, installments })
@@ -114,17 +124,23 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
         {isTyping && <TypingIndicator />}
 
         {showReadyButton && (
-          <div className="flex justify-center pt-2 pb-1 animate-fade-in">
+          <div className="flex flex-col items-center gap-2 pt-3 pb-2 animate-fade-in">
+            <p className="text-xs text-[#939490] font-light">
+              {isEs ? 'Toca para continuar' : 'Tap to continue'}
+            </p>
             <button
-              onClick={() => sendMessage(isEs ? "Continuar mi solicitud" : "Continue my application")}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95 touch-active"
+              onClick={() => sendMessage(isEs ? 'Continuar mi solicitud' : 'Continue my application')}
+              className="flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold transition-all active:scale-95 touch-active animate-pulse-once"
               style={{
                 background: '#00A69C',
                 color: '#FFFFFF',
-                boxShadow: '0 2px 8px rgba(0,166,156,0.25)',
+                boxShadow: '0 4px 16px rgba(0,166,156,0.45)',
+                minWidth: 220,
+                justifyContent: 'center',
               }}
             >
               {isEs ? 'Continuar mi solicitud' : 'Continue my application'}
+              <ChevronRight size={18} />
             </button>
           </div>
         )}
@@ -157,6 +173,21 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
               }}
             >
               {isEs ? 'Dispersar mi crédito' : 'Disburse my loan'}
+            </button>
+          </div>
+        )}
+
+        {showSkipToOffer && (
+          <div className="flex justify-center pt-1 pb-2 animate-fade-in">
+            <button
+              onClick={() => {
+                flowDispatch({ type: 'SKIP_TO_OFFER' })
+                router.push('/offer')
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border-2 border-[#1a989e] text-[#1a989e] bg-white touch-active active:bg-[#d2f2f4]"
+            >
+              {isEs ? 'Ir directo a mi oferta' : 'Skip to my offer'}
+              <ChevronRight size={13} />
             </button>
           </div>
         )}

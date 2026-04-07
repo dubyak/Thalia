@@ -68,13 +68,18 @@ const config: Config = {
         'typing': {
           '0%, 60%, 100%': { transform: 'translateY(0)', opacity: '0.4' },
           '30%': { transform: 'translateY(-8px)', opacity: '1' }
+        },
+        'pulse-once': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.03)' },
         }
       },
       animation: {
         'fade-in': 'fade-in 0.3s ease-out forwards',
         'slide-up': 'slide-up 0.3s ease-out forwards',
         'slide-in-right': 'slide-in-right 0.3s ease-out forwards',
-        'typing': 'typing 1.2s ease-in-out infinite'
+        'typing': 'typing 1.2s ease-in-out infinite',
+        'pulse-once': 'pulse-once 1.2s ease-in-out 0.5s 2',
       }
     }
   },

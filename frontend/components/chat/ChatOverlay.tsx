@@ -76,9 +76,10 @@ export function ChatOverlay() {
           </div>
           <button
             onClick={closeOverlay}
-            className="w-8 h-8 rounded-full bg-[#f5f6f0] flex items-center justify-center touch-active"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#f5f6f0] text-[#676d65] text-xs font-medium touch-active active:bg-[#e5e5e5]"
           >
-            <ChevronDown size={18} className="text-[#676d65]" />
+            {locale === 'es-MX' ? 'Cerrar' : 'Close'}
+            <ChevronDown size={14} />
           </button>
         </div>
 
