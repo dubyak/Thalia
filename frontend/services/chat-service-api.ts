@@ -8,10 +8,10 @@ let _sessionId: string | null = null
 function getSessionId(): string {
   if (!_sessionId) {
     try {
-      _sessionId = sessionStorage.getItem('thalia_session_id')
+      _sessionId = localStorage.getItem('thalia_session_id')
       if (!_sessionId) {
         _sessionId = makeSessionId()
-        sessionStorage.setItem('thalia_session_id', _sessionId)
+        localStorage.setItem('thalia_session_id', _sessionId)
       }
     } catch {
       _sessionId = makeSessionId()
@@ -44,7 +44,7 @@ function parseResponse(data: Record<string, unknown>, fallbackPhase: OnboardingP
 export const apiChatService = {
   resetSession() {
     _sessionId = null
-    try { sessionStorage.removeItem('thalia_session_id') } catch { /* ignore */ }
+    try { localStorage.removeItem('thalia_session_id') } catch { /* ignore */ }
   },
 
   async getServicingOpening(

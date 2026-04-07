@@ -5,6 +5,7 @@ import {
   useContext,
   useReducer,
   useCallback,
+  useEffect,
   useRef,
   type ReactNode
 } from 'react'
@@ -162,10 +163,49 @@ interface ChatContextValue {
 const ChatContext = createContext<ChatContextValue | null>(null)
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(chatReducer, INITIAL_STATE)
+  const [state, dispatch] = useReducer(chatReducer, INITIAL_STATE, (init) => {
+    if (typeof window === 'undefined') return init
+    try {
+      const saved = localStorage.getItem('tala_chat_state')
+      if (!saved) return init
+      const parsed = JSON.parse(saved)
+      return {
+        ...init,
+        messages: (parsed.messages ?? []).map((m: ChatMessage) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        })),
+        phase: parsed.phase ?? init.phase,
+        mode: parsed.mode ?? init.mode,
+        businessProfile: parsed.businessProfile ?? init.businessProfile,
+        testerFirstName: parsed.testerFirstName ?? init.testerFirstName,
+        approvedAmount: parsed.approvedAmount ?? init.approvedAmount,
+        maxAmount: parsed.maxAmount ?? init.maxAmount,
+        ceilingAmount: parsed.ceilingAmount ?? init.ceilingAmount,
+      }
+    } catch {
+      return init
+    }
+  })
   const startingRef = useRef(false)
   const stateRef = useRef(state)
   stateRef.current = state
+
+  // Persist chat state to localStorage on relevant state changes
+  useEffect(() => {
+    const toSave = {
+      messages: state.messages,
+      phase: state.phase,
+      mode: state.mode,
+      businessProfile: state.businessProfile,
+      testerFirstName: state.testerFirstName,
+      approvedAmount: state.approvedAmount,
+      maxAmount: state.maxAmount,
+      ceilingAmount: state.ceilingAmount,
+    }
+    localStorage.setItem('tala_chat_state', JSON.stringify(toSave))
+  }, [state.messages, state.phase, state.mode, state.businessProfile,
+      state.testerFirstName, state.approvedAmount, state.maxAmount, state.ceilingAmount])
 
   // Read locale from app-wide locale context
   const { locale } = useLocale()
@@ -348,7 +388,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const openOverlay = useCallback(() => dispatch({ type: 'OPEN_OVERLAY' }), [])
   const closeOverlay = useCallback(() => dispatch({ type: 'CLOSE_OVERLAY' }), [])
   const resetChat = useCallback(() => {
-    sessionStorage.removeItem('thalia_session_id')
+    localStorage.removeItem('thalia_session_id')
+    localStorage.removeItem('tala_chat_state')
+    apiChatService.resetSession()
     startingRef.current = false
     dispatch({ type: 'RESET' })
   }, [])
