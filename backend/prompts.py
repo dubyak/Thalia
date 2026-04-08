@@ -335,6 +335,7 @@ def build_system_prompt(
     amount_fmt = f"${approved_amount:,.0f}"
     offer_fmt = f"${offer_amount:,.0f}" if offer_amount else "$0"
     max_fmt = f"${max_amount:,.0f}" if max_amount else "$0"
+    rate_pct = f"{interest_rate_daily * 100:.2f}%"
 
     business_type = collected.get("businessType", "your business")
     loan_purpose = collected.get("loanPurpose", "")
@@ -449,17 +450,20 @@ def build_system_prompt(
 
         if is_first_visit:
             opening = (
-                "OPENING (first visit — use EXACTLY ONE bubble):\n"
-                f"  1. Greet {tester_name} warmly — feel like you're continuing from onboarding, NOT meeting them fresh.\n"
-                f"  2. Briefly mention BOTH things you can help with:\n"
-                f"     a) Growing their {business_type} (business coaching)\n"
-                f"     b) Any loan or payment questions\n"
-                f"     Example: 'Your credit is live, {tester_name}! I'm here to help grow your {business_type}\n"
-                f"     or answer any loan questions — what do you need?'\n"
-                f"  3. Do NOT say 'nice to meet you' or introduce yourself as if new.\n"
-                f"  4. Quick-reply buttons will appear below automatically — do NOT list them in text.\n"
-                f"  5. End with a short invitation ('what do you need?' or similar).\n"
-                f"  IMPORTANT: ONE bubble only. 40 words max.\n"
+                "OPENING (first visit — use EXACTLY TWO bubbles):\n"
+                "  Bubble 1:\n"
+                f"    Greet {tester_name} warmly — feel like you're continuing from onboarding, NOT meeting them fresh.\n"
+                f"    Briefly mention BOTH things you can help with:\n"
+                f"      a) Growing their {business_type} (business coaching)\n"
+                f"      b) Any loan or payment questions\n"
+                f"    Remind them they can use their microphone to respond if they prefer — keep it casual, one phrase.\n"
+                f"    End with a short invitation ('what do you need?' or similar).\n"
+                f"    Do NOT say 'nice to meet you' or introduce yourself as if new.\n"
+                f"    Quick-reply buttons will appear below automatically — do NOT list them in text.\n"
+                f"    40 words max.\n"
+                "  Bubble 2 (separate bubble):\n"
+                f"    One short sentence telling them they can type 'menu' anytime to see all the ways\n"
+                f"    Thalia can help their business. Keep it under 15 words.\n"
             )
         else:
             opening = (
@@ -517,7 +521,7 @@ def build_system_prompt(
             f"  3. Invite continuation: '{t('coach_invite_back')}'\n\n"
 
             f"{_formatting_rules('coaching')}\n"
-            "Keep responses warm and concise (40 words max per bubble, single bubble when possible). Always end with a question.\n"
+            "Keep responses warm and concise (40 words max per bubble, single bubble when possible — except the first-visit opening which uses two bubbles). Always end with a question.\n"
             f"{t('language_critical')}"
         )
 
@@ -750,17 +754,23 @@ def build_system_prompt(
             "  observation or connection, not a blank question. Not 'what do you want to\n"
             "  improve?' but 'Your cash cycle is same-week and barbacoa is your biggest cost —\n"
             "  that puts you in a good position to buy in bulk when prices dip. What does your\n"
-            "  restocking routine look like right now?'\n\n"
+            "  restocking routine look like right now?'\n"
+            "  CRITICAL: Turn 1 MUST end with a diagnostic question to draw the customer\n"
+            "  into dialogue. Do NOT deliver the recommendation or the bridge in Turn 1.\n"
+            "  Do NOT set advance_phase=true in Turn 1.\n\n"
 
             "Turn 2 — Give a meaningful reframe of their answer + one follow-up. Connect what\n"
             "  they said to something actionable. Not 'interesting' but 'Buying three days'\n"
             "  worth at a time means you're exposed to price swings more often — have you\n"
-            "  tried locking in a weekly rate with your supplier?'\n\n"
+            "  tried locking in a weekly rate with your supplier?'\n"
+            "  Do NOT set advance_phase=true in Turn 2.\n\n"
 
             "Turn 3 — Deliver the recommendation. Do not wait longer. The first concrete,\n"
             "  actionable version of your recommendation should land by turn 3. It can be\n"
             "  refined in later turns if the customer engages, but the core value must arrive\n"
-            "  here. Make it specific to their numbers and context.\n\n"
+            "  here. Make it specific to their numbers and context. After the recommendation,\n"
+            "  include the bridge (see BRIDGE below). Set advance_phase=false — wait for\n"
+            "  the customer's response before advancing.\n\n"
 
             "Turns 4-6 (ONLY if the customer engages with the recommendation) — If the\n"
             "  customer reacts with a question, a 'how would I do that?', or wants to explore\n"
@@ -770,14 +780,15 @@ def build_system_prompt(
             "  ('ok', 'sounds good', 'got it') or asks to move on, advance immediately.\n\n"
 
             "WHEN TO ADVANCE (set advance_phase=true):\n"
-            "  (a) You've delivered the recommendation and the customer gives a closing signal\n"
-            "      or doesn't ask a follow-up, OR\n"
+            "  (a) You've delivered the recommendation (Turn 3+) AND the customer gives a\n"
+            "      closing signal or doesn't ask a follow-up, OR\n"
             "  (b) The customer asks to move on or see their offer at any point, OR\n"
-            "  (c) You've reached 6 real customer turns — wrap up regardless.\n\n"
+            "  (c) You've reached 6 real customer turns — wrap up regardless.\n"
+            "  NEVER set advance_phase=true before Turn 3.\n\n"
 
             "BRIDGE TO POST-LOAN COACHING (required before advancing):\n"
-            "  After your recommendation, end with a natural bridge that references the\n"
-            "  specific topic you discussed:\n"
+            "  After your recommendation (Turn 3+), end with a natural bridge that references\n"
+            "  the specific topic you discussed:\n"
             "  'Once your credit is active, I can help you go deeper on [restate topic in\n"
             "  3-5 words]. Ready to see your offer?'\n"
             "  The bridge should feel like a continuation of the conversation, not a canned\n"
@@ -797,11 +808,11 @@ def build_system_prompt(
             "- Advance phase without delivering at least one concrete insight\n"
             "- Use turns 4-6 for more diagnostic questions — only for deepening a\n"
             "  recommendation the customer is actively exploring\n"
+            "- Include the bridge question ('Ready to see your offer?') in Turn 1 or Turn 2\n"
+            "- Set advance_phase=true before the recommendation has been delivered\n"
         )
 
     elif phase == "11":
-        # Format the daily rate as a percentage for display
-        rate_pct = f"{interest_rate_daily * 100:.2f}%"
         instructions = (
             "PHASE 11 — OFFER PRESENTATION\n"
             f"{already_collected}\n\n"
@@ -866,6 +877,18 @@ def build_system_prompt(
             "- Neutral: Use gender-neutral alternatives (\"¡Perfecto!\", \"¡Excelente!\", \"Bienvenid@\")\n"
             "Never use slash constructions like \"listo/a\" or \"bienvenido/a\".\n"
         )
+    skip_instruction = (
+        "SKIP TO OFFER — applies in ANY phase:\n"
+        "If the customer says they want to skip the remaining questions and get their "
+        "loan immediately (e.g. 'I just want my loan now', 'just show me my offer', "
+        "'skip to the loan', 'I don't need all these questions'), respond with exactly "
+        "2 bubbles:\n"
+        f"  Bubble 1: 'Of course!'\n"
+        f"  Bubble 2: 'You\u2019re approved for **{amount_fmt} MXN** at **{rate_pct} daily "
+        f"interest**, for up to **60 days** (1 or 2 payments). Ready to configure it?'\n"
+        "Set skip_to_offer=true and is_offer=true. "
+        "Do NOT ask any remaining profile questions.\n"
+    )
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"
         f"Customer: {tester_name} | Date: {today}\n"
@@ -874,6 +897,7 @@ def build_system_prompt(
         f"{survey_ctx}\n"
         f"{_absolute_rules(locale)}\n"
         f"{_formatting_rules('onboarding')}\n"
+        f"{skip_instruction}\n"
         f"{instructions}\n\n"
         f"{_conversation_rules(locale)}"
         f"{gender_rule}"
