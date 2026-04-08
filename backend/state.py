@@ -108,3 +108,12 @@ class AgentDecision(BaseModel):
             "and in all other phases."
         )
     )
+    skip_to_offer: bool = Field(
+        default=False,
+        description=(
+            "Set to true ONLY when the customer explicitly asks to skip the remaining "
+            "questions and get their loan offer immediately — e.g. 'I just want my loan now', "
+            "'just show me my offer', 'skip to the loan', 'I don't need the questions'. "
+            "Leave false in all other cases, including normal phase progression."
+        )
+    )
