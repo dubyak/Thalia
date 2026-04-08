@@ -270,7 +270,12 @@ async def _run_agent_inner(
     if session.mode == "onboarding":
         phase = session.phase
 
-        if phase == "0":
+        # ── Skip-to-offer: jump directly to Phase 11 from any earlier phase ──
+        if result.skip_to_offer and phase not in ("11", "12", "complete"):
+            session.phase = "11"
+            result.is_offer = True
+
+        elif phase == "0":
             if result.advance_phase:
                 session.phase = _next_phase(phase)
 
@@ -307,7 +312,11 @@ async def _run_agent_inner(
             # triggers Phase 12 closing.
             if result.offer_negotiated:
                 session.current_offer = session.max_amount
-            if result.advance_phase:
+            # is_offer and advance_phase are mutually exclusive: if the LLM
+            # accidentally sets advance_phase=True while showing the configure
+            # button (is_offer=True), prioritize is_offer and stay in phase 11.
+            # Only advance when the customer has actually accepted via the app.
+            if result.advance_phase and not result.is_offer:
                 session.offer_stage = "accepted"
                 session.phase = _next_phase(phase)
 
