@@ -199,3 +199,42 @@ async def test_coaching_no_loops():
         agent_turns.append(combined)
 
     sessions.pop(sid, None)
+
+
+# ── Skip-to-offer ────────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_skip_to_offer_jumps_to_phase_11():
+    """Saying 'I just want my loan now' mid-onboarding should jump to phase 11
+    and return is_offer=True so the configure-loan button appears."""
+    sid = "test-skip-to-offer"
+    sessions.pop(sid, None)
+
+    # Start session (phase 0 welcome)
+    await run_agent(
+        sid,
+        tester_name="Ana",
+        approved_amount=10000,
+        max_amount=12000,
+        mode="onboarding",
+        business_type="food stall",
+        loan_purpose="Restock inventory",
+    )
+
+    # Answer first question to land in phase 1+
+    await run_agent(sid, message="I'm ready to get started")
+
+    # Now skip to offer
+    result = await run_agent(sid, message="I just want to get my loan now")
+
+    assert result["phase"] == "11", (
+        f"Expected phase '11' after skip, got '{result['phase']}'"
+    )
+    assert result["is_offer"] is True, (
+        "Expected is_offer=True so the configure-loan button appears"
+    )
+    assert result["offer_amount"] == 10000, (
+        f"Expected offer_amount=10000, got {result['offer_amount']}"
+    )
+
+    sessions.pop(sid, None)
