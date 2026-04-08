@@ -837,6 +837,7 @@ def build_system_prompt(
             "  Do NOT repeat the terms, do NOT celebrate at length — the closing message will do that.\n"
             "  ADVANCE TRIGGER: Any message containing 'Acepté el crédito' / 'I've accepted the loan'\n"
             "  or any variant means the customer accepted. Set advance_phase=true immediately.\n"
+            "  Set is_offer=false. Set skip_to_offer=false.\n"
             "  Do NOT wait for additional confirmation.\n"
         )
 
@@ -884,15 +885,18 @@ def build_system_prompt(
     if phase not in ("11", "12", "complete"):
         skip_instruction = (
             "SKIP TO OFFER — applies in ANY phase before the offer:\n"
-            "If the customer says they want to skip the remaining questions and get their "
-            "loan immediately (e.g. 'I just want my loan now', 'just show me my offer', "
-            "'skip to the loan', 'I don't need all these questions'), respond with exactly "
-            "2 bubbles:\n"
+            "If the customer explicitly says they want to stop the conversation and get "
+            "their loan RIGHT NOW, bypassing the remaining questions — e.g. 'I just want "
+            "my loan now', 'I don't need the questions, just give me my credit', 'skip "
+            "everything and show me my loan' — respond with exactly 2 bubbles:\n"
             f"  Bubble 1: 'Of course!'\n"
             f"  Bubble 2: 'You\u2019re approved for **{amount_fmt} MXN** at **{rate_pct} daily "
             f"interest**, for up to **60 days** (1 or 2 payments). Ready to configure it?'\n"
             "Set skip_to_offer=true and is_offer=true. "
             "Do NOT ask any remaining profile questions.\n"
+            "Do NOT trigger this for natural conversation transitions like 'I'm ready to "
+            "see the offer now' or 'let's move on to the loan' — those are part of the "
+            "normal flow and should be handled by the current phase instructions.\n"
         )
     return (
         f"You are Thalia, a warm AI business assistant for Tala (lending app).\n"

@@ -103,17 +103,19 @@ class AgentDecision(BaseModel):
         default=False,
         description=(
             "Phase 11 only: set to true when presenting a final offer ready for configuration. "
-            "Set true when the customer says YES to the initial offer (Step 2) OR when presenting "
-            "the negotiated max offer (Step 3). Leave false during the initial offer presentation "
-            "and in all other phases."
+            "Set true ONLY in Step 2 (customer says YES to initial offer) and Step 3 (presenting "
+            "negotiated max offer). Leave false in Step 1 (initial offer presentation), Step 4 "
+            "(customer accepted via app — set advance_phase=true instead), and all phases outside Phase 11."
         )
     )
     skip_to_offer: bool = Field(
         default=False,
         description=(
-            "Set to true ONLY when the customer explicitly asks to skip the remaining "
-            "questions and get their loan offer immediately — e.g. 'I just want my loan now', "
-            "'just show me my offer', 'skip to the loan', 'I don't need the questions'. "
-            "Leave false in all other cases, including normal phase progression."
+            "Set to true ONLY when the customer explicitly demands to stop the conversation "
+            "and get their loan RIGHT NOW, bypassing the remaining questions — e.g. "
+            "'I just want my loan now', 'I don't need all these questions', 'skip everything "
+            "and give me my credit'. "
+            "Leave false in all other cases, including normal phase progression, natural "
+            "coaching-to-offer transitions ('I'm ready to see the offer'), and Phase 11+."
         )
     )

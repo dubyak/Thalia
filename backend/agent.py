@@ -259,7 +259,7 @@ async def _run_agent_inner(
 
     # ── DEBUG: log LLM decision ────────────────────────────────────────
     preview = result.messages[0][:80] if result.messages else "(empty)"
-    print(f"[DEBUG] phase={session.phase} | advance={result.advance_phase} | extracted={result.extracted} | collected={session.collected} | msgs={len(result.messages)} | first={preview}...")
+    print(f"[DEBUG] phase={session.phase} | advance={result.advance_phase} | is_offer={result.is_offer} | skip_to_offer={result.skip_to_offer} | extracted={result.extracted} | collected={session.collected} | msgs={len(result.messages)} | first={preview}...")
 
     # ── Merge extracted fields ─────────────────────────────────────────
     extracted = result.extracted.to_dict()
@@ -336,6 +336,7 @@ async def _run_agent_inner(
         and phase in AUTO_ADVANCE_FROM
         and result.advance_phase
         and session.phase != phase  # phase actually changed
+        and not result.skip_to_offer  # skip block already placed phase=11; don't auto-advance
     ):
         # Save the acknowledgment messages from the first call.
         # Guard: if the last ack bubble is purely a question (agent re-asked
