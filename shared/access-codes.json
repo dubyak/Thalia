@@ -21,5 +21,6 @@
   "3318":     { "pid": "PB3", "customerId": "",                "firstName": "",         "name": "",                                "signUpDate": "",           "loanNumber": 0,  "currentLoan": 0,     "initialOffer": 0,     "maxOffer": 0     },
   "3319":     { "pid": "PB4", "customerId": "",                "firstName": "",         "name": "",                                "signUpDate": "",           "loanNumber": 0,  "currentLoan": 0,     "initialOffer": 0,     "maxOffer": 0     },
   "3320":     { "pid": "PB5", "customerId": "",                "firstName": "Baltazar", "name": "Baltazar Rojas",                  "signUpDate": "05/09/2024", "loanNumber": 4,  "currentLoan": 2400,  "initialOffer": 3000,  "maxOffer": 3600,  "gender": "male" },
-  "3321":     { "pid": "PB6", "customerId": "",                "firstName": "Eduardo",  "name": "Eduardo Ortiz",                   "signUpDate": "01/10/2025", "loanNumber": 7,  "currentLoan": 5500,  "initialOffer": 6875,  "maxOffer": 8250,  "gender": "male" }
+  "3321":     { "pid": "PB6", "customerId": "",                "firstName": "Eduardo",  "name": "Eduardo Ortiz",                   "signUpDate": "01/10/2025", "loanNumber": 7,  "currentLoan": 5500,  "initialOffer": 6875,  "maxOffer": 8250,  "gender": "male" },
+  "3322":     { "pid": "PB7", "customerId": "",                "firstName": "Luis Miguel","name": "Luis Miguel Cabrera",             "signUpDate": "",           "loanNumber": 0,  "currentLoan": 0,     "initialOffer": 0,     "maxOffer": 0,     "gender": "male" }
 }
