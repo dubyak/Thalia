@@ -31,3 +31,18 @@ Tester access codes and loan amounts live in `shared/access-codes.json`. To upda
 - The product is a **personal credit** — never say "business loan" or "business credit"
 - Always test the full onboarding flow end-to-end after prompt changes — small wording changes have outsized effects on conversation quality
 - Run `cd backend && python -m pytest tests/test_agent_loops.py -v` before pushing prompt or agent changes
+
+## AgentDecision schema changes
+
+Adding or modifying ANY field in `AgentDecision` (`backend/state.py`) changes LLM behavior across **all phases and all modes** — the schema is included in every API call. After adding a field:
+1. Run the full test suite immediately, before committing anything else
+2. Watch for unexpected behavior in phases that don't use the new field
+3. Check that field descriptions don't bleed into adjacent fields (e.g. "offer" language in one field can make the LLM set `is_offer=True` in the wrong step)
+
+## When to skip the writing-plans skill
+
+Use `superpowers:writing-plans` when the task involves architectural decisions, multiple subsystems, or >4 files. For focused changes (single feature, ≤4 files, clear implementation path), skip the plan and implement directly — the plan adds 15+ minutes of overhead that isn't justified.
+
+## Debugging LLM output failures
+
+When a test fails due to unexpected LLM output (wrong flags, wrong phase), **add field-level debug logging first** before re-running. The debug print in `agent.py` already logs `phase` and `advance_phase` — extend it to include any field you're investigating. Running the test suite blind costs ~100 seconds per attempt.

@@ -26,7 +26,7 @@ export function LoanConfigModal({ open, approvedAmount, maxAmount, onClose, onCo
   const { locale } = useLocale()
   const isEs = locale === 'es-MX'
   const today = useMemo(() => new Date(), [])
-  const [amount, setAmount] = useState(approvedAmount)
+  const [amount, setAmount] = useState(Math.min(approvedAmount, maxAmount))
 
   const dueDateOptions = useMemo(() => getSmartDueDates(), [])
   const defaultDate = dueDateOptions.find(d => d.recommended)?.date ?? dueDateOptions[0]?.date

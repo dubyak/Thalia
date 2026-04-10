@@ -25,6 +25,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
   // Speech recognition state
   const [isListening, setIsListening] = useState(false)
   const [speechError, setSpeechError] = useState<string | null>(null)
+  const [hasUsedShiftEnter, setHasUsedShiftEnter] = useState(false)
   const recognitionRef = useRef<any>(null)
   const hasSpeech = typeof SpeechRecognition !== 'undefined'
 
@@ -39,6 +40,9 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && e.shiftKey && !hasUsedShiftEnter) {
+      setHasUsedShiftEnter(true)
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -85,7 +89,7 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
     }
 
     const recognition = new SpeechRecognition()
-    recognition.continuous = false
+    recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
@@ -153,6 +157,15 @@ export function ChatInput({ onSend, onImageSend, disabled, placeholder = 'Type y
       >
         <Camera size={18} className="text-[#F06F14]" />
       </button>
+
+      {/* Shift+Enter hint */}
+      {value.length > 0 && !hasUsedShiftEnter && !isListening && !speechError && (
+        <div className="absolute bottom-full left-0 right-0 flex items-center justify-center pb-1 pointer-events-none">
+          <span className="text-xs text-[#c2c6c0] bg-white px-2 py-0.5 rounded-full">
+            Shift + Enter for new line
+          </span>
+        </div>
+      )}
 
       {/* Input field */}
       <div className="flex-1 flex items-center px-3" style={{ height: 36, borderRadius: 10, background: '#F8FAFC' }}>

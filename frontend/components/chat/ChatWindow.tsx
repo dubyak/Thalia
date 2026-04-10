@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { ChevronRight } from 'lucide-react'
 import { useChat } from '@/contexts/ChatContext'
 import { useFlow } from '@/contexts/FlowContext'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -50,15 +49,6 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
     isFirstVisit &&
     messages.length === 1 &&
     !isTyping
-
-  // Show "ready" button after onboarding welcome, before the user has sent anything
-  const hasUserMessage = messages.some((m) => m.role === 'user')
-  const showReadyButton =
-    state.mode === 'onboarding' &&
-    messages.length > 0 &&
-    !hasUserMessage &&
-    !isTyping &&
-    !state.isComplete
 
   // Show "Configure my loan" button after the offer message
   const lastMessage = messages[messages.length - 1]
@@ -116,27 +106,6 @@ export function ChatWindow({ showProgress = false, onComplete, isFirstVisit = fa
 
         {isTyping && <TypingIndicator />}
 
-        {showReadyButton && (
-          <div className="flex flex-col items-center gap-2 pt-3 pb-2 animate-fade-in">
-            <p className="text-xs text-[#939490] font-light">
-              {isEs ? 'Toca para continuar' : 'Tap to continue'}
-            </p>
-            <button
-              onClick={() => sendMessage(isEs ? 'Continuar mi solicitud' : 'Continue my application')}
-              className="flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold transition-all active:scale-95 touch-active animate-pulse-once"
-              style={{
-                background: '#00A69C',
-                color: '#FFFFFF',
-                boxShadow: '0 4px 16px rgba(0,166,156,0.45)',
-                minWidth: 220,
-                justifyContent: 'center',
-              }}
-            >
-              {isEs ? 'Continuar mi solicitud' : 'Continue my application'}
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
 
         {showConfigureButton && (
           <div className="flex justify-center pt-2 pb-1 animate-fade-in">

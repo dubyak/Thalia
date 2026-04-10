@@ -178,6 +178,14 @@ These are hard-won insights from debugging and testing. Read before making chang
 - Always test the full onboarding flow after prompt changes — not just the phase you modified. Prompt rules interact across phases.
 - Watch for: dead-end responses (user has to say "ok"), re-asked questions (extraction failure), duplicate transition text, robotic tone.
 - Run `cd backend && python -m pytest tests/test_agent_loops.py -v` for loop detection and phase stall tests.
+- Any change to `AgentDecision` fields in `state.py` affects LLM behavior in every phase. Run the full test suite immediately after the field change, before committing anything else.
+
+**Phase 11 offer / configure button:**
+- `is_offer` and `advance_phase` are designed to be mutually exclusive in phase 11. The guard `if result.advance_phase and not result.is_offer:` protects against the LLM accidentally setting `advance_phase=True` while showing the configure button (Step 2). But this guard also silently blocks phase advancement if the LLM mistakenly sets `is_offer=True` during the acceptance step (Step 4).
+- Root fix: phase 11 Step 4 instructions must explicitly include `Set is_offer=false.` — the LLM will sometimes set it True without this instruction, particularly if there are other fields in the schema that reference "offer" language.
+- Adding any field whose description mentions "offer" to `AgentDecision` increases the risk of `is_offer=True` being set in the wrong step. Always run the full test suite after such additions.
+- The skip-to-offer path (`skip_to_offer=True`) sets `session.phase="11"` and `result.is_offer=True` before the auto-advance check runs. The auto-advance guard must include `and not result.skip_to_offer` to prevent a duplicate second LLM call generating a redundant offer presentation.
+- Skip instruction in prompts must be scoped to phases before 11 (`if phase not in ("11", "12", "complete")`). Including it in phase 11 causes the LLM to confuse acceptance messages with skip intent.
 
 ## Maintaining this file
 

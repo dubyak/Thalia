@@ -351,7 +351,7 @@ async def _run_agent_inner(
         ack_combined = "\n\n".join(ack_messages)
         session.messages.append({"role": "assistant", "content": ack_combined})
         session.messages.append({
-            "role": "user",
+            "role": "system",
             "content": "(System note: the previous response above was already sent to the customer. "
                        "Do NOT repeat or rephrase it. Proceed immediately to your next required action.)",
         })
